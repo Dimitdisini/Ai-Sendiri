@@ -96,3 +96,25 @@ Halaman terpisah untuk mengerjakan visual tanpa dashboard: http://localhost:4545
   Panah biru = +z model. Aturan: karakter dan kursi menghadap +z pada rotasi 0; chairModernCushion menghadap +x.
 - Semua model dipusatkan ke tengah alas bounding box (fitXZ), jadi koordinat SEATS adalah titik tengah benda.
 index.html memakai office3d.js yang sama, jadi perbaikan di studio otomatis masuk ke dashboard.
+
+## Kantor 3D v2 — interior prosedural (menggantikan versi aset Kenney)
+
+`office3d.js` sekarang membangun semua benda dan orang dari kode dengan ukuran nyata dalam meter. Tidak ada file model lagi,
+jadi posisi, arah hadap, dan tinggi duduk presisi. Folder `assets/` (Kenney) tidak dipakai lagi dan boleh dihapus.
+
+Isi ruangan (x -9..9, z -6..6; dinding belakang berjendela, dinding kanan):
+- Area kerja: 10 meja gaming dua baris (baris A menghadap jendela, baris B menghadap kamera) + meja besar Orkestrator.
+  Tiap meja: 2 atau 3 monitor dengan layar sesuai peran (kode, dokumen, grafik, tes), keyboard RGB, strip RGB, bias light, kursi gaming berwarna peran.
+- Ruang meeting kaca berbingkai hitam: meja panjang, 7 kursi, laptop dan notes, lampu gantung, TV besar untuk presentasi.
+- Pojok kopi: kabinet, mesin kopi, microwave, kulkas, meja bar dengan 2 stool, lampu gantung.
+- Lounge: sofa 3 dudukan, 2 armchair, meja kopi, karpet, lampu lantai, rak buku pembatas, kucing kantor yang jalan-jalan.
+- Pojok main: 2 bean bag dan mesin arcade.
+- Papan: Papan Tugas (kanban dari data plan/QA), Roadmap (persen), Papan Status (tiap agen), jam dinding, TV presentasi.
+- Tema Otomatis/Terang/Gelap (malam 18.00–06.00): jendela kota malam dengan lampu gedung, lampu gantung dan lampu lantai menyala.
+
+Orang: badan prosedural bersendi (pinggul, lutut, bahu, siku, kepala), baju warna peran, gaya rambut, kacamata, headset.
+Pose: mengetik, duduk santai, rapat (sesekali gestur), presentasi (menunjuk TV), ngopi (menyeruput), bean bag (main HP), arcade.
+Jalan memakai A* di peta halangan 20 cm supaya tidak menembus meja dan kaca.
+
+Studio: `studio.html` (tombol skenario). Debug: `window.office3d` (camera, controls, actors, SPOTS, setTheme).
+Menggeser tata letak: ubah ROW_X, spot("desk:…"), MEET_IDS, dan rest(...) di bagian TITIK (SPOT).

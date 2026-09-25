@@ -13,11 +13,16 @@
     .bubble3d{background:#fff;color:#1f2430;font-size:11px;padding:4px 9px;border-radius:10px;border:1px solid #d1d5db;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #panel{position:fixed;top:10px;left:10px;background:rgba(255,255,255,.92);border:1px solid #ddd;border-radius:10px;padding:10px;font-size:12px;z-index:5}
     #panel button{margin:2px;font-size:12px}
+  .zone3d{background:rgba(255,255,255,.9);color:#1f2430;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.15);white-space:nowrap;pointer-events:none}
+.theme3d{position:absolute;top:10px;right:10px;display:flex;gap:4px;background:rgba(255,255,255,.88);padding:4px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.15);z-index:3}
+.theme3d button{border:0;background:transparent;font-size:12px;padding:4px 8px;border-radius:7px;cursor:pointer;color:#374151}
+.theme3d button.on{background:#2563eb;color:#fff}
+.tag3d{box-shadow:0 1px 3px rgba(0,0,0,.25)}
   </style>
 </head>
 <body>
   <div id="panel">
-    <b>Studio</b> · data contoh
+    <b>Studio Kantor 3D</b> · data contoh, bukan data asli
     <div>
       <button onclick="S.scenario('kerja')">Semua kerja</button>
       <button onclick="S.scenario('campur')">Campur</button>
