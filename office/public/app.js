@@ -285,3 +285,62 @@ try {
   const es = new EventSource("/events");
   es.onmessage = () => fetchState();
 } catch { /* polling tetap jalan */ }
+
+// -------------------------------------------------------------------
+// KOTAK PERINTAH -> /api/command (Orkestrator via claude -p)
+// -------------------------------------------------------------------
+const CMD_LABEL = { antre: "antre", jalan: "jalan", selesai: "selesai", gagal: "gagal", dihentikan: "dihentikan", dibatalkan: "dibatalkan", terhenti: "terhenti" };
+function getToken(forcePrompt) {
+  let t = "";
+  try { t = localStorage.getItem("office-token") || ""; } catch { /* abaikan */ }
+  if (!t || forcePrompt) {
+    t = (window.prompt("Masukkan kunci akses (OFFICE_TOKEN di file office/.env):", "") || "").trim();
+    if (t) { try { localStorage.setItem("office-token", t); } catch { /* abaikan */ } }
+  }
+  return t;
+}
+function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function renderCompanySelect() {
+  const sel = document.getElementById("cmdCompany"); if (!sel || !state) return;
+  const sig = state.companies.map((c) => c.slug).join("|");
+  if (sel.dataset.sig !== sig) {
+    sel.innerHTML = `<option value="">Semua</option>` + state.companies.map((c) => `<option value="${c.slug}">${escapeHtml(c.name)}</option>`).join("");
+    sel.dataset.sig = sig;
+  }
+  if (!sel.dataset.touched && activeCompany) sel.value = activeCompany;
+}
+async function loadCommands() {
+  try {
+    const list = await (await fetch("/api/commands")).json();
+    const el = document.getElementById("cmdList"); if (!el) return;
+    el.innerHTML = list.slice(0, 5).map((j) => {
+      const dur = j.ended && j.started ? ` · ${Math.round((j.ended - j.started) / 1000)} dtk` : "";
+      const open = j.status === "jalan" || (j.ended && Date.now() - j.ended < 120000) ? " open" : "";
+      const stop = j.status === "jalan" || j.status === "antre" ? `<button class="cmd-stop" data-id="${j.id}">Hentikan</button>` : "";
+      return `<details class="cmd-item"${open}><summary><span class="cmd-st st-${j.status}">${CMD_LABEL[j.status] || j.status}</span><span class="cmd-q">${escapeHtml(j.text)}</span><span class="cmd-meta">${j.company ? escapeHtml(j.company) + " · " : ""}${fmtTime(j.created)}${dur}</span>${stop}</summary><pre class="cmd-out">${escapeHtml(j.output || (j.status === "antre" ? "Menunggu giliran..." : "Orkestrator sedang bekerja..."))}</pre></details>`;
+    }).join("") || `<div class="cmd-empty">Belum ada perintah dari dashboard.</div>`;
+  } catch { /* server mungkin sedang restart */ }
+}
+async function sendCommand(text, company, retried) {
+  const token = getToken(false); if (!token) return;
+  const res = await fetch("/api/command", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ text, company }) });
+  if (res.status === 401 && !retried) { getToken(true); return sendCommand(text, company, true); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); alert("Gagal mengirim: " + (e.error || res.status)); return; }
+  document.getElementById("cmdText").value = "";
+  loadCommands();
+}
+document.getElementById("cmdForm")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = document.getElementById("cmdText").value.trim(); if (!text) return;
+  sendCommand(text, document.getElementById("cmdCompany").value || null);
+});
+document.getElementById("cmdCompany")?.addEventListener("change", (e) => { e.target.dataset.touched = "1"; });
+document.getElementById("cmdList")?.addEventListener("click", async (e) => {
+  const b = e.target.closest(".cmd-stop"); if (!b) return;
+  e.preventDefault();
+  const token = getToken(false); if (!token) return;
+  await fetch(`/api/command/${b.dataset.id}/stop`, { method: "POST", headers: { Authorization: "Bearer " + token } });
+  loadCommands();
+});
+loadCommands();
+setInterval(() => { renderCompanySelect(); loadCommands(); }, 3000);

@@ -118,3 +118,38 @@ Jalan memakai A* di peta halangan 20 cm supaya tidak menembus meja dan kaca.
 
 Studio: `studio.html` (tombol skenario). Debug: `window.office3d` (camera, controls, actors, SPOTS, setTheme).
 Menggeser tata letak: ubah ROW_X, spot("desk:…"), MEET_IDS, dan rest(...) di bagian TITIK (SPOT).
+
+## Kotak perintah (dashboard → Orkestrator)
+
+Di halaman Overview ada kotak "Perintah ke tim". Pilih perusahaan, ketik perintah (misal `/briefing` atau `/kickoff xavortree: ...`), Kirim.
+- Server menjalankan `claude -p` di root proyek, satu perintah dalam satu waktu, sisanya antre. Hasil tampil di bawah kotak, bisa dihentikan.
+- Riwayat disimpan di `office/data/commands.jsonl`.
+- Perlu kunci akses: `OFFICE_TOKEN` di `office/.env` (dibuat otomatis saat server pertama jalan). Dashboard menanyakannya sekali lalu mengingatnya di browser itu.
+- `CLAUDE_SAFE=1` membuat perintah jalan tanpa bypass izin (perintah yang butuh izin akan gagal).
+
+## Keamanan jaringan
+
+Server kini hanya mendengar di `127.0.0.1` (sebelumnya semua antarmuka). Untuk membuka dari jaringan lain: `OFFICE_HOST=0.0.0.0`,
+tapi cara yang disarankan adalah Tailscale (di bawah), supaya dashboard tidak pernah terbuka ke internet publik.
+
+## Akses dari HP (Tailscale)
+
+1. Pasang Tailscale di Mac (tailscale.com/download) dan di HP, login dengan akun yang sama.
+2. Di Mac, jalankan sekali: `tailscale serve --bg 4545`
+3. Buka alamat `https://<nama-mac>.<tailnet>.ts.net` di HP. Hanya perangkat di tailnet-mu yang bisa membukanya.
+4. Saat pertama mengirim perintah dari HP, masukkan OFFICE_TOKEN.
+Mematikan: `tailscale serve --https=443 off`.
+
+## Lapor dari Antigravity atau tool lain
+
+Tool di luar Claude Code bisa muncul sebagai karakter di kantor lewat `POST /api/event`:
+
+```bash
+curl -X POST http://localhost:4545/api/event \
+  -H "Authorization: Bearer $OFFICE_TOKEN" -H "Content-Type: application/json" \
+  -d '{"agent_type":"frontend","company":"xavortree","summary":"Antigravity: rapikan layout","source":"antigravity"}'
+```
+
+Field: `agent_type` wajib (id peran di roster, misal backend, frontend, data), `company` (slug folder), `summary` (teks gelembung),
+`status` opsional (`selesai` atau `istirahat` membuat karakter berhenti kerja), `source` (nama tool).
+Di Antigravity, tambahkan aturan: "setiap mulai dan selesai tugas, jalankan curl di atas dengan ringkasan satu kalimat".

@@ -4,7 +4,10 @@
 // lalu sajikan lewat REST API + Server-Sent Events ke office/public/index.html.
 
 import { createServer } from "node:http";
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, watch, mkdirSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { randomBytes, timingSafeEqual } from "node:crypto";
+import { homedir } from "node:os";
+import { readFileSync, writeFileSync, appendFileSync, existsSync, readdirSync, statSync, watch, mkdirSync } from "node:fs";
 import { join, extname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -18,6 +21,28 @@ const PUBLIC_DIR = join(OFFICE_DIR, "public");
 
 mkdirSync(DATA_DIR, { recursive: true });
 if (!existsSync(EVENTS_FILE)) writeFileSync(EVENTS_FILE, "");
+
+// ---------- Konfigurasi dari office/.env (tanpa menimpa env shell) ----------
+const ENV_FILE = join(OFFICE_DIR, ".env");
+function loadEnv() {
+  if (!existsSync(ENV_FILE)) return;
+  for (const line of readFileSync(ENV_FILE, "utf8").split("\n")) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+}
+loadEnv();
+// Kunci akses untuk endpoint yang bisa menjalankan perintah atau menulis event. Dibuat otomatis sekali.
+if (!process.env.OFFICE_TOKEN) {
+  const tok = randomBytes(18).toString("base64url");
+  appendFileSync(ENV_FILE, (existsSync(ENV_FILE) && !readFileSync(ENV_FILE, "utf8").endsWith("\n") ? "\n" : "") + "OFFICE_TOKEN=" + tok + "\n", { mode: 0o600 });
+  process.env.OFFICE_TOKEN = tok;
+  console.log("Kunci akses baru dibuat di office/.env (OFFICE_TOKEN).");
+}
+const TOKEN = process.env.OFFICE_TOKEN;
+const HOST = process.env.OFFICE_HOST || "127.0.0.1"; // default hanya dari laptop ini; akses HP lewat tailscale serve
+const CLAUDE_BIN = process.env.CLAUDE_BIN || (existsSync(join(homedir(), ".local/bin/claude")) ? join(homedir(), ".local/bin/claude") : "claude");
+const COMMANDS_FILE = join(DATA_DIR, "commands.jsonl");
 
 let roster = {};
 try {
@@ -286,9 +311,98 @@ function serveEvidence(req, res, urlPath) {
   res.end(readFileSync(filePath));
 }
 
-const server = createServer((req, res) => {
+function authorized(req) {
+  const h = req.headers.authorization || "";
+  const got = Buffer.from(h.replace(/^Bearer\s+/i, "")), want = Buffer.from(TOKEN);
+  return got.length === want.length && timingSafeEqual(got, want);
+}
+function readBody(req, limit = 64 * 1024) {
+  return new Promise((resolve, reject) => {
+    let buf = ""; req.setEncoding("utf8");
+    req.on("data", (c) => { buf += c; if (buf.length > limit) { reject(new Error("terlalu besar")); req.destroy(); } });
+    req.on("end", () => { try { resolve(buf ? JSON.parse(buf) : {}); } catch { reject(new Error("JSON tidak valid")); } });
+    req.on("error", reject);
+  });
+}
+
+// ---------- Perintah dari dashboard -> Orkestrator (claude -p), satu per satu ----------
+const jobs = [];
+let running = null;
+function loadJobs() {
+  if (!existsSync(COMMANDS_FILE)) return;
+  const last = new Map();
+  for (const l of readFileSync(COMMANDS_FILE, "utf8").trim().split("\n")) { try { const j = JSON.parse(l); last.set(j.id, j); } catch { /* lewati */ } }
+  for (const j of last.values()) { if (j.status === "jalan" || j.status === "antre") j.status = "terhenti"; jobs.push(j); }
+}
+loadJobs();
+function saveJob(j) { appendFileSync(COMMANDS_FILE, JSON.stringify(j) + "\n"); }
+function nextJob() {
+  if (running) return;
+  const j = jobs.find((x) => x.status === "antre"); if (!j) return;
+  running = j; j.status = "jalan"; j.started = Date.now(); saveJob(j); broadcast();
+  const where = j.company ? `Perusahaan: ${j.company} (folder companies/${j.company}/). ` : "";
+  const prompt = `Perintah dari CEO lewat dashboard Kantor AI. ${where}Jalankan sesuai CLAUDE.md. Jawab ringkas maksimal 15 baris, tanpa tabel markdown.\n\n${j.text}`;
+  const args = ["-p", prompt, "--output-format", "text"];
+  if (process.env.CLAUDE_SAFE !== "1") args.push("--dangerously-skip-permissions");
+  const child = spawn(CLAUDE_BIN, args, { cwd: ROOT, env: process.env });
+  j.pid = child.pid;
+  let out = "", err = "";
+  child.stdout.on("data", (d) => { out += d; j.output = out.slice(-6000); });
+  child.stderr.on("data", (d) => { err += d; });
+  const done = (code) => {
+    if (j.status === "jalan") j.status = code === 0 ? "selesai" : "gagal";
+    j.ended = Date.now(); j.output = (out.trim() || err.trim() || "(tidak ada keluaran)").slice(-6000); delete j.pid;
+    saveJob(j); running = null; broadcast(); nextJob();
+  };
+  child.on("close", done);
+  child.on("error", (e) => { err += String(e); done(-1); });
+  j._child = child;
+}
+function publicJob(j) { const { _child, ...rest } = j; return rest; }
+
+const server = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const path = url.pathname;
+
+  if (path === "/api/auth" && req.method === "GET") { sendJSON(res, authorized(req) ? 200 : 401, { ok: authorized(req) }); return; }
+
+  if (path === "/api/commands" && req.method === "GET") { sendJSON(res, 200, jobs.slice(-20).reverse().map(publicJob)); return; }
+
+  if (path === "/api/command" && req.method === "POST") {
+    if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }
+    let body; try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
+    const text = String(body.text || "").trim().slice(0, 4000);
+    if (!text) { sendJSON(res, 400, { error: "Perintah kosong" }); return; }
+    const company = body.company && /^[a-z0-9._-]+$/i.test(body.company) && existsSync(join(COMPANIES_DIR, body.company)) ? body.company : null;
+    const j = { id: randomBytes(6).toString("hex"), text, company, status: "antre", created: Date.now(), output: "" };
+    jobs.push(j); saveJob(j); nextJob(); broadcast();
+    sendJSON(res, 200, publicJob(j)); return;
+  }
+
+  const mStop = path.match(/^\/api\/command\/([a-f0-9]+)\/stop$/);
+  if (mStop && req.method === "POST") {
+    if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
+    const j = jobs.find((x) => x.id === mStop[1]);
+    if (!j) { sendJSON(res, 404, { error: "tidak ada" }); return; }
+    if (j.status === "antre") { j.status = "dibatalkan"; saveJob(j); }
+    else if (j.status === "jalan" && j._child) { j.status = "dihentikan"; j._child.kill("SIGTERM"); }
+    broadcast(); sendJSON(res, 200, publicJob(j)); return;
+  }
+
+  // Event dari tool lain (Antigravity, Codex, skrip). Format sama dengan hooks.
+  if (path === "/api/event" && req.method === "POST") {
+    if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
+    let b; try { b = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
+    const type = String(b.agent_type || b.role || "").trim();
+    if (!/^[a-z0-9-]{2,40}$/.test(type)) { sendJSON(res, 400, { error: "agent_type wajib, huruf kecil dan tanda minus, misal backend" }); return; }
+    const HOOKS = new Set(["SubagentStart", "PreToolUse", "PostToolUse", "SubagentStop"]);
+    const status = String(b.status || "").toLowerCase();
+    const hook = HOOKS.has(b.hook) ? b.hook : status === "selesai" || status === "istirahat" ? "SubagentStop" : "PreToolUse";
+    const company = b.company && /^[a-z0-9._-]+$/i.test(b.company) ? b.company : null;
+    const rec = { ts: Date.now(), hook, session_id: String(b.session || "ext-" + (b.source || "luar")).slice(0, 60), agent_type: type, agent_id: "ext-" + type, company, cwd: null, tool: String(b.tool || b.source || "External").slice(0, 40), summary: String(b.summary || "").slice(0, 200), source: String(b.source || "luar").slice(0, 40) };
+    appendFileSync(EVENTS_FILE, JSON.stringify(rec) + "\n");
+    sendJSON(res, 200, { ok: true }); return;
+  }
 
   if (path === "/api/roster") {
     // Baca ulang tiap request supaya ganti nama/warna di roster.json langsung terlihat tanpa restart
@@ -386,6 +500,8 @@ const server = createServer((req, res) => {
   serveStatic(req, res, path);
 });
 
+function broadcast() { for (const client of sseClients) { try { client.write(`data: ${JSON.stringify({ ts: Date.now() })}\n\n`); } catch { sseClients.delete(client); } } }
+
 // Broadcast tiap kali events.jsonl bertambah baris (debounce ringan)
 let lastSize = existsSync(EVENTS_FILE) ? statSync(EVENTS_FILE).size : 0;
 watch(DATA_DIR, { persistent: true }, (eventType, filename) => {
@@ -412,7 +528,7 @@ server.on("error", (err) => {
   throw err;
 });
 
-server.listen(PORT, () => {
-  console.log(`Kantor AI dashboard: http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Kantor AI dashboard: http://localhost:${PORT}  (mendengar di ${HOST})`);
   console.log(`Membaca perusahaan dari: ${COMPANIES_DIR}`);
 });

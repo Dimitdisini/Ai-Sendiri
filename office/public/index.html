@@ -77,6 +77,16 @@
 
     <!-- OVERVIEW -->
     <section class="page active" id="pageOverview">
+      <!-- Kotak perintah ke tim -->
+      <div class="cmd-card">
+        <form class="cmd-row" id="cmdForm" autocomplete="off">
+          <select id="cmdCompany" title="Perusahaan"></select>
+          <input id="cmdText" placeholder="Perintah ke tim, misal: /briefing  atau  /kickoff xavortree: aplikasi absensi" />
+          <button type="submit" id="cmdSend">Kirim</button>
+        </form>
+        <div class="cmd-hint">Dijalankan Orkestrator (Kai) sesuai CLAUDE.md. Satu perintah jalan dalam satu waktu, sisanya antre.</div>
+        <div id="cmdList" class="cmd-list"></div>
+      </div>
       <!-- Kanvas isometrik -->
       <div class="canvas-wrap">
         <div id="office3d" style="display:none;position:relative;width:100%"></div>
