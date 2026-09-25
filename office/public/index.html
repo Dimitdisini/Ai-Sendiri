@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>Kantor AI</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Kantor AI <small>Dashboard tim agen</small></div>
+    <div class="company-tabs" id="companyTabs"></div>
+    <div style="flex:1"></div>
+    <div class="stat-pill"><div class="n"><span class="live-dot"></span><span id="liveTime">--:--</span></div><div class="l">Live</div></div>
+    <div class="stat-pill"><div class="n" id="roadmapPct">-</div><div class="l">Progres roadmap</div></div>
+    <div class="stat-pill"><div class="n" id="planCount">-</div><div class="l">Plan / QA report</div></div>
+    <div class="stat-pill"><div class="n" id="blokirCount">-</div><div class="l">Tertahan (BLOKIR)</div></div>
+  </header>
+
+  <main>
+    <div class="quota-banner" id="quotaBanner" style="display:none"></div>
+    <section class="office-wrap">
+      <canvas id="officeCanvas" width="960" height="640"></canvas>
+    </section>
+    <section class="agent-grid" id="agentGrid"></section>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="roadmap" class="active">Roadmap</button>
+      <button data-tab="keputusan">Keputusan</button>
+      <button data-tab="output">Output</button>
+      <button data-tab="bukti">Bukti QA</button>
+    </nav>
+
+    <section id="tabRoadmap"></section>
+    <section id="tabKeputusan" style="display:none"></section>
+    <section id="tabOutput" style="display:none"></section>
+    <section id="tabBukti" style="display:none"></section>
+  </main>
+
+  <script src="/office.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+office/data/
+node_modules/
+.DS_Store
+office/.env
+companies/*/code/
