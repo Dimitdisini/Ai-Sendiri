@@ -153,3 +153,16 @@ curl -X POST http://localhost:4545/api/event \
 Field: `agent_type` wajib (id peran di roster, misal backend, frontend, data), `company` (slug folder), `summary` (teks gelembung),
 `status` opsional (`selesai` atau `istirahat` membuat karakter berhenti kerja), `source` (nama tool).
 Di Antigravity, tambahkan aturan: "setiap mulai dan selesai tugas, jalankan curl di atas dengan ringkasan satu kalimat".
+
+## Telegram dan dashboard disatukan (2026-09-25)
+
+Bot Telegram tidak lagi menjalankan `claude -p` sendiri. Sekarang dia mengirim perintah ke antrean yang sama
+dengan kotak perintah dashboard (`POST /api/command`), jadi hanya ADA SATU antrean, tidak ada dua sesi Kai
+yang bisa bentrok mengubah file yang sama.
+
+Setiap perintah selesai — dari Telegram MAUPUN dashboard — hasilnya otomatis dikirim ke Telegram
+(`notifyTelegram` di server.mjs), asal `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` ada di `office/.env`.
+Jadi kamu bisa kirim perintah dari HP atau dari laptop, hasilnya tetap masuk ke Telegram-mu.
+
+Perintah bebas: tidak ada batasan jenis tugas. Bisa "ringkas dokumen X", "analisa Y", "buatkan Z" —
+semuanya diteruskan apa adanya ke Kai, yang memanggil peran yang sesuai.

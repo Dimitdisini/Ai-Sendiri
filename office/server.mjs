@@ -374,10 +374,27 @@ function nextJob() {
   let out = "", err = "";
   child.stdout.on("data", (d) => { out += d; j.output = out.slice(-6000); });
   child.stderr.on("data", (d) => { err += d; });
+  async function notifyTelegram(text) {
+  const tok = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
+  if (!tok || !chat) return;
+  try {
+    for (let i = 0; i < text.length; i += 3900) {
+      await fetch(`https://api.telegram.org/bot${tok}/sendMessage`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chat, text: text.slice(i, i + 3900) }),
+      });
+    }
+  } catch { /* Telegram opsional, jangan sampai gagal di sini menghentikan job */ }
+}
+
   const done = (code) => {
     if (j.status === "jalan") j.status = code === 0 ? "selesai" : "gagal";
     j.ended = Date.now(); j.output = (out.trim() || err.trim() || "(tidak ada keluaran)").slice(-6000); delete j.pid;
     saveJob(j); running = null; broadcast(); nextJob();
+    const label = j.status === "selesai" ? "✅" : j.status === "dihentikan" ? "⏹" : "❌";
+    notifyTelegram(`${label} Perintah${j.company ? " (" + j.company + ")" : ""}: ${j.text}
+
+${j.output}`);
   };
   child.on("close", done);
   child.on("error", (e) => { err += String(e); done(-1); });
@@ -392,6 +409,13 @@ const server = createServer(async (req, res) => {
   if (path === "/api/auth" && req.method === "GET") { sendJSON(res, authorized(req) ? 200 : 401, { ok: authorized(req) }); return; }
 
   if (path === "/api/commands" && req.method === "GET") { sendJSON(res, 200, jobs.slice(-20).reverse().map(publicJob)); return; }
+
+  const mGetJob = path.match(/^\/api\/command\/([a-f0-9]+)$/);
+  if (mGetJob && req.method === "GET") {
+    const j = jobs.find((x) => x.id === mGetJob[1]);
+    if (!j) { sendJSON(res, 404, { error: "tidak ada" }); return; }
+    sendJSON(res, 200, publicJob(j)); return;
+  }
 
   if (path === "/api/command" && req.method === "POST") {
     if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }

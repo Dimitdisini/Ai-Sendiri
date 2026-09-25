@@ -23,3 +23,11 @@ Aturan formasi:
 - Setiap plan punya satu pemilik. Orkestrator memilih pemilik dari kolom "pemilik" di file plan.
 - Alur modul: analyst menulis plan → pemilik plan mengerjakan → qa menguji sampai PASS → devops untuk rilis.
 - Model per peran bisa diubah di frontmatter .claude/agents/<peran>.md.
+
+## Diskusi pagi (protokol /diskusi-pagi)
+
+Dijadwalkan harian (hari kerja): Peneliti menemukan SATU tema tajam relevan ke bidang tiap perusahaan.
+Kalau ada tema layak, 3-4 peran paling relevan (dipilih Orkestrator sesuai tema, bukan acak dan bukan semua 11)
+memberi pandangan singkat dari sudut kerjanya. Notulen di meetings/YYYY-MM-DD-diskusi-pagi.md.
+Batas biaya ketat: maksimal 5 pemanggilan per perusahaan per hari untuk protokol ini, tidak ada ronde kedua.
+Kalau tidak ada tema layak, tidak ada diskusi hari itu — itu hasil yang sah.

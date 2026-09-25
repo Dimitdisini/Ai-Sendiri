@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 // Jembatan Telegram untuk Team Dimitri. Tanpa dependency: long polling ke API Telegram.
-// - Pesan teks dari CEO (chat id yang diizinkan) -> dijalankan sebagai perintah ke Orkestrator lewat `claude -p`.
+// - Pesan teks dari CEO (chat id yang diizinkan) -> dikirim ke antrean perintah server (SATU antrean
+//   yang sama dengan kotak perintah dashboard, lihat office/server.mjs /api/command). Hasilnya dikirim
+//   balik ke Telegram oleh server sendiri (notifyTelegram), bukan oleh file ini.
 // - /status -> ringkasan dari dashboard lokal.
 // - Pantau planning/KEPUTUSAN.md semua perusahaan: item BLOKIR baru berstatus Menunggu -> notifikasi.
 //
-// Env wajib: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-// Env opsional: OFFICE_URL (default http://localhost:4545), CLAUDE_BIN (default claude), CLAUDE_SAFE=1 (tanpa bypass izin)
+// Env wajib: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, OFFICE_TOKEN (biasanya sudah ada di office/.env)
+// Env opsional: OFFICE_URL (default http://localhost:4545)
 
-import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { homedir } from "node:os";
 
 const OFFICE_DIR = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = join(OFFICE_DIR, "..");
@@ -30,9 +30,8 @@ if (existsSync(ENV_FILE)) {
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "");
 const OFFICE_URL = process.env.OFFICE_URL || "http://localhost:4545";
-const CLAUDE_BIN = process.env.CLAUDE_BIN || (existsSync(join(homedir(), ".local/bin/claude")) ? join(homedir(), ".local/bin/claude") : "claude");
-const SAFE = process.env.CLAUDE_SAFE === "1";
 
+if (!process.env.OFFICE_TOKEN) console.error("Peringatan: OFFICE_TOKEN kosong di office/.env — perintah dari Telegram akan ditolak server.");
 if (!TOKEN || !CHAT_ID) {
   console.error("Butuh TELEGRAM_BOT_TOKEN dan TELEGRAM_CHAT_ID. Contoh:\n  TELEGRAM_BOT_TOKEN=123:abc TELEGRAM_CHAT_ID=99999 node office/telegram.mjs");
   process.exit(1);
@@ -52,20 +51,6 @@ async function send(text) {
   }
 }
 
-let busy = false;
-function runClaude(prompt) {
-  return new Promise((resolve) => {
-    const args = ["-p", prompt, "--output-format", "text"];
-    if (!SAFE) args.push("--dangerously-skip-permissions");
-    const child = spawn(CLAUDE_BIN, args, { cwd: ROOT, env: process.env });
-    let out = "", err = "";
-    child.stdout.on("data", (d) => (out += d));
-    child.stderr.on("data", (d) => (err += d));
-    child.on("close", (code) => resolve({ code, out: out.trim(), err: err.trim() }));
-    child.on("error", (e) => resolve({ code: -1, out: "", err: String(e) }));
-  });
-}
-
 async function handleMessage(text) {
   if (text === "/start" || text === "/help") {
     return send("Team Dimitri siap. Kirim perintah biasa (misal: /kickoff xavortree: ...), atau /status untuk ringkasan.");
@@ -80,14 +65,24 @@ async function handleMessage(text) {
       return send("Dashboard tidak bisa dihubungi. Pastikan `node office/server.mjs` jalan.");
     }
   }
-  if (busy) return send("Masih mengerjakan perintah sebelumnya. Tunggu sebentar.");
-  busy = true;
-  await send("Diterima. Orkestrator mulai bekerja...");
-  const prompt = `Perintah dari CEO lewat Telegram. Jalankan sesuai CLAUDE.md. Jawab ringkas, maksimal 15 baris, tanpa markdown tabel.\n\n${text}`;
-  const r = await runClaude(prompt);
-  busy = false;
-  if (r.code !== 0 && !r.out) return send(`Gagal menjalankan claude (kode ${r.code}).\n${r.err.slice(0, 800)}`);
-  return send(r.out || "(tidak ada keluaran)");
+  await send("Diterima, masuk antrean (satu antrean dengan dashboard)...");
+  try {
+    const subRes = await fetch(`${OFFICE_URL}/api/command`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + process.env.OFFICE_TOKEN },
+      body: JSON.stringify({ text }),
+    });
+    if (!subRes.ok) { const e = await subRes.json().catch(() => ({})); return send("Gagal mengirim ke antrean: " + (e.error || subRes.status)); }
+    const job = await subRes.json();
+    // Poll status; hasil akhirnya tetap dikirim server via notifyTelegram, ini hanya jaga-jaga kalau server gagal kirim
+    for (let i = 0; i < 150; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const cur = await (await fetch(`${OFFICE_URL}/api/command/${job.id}`)).json().catch(() => null);
+      if (cur && cur.status !== "antre" && cur.status !== "jalan") return; // server sudah mengirim hasil
+    }
+  } catch (e) {
+    return send("Dashboard tidak bisa dihubungi. Pastikan `node office/server.mjs` jalan.\n" + String(e).slice(0, 200));
+  }
 }
 
 // ---- Pantau BLOKIR baru ----
@@ -137,7 +132,7 @@ async function poll() {
   }
   setImmediate(poll);
 }
-console.log(`Telegram bridge aktif. Claude: ${CLAUDE_BIN}${SAFE ? " (mode aman, tanpa bypass izin)" : ""}`);
+console.log(`Telegram bridge aktif. Perintah diteruskan ke antrean server di ${OFFICE_URL}.`);
 send("Team Dimitri online. Kirim /status untuk ringkasan, atau perintah langsung seperti: /kickoff xavortree: ...").catch(() => {});
 poll();
 setInterval(() => notifyBlokir().catch(() => {}), 60 * 1000);
