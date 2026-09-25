@@ -284,6 +284,7 @@ const ROW_B = ["backend", "frontend", "data", "devops", "qa"];                  
 ROW_A.forEach((t, i) => spot("desk:" + t, ROW_X[i], -4.3, Math.PI, "desk", 0.47));
 ROW_B.forEach((t, i) => spot("desk:" + t, ROW_X[i], -2.3, 0, "desk", 0.47));
 spot("desk:orchestrator", -1.2, 1.75, Math.PI, "desk", 0.47);
+spot("desk:peneliti", 1.4, 1.75, Math.PI, "desk", 0.47);
 
 const MEET_T = { x: 6.3, z: 3.1 };
 const MEET_IDS = ["meet:0"];
@@ -450,7 +451,7 @@ function books(parent, x0, x1, y, z, seed) {
 
 // ---------- meja gaming per peran ----------
 const DESKS = {};
-const SCREEN_KIND = { backend: "code", frontend: "code", devops: "code", data: "chart", "ai-engineer": "chart", qa: "test", "business-analyst": "doc", pm: "doc", analyst: "doc", "chief-of-staff": "dash", orchestrator: "dash" };
+const SCREEN_KIND = { backend: "code", frontend: "code", devops: "code", data: "chart", "ai-engineer": "chart", qa: "test", "business-analyst": "doc", pm: "doc", analyst: "doc", "chief-of-staff": "dash", orchestrator: "dash", peneliti: "doc" };
 const MONITORS = { backend: 3, frontend: 3, data: 3, devops: 3, "ai-engineer": 3 };
 function monitor(parent, x, z, ry, tex, w = 0.56, h = 0.33) {
   const m = grp(parent, x, 0.745, z, ry);
@@ -770,8 +771,8 @@ function refreshBoards() { drawKanban(); drawRoad(); drawStatus(); drawClock(); 
 // =====================================================================
 // MANUSIA PROSEDURAL
 // =====================================================================
-const SEAT_TYPES = { orchestrator: 1, "business-analyst": 1, pm: 1, analyst: 1, "ai-engineer": 1, backend: 1, frontend: 1, data: 1, devops: 1, qa: 1, "chief-of-staff": 1 };
-const DEFAULT_COLORS = { orchestrator: "#7c3aed", "business-analyst": "#0d9488", pm: "#2563eb", analyst: "#0891b2", "ai-engineer": "#9333ea", backend: "#16a34a", frontend: "#65a30d", data: "#ca8a04", devops: "#dc2626", qa: "#ea580c", "chief-of-staff": "#334155" };
+const SEAT_TYPES = { orchestrator: 1, "business-analyst": 1, pm: 1, analyst: 1, "ai-engineer": 1, backend: 1, frontend: 1, data: 1, devops: 1, qa: 1, "chief-of-staff": 1, peneliti: 1 };
+const DEFAULT_COLORS = { orchestrator: "#7c3aed", "business-analyst": "#0d9488", pm: "#2563eb", analyst: "#0891b2", "ai-engineer": "#9333ea", backend: "#16a34a", frontend: "#65a30d", data: "#ca8a04", devops: "#dc2626", qa: "#ea580c", "chief-of-staff": "#334155", peneliti: "#0e7490" };
 const STYLE = {
   orchestrator: { skin: 0xd9a47e, hair: 0x1c1c24, pants: 0x1f2937, hairStyle: "side", tie: true },
   "business-analyst": { skin: 0xf1c7a8, hair: 0x3b2a1e, pants: 0x374151, female: true, hairStyle: "long" },
@@ -784,6 +785,7 @@ const STYLE = {
   devops: { skin: 0x8d5a3b, hair: 0x111111, pants: 0x1f2937, hairStyle: "short", headset: true },
   qa: { skin: 0xf1c7a8, hair: 0x2b1d14, pants: 0x2d3748, female: true, hairStyle: "bob" },
   "chief-of-staff": { skin: 0xc68a62, hair: 0x3b3b3b, pants: 0x1f2937, hairStyle: "side", glasses: true },
+  peneliti: { skin: 0xd9a47e, hair: 0x2b2b2b, pants: 0x374151, hairStyle: "curly", glasses: true, female: true },
 };
 function makeHuman(style, shirtHex) {
   const shirtC = new THREE.Color(shirtHex).getHex();
