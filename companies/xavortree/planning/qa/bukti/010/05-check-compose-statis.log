@@ -1,0 +1,57 @@
+# check-compose + struktur + .env.example (pendukung AC1–AC5, statis) — Fri Sep 25 20:07:01 WIB 2026
+## check-compose pada repo asli
+check-compose OK: 11 service, 21 variabel env terdokumentasi, port sesuai TDD §6
+exit=0
+## Negatif 1: publikasikan 1883 ke host
+check-compose: 2 masalah
+  - mosquitto: ports ["8883:8883","1883:1883"] != ["8883:8883"]
+  - mosquitto: 1883 tidak boleh dipublikasikan
+exit=1
+## Negatif 2: db bind 0.0.0.0:5432
+check-compose: 1 masalah
+  - timescaledb: ports ["5432:5432"] != ["127.0.0.1:5432:5432"]
+exit=1
+## Negatif 3: hapus healthcheck ingest (ganti kunci)
+check-compose: 1 masalah
+  - ingest: healthcheck wajib
+exit=1
+## Negatif 4: variabel QA_BARU tidak ada di .env.example
+check-compose: 1 masalah
+  - variabel ${QA_BARU} tidak ada di .env.example
+exit=1
+## Negatif 5: web depends_on api tanpa service_healthy
+check-compose: 1 masalah
+  - web: depends_on api harus condition service_healthy
+exit=1
+## Struktur folder TDD §1 (plan scope)
+apps/api           ada
+apps/ingest        ada
+apps/alerter       ada
+apps/web           ada
+services/anomaly   ada
+tools/simcore      ada
+tools/dataset      ada
+tools/simulator    ada
+firmware           ada
+db/migrations      ada
+db/seed            ada
+db/tests           ada
+deploy             ada
+packages/shared    ada
+docs               ada
+## mosquitto.conf kunci
+2:per_listener_settings false
+3:allow_anonymous false
+14:plugin /usr/lib/mosquitto_dynamic_security.so
+15:plugin_opt_config_file /mosquitto/data/dynsec.json
+18:listener 8883 0.0.0.0
+23:tls_version tlsv1.2
+26:listener 1883 0.0.0.0
+## migrasi 0001: extension & role
+4:CREATE EXTENSION IF NOT EXISTS timescaledb;
+5:CREATE EXTENSION IF NOT EXISTS pgcrypto;
+10:    CREATE ROLE app_owner LOGIN NOBYPASSRLS;
+13:    CREATE ROLE app_api LOGIN NOBYPASSRLS;
+16:    CREATE ROLE app_ingest LOGIN NOBYPASSRLS;
+19:    CREATE ROLE app_anomaly LOGIN NOBYPASSRLS;
+22:    CREATE ROLE app_admin LOGIN BYPASSRLS;

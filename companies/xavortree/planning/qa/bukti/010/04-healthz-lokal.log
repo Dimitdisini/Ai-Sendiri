@@ -1,0 +1,36 @@
+# Placeholder service dijalankan lokal tanpa Docker (pendukung AC1) — Fri Sep 25 20:04:17 WIB 2026
+{"svc": "simulator", "level": "info", "msg": "listening on 18090"}
+{"svc": "anomaly", "level": "info", "msg": "listening on 18083"}
+## GET :18080/healthz
+{"status":"ok","svc":"api"}  -> HTTP 200
+## GET :18081/healthz
+{"status":"ok","svc":"ingest"}  -> HTTP 200
+## GET :18082/healthz
+{"status":"ok","svc":"alerter"}  -> HTTP 200
+## GET :18083/healthz
+{"svc": "anomaly", "level": "info", "msg": "\"GET /healthz HTTP/1.1\" 200 -"}
+{"status": "ok", "svc": "anomaly"}  -> HTTP 200
+## GET :18090/healthz
+{"svc": "simulator", "level": "info", "msg": "\"GET /healthz HTTP/1.1\" 200 -"}
+{"status": "ok", "svc": "simulator"}  -> HTTP 200
+## GET :18080/tidak-ada
+HTTP 404
+## SIGTERM api -> shutdown bersih
+exit api=0
+## web: halaman placeholder
+Monitoring Gudang — segera
+7:    location = /healthz {
+8-        access_log off;
+9-        add_header Content-Type text/plain;
+10-        return 200 'ok';
+  {"level":30,"time":1790341595212,"svc":"api","msg":"Server listening at http://127.0.0.1:18080"}
+  {"level":30,"time":1790341595213,"svc":"api","msg":"Server listening at http://192.168.2.104:18080"}
+  {"level":30,"time":1790341596953,"svc":"api","msg":"menerima SIGTERM, menutup"}
+  exit api setelah SIGTERM=0
+## web: halaman placeholder
+Monitoring Gudang — segera
+7:    location = /healthz {
+8-        access_log off;
+9-        add_header Content-Type text/plain;
+10-        return 200 'ok';
+(catatan: kill pada batch sebelumnya gagal karena bug skrip QA — indeks array zsh; proses dimatikan manual, lalu uji SIGTERM api diulang di atas)

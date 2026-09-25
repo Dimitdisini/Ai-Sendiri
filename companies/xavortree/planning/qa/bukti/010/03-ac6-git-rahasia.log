@@ -1,0 +1,94 @@
+# AC6 — git ls-files & rahasia — Fri Sep 25 20:03:15 WIB 2026
+HEAD 3cc2957
+## git status --porcelain (worktree)
+!! .pytest_cache/
+!! .ruff_cache/
+!! .venv/
+!! apps/alerter/dist/
+!! apps/alerter/tsconfig.tsbuildinfo
+!! apps/api/dist/
+!! apps/api/tsconfig.tsbuildinfo
+!! apps/ingest/dist/
+!! apps/ingest/tsconfig.tsbuildinfo
+!! node_modules/
+!! packages/shared/dist/
+!! packages/shared/tsconfig.tsbuildinfo
+## jumlah file ter-track:       69
+## git ls-files | grep -E '(^|/)\.env$|\.env\.|\.key$|\.pem$|\.crt$|dynsec\.json|\.p12$'
+.env.example
+## seluruh riwayat: git log --all --name-only | grep pola sama
+.env.example
+## scan isi file ter-track untuk kunci privat/token
+fatal: command line, 'BEGIN (RSA |EC |OPENSSH |)PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|xox[bp]-|sk-[A-Za-z0-9]{20,}': empty (sub)expression
+(tidak ada temuan)
+## .gitignore
+# rahasia dan env lokal
+.env
+.env.*
+!.env.example
+
+# sertifikat dev (dibuat oleh deploy/certs/gen.sh)
+deploy/certs/*.key
+deploy/certs/*.crt
+deploy/certs/*.csr
+deploy/certs/*.srl
+deploy/certs/*.cnf
+
+# dependensi dan build
+node_modules/
+dist/
+*.tsbuildinfo
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+
+# dbmate
+db/schema.sql
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+## git check-ignore untuk path sensitif
+.env                             .gitignore:2:.env	.env
+deploy/certs/server.key          .gitignore:7:deploy/certs/*.key	deploy/certs/server.key
+deploy/certs/ca.key              .gitignore:7:deploy/certs/*.key	deploy/certs/ca.key
+deploy/certs/ca.crt              .gitignore:8:deploy/certs/*.crt	deploy/certs/ca.crt
+deploy/mosquitto/dynsec.json     TIDAK DIABAIKAN
+node_modules                     .gitignore:14:node_modules/	node_modules
+.venv                            .gitignore:17:.venv/	.venv
+apps/api/.env                    .gitignore:2:.env	apps/api/.env
+## .env.example: nilai password
+13:POSTGRES_PASSWORD=dev-postgres-ganti
+15:APP_OWNER_PASSWORD=dev-owner-ganti
+16:APP_API_PASSWORD=dev-api-ganti
+17:APP_INGEST_PASSWORD=dev-ingest-ganti
+18:APP_ANOMALY_PASSWORD=dev-anomaly-ganti
+19:APP_ADMIN_PASSWORD=dev-admin-ganti
+22:DYNSEC_ADMIN_PASSWORD=dev-dynsec-admin-ganti
+23:SVC_INGEST_PASSWORD=dev-svc-ingest-ganti
+26:JWT_SECRET=dev-jwt-secret-ganti-minimal-32-karakter
+33:ANTHROPIC_API_KEY=
+36:GRAFANA_ADMIN_PASSWORD=dev-grafana-ganti
+## (ulang) scan kunci privat/token pada file ter-track
+(tidak ada temuan)
+
+## Simulasi pada clone bersih: cp .env.example .env + gen.sh + git add -A
+file sensitif di worktree:
+.env
+
+deploy/certs/:
+README.md
+ca.crt
+ca.key
+gen.sh
+server.cnf
+server.crt
+server.key
+git diff --cached --name-only:
+(akhir daftar staged)
+ls-files setelah add -A: tidak ada .env/*.key/*.crt

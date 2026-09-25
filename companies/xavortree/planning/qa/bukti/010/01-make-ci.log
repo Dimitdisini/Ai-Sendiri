@@ -1,0 +1,87 @@
+# make ci — Fri Sep 25 20:02:16 WIB 2026
+# HEAD 3cc2957
+npm ci
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 210 packages, and audited 215 packages in 2s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+5 vulnerabilities (3 moderate, 1 high, 1 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+/Library/Developer/CommandLineTools/usr/bin/make lint
+WARNING: You are using pip version 21.2.4; however, version 26.0.1 is available.
+You should consider upgrading via the '/Users/haimac/Dimitri Ahmad/n8n-agent-Vscode/companies/xavortree/code/monitoring-gudang/.venv/bin/python -m pip install --upgrade pip' command.
+npm run lint
+
+> monitoring-gudang@0.1.0 lint
+> eslint . && prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+.venv/bin/python -m ruff check .
+All checks passed!
+.venv/bin/python -m ruff format --check .
+18 files already formatted
+/Library/Developer/CommandLineTools/usr/bin/make test
+WARNING: You are using pip version 21.2.4; however, version 26.0.1 is available.
+You should consider upgrading via the '/Users/haimac/Dimitri Ahmad/n8n-agent-Vscode/companies/xavortree/code/monitoring-gudang/.venv/bin/python -m pip install --upgrade pip' command.
+npm run build
+
+> monitoring-gudang@0.1.0 build
+> tsc -b apps/api apps/ingest apps/alerter
+
+npm test
+
+> monitoring-gudang@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /Users/haimac/Dimitri Ahmad/n8n-agent-Vscode/companies/xavortree/code/monitoring-gudang
+
+ ✓ apps/api/test/healthz.test.ts (1 test) 170ms
+ ✓ apps/alerter/test/healthz.test.ts (1 test) 176ms
+ ✓ packages/shared/test/app.test.ts (1 test) 177ms
+ ✓ apps/ingest/test/healthz.test.ts (1 test) 178ms
+
+ Test Files  4 passed (4)
+      Tests  4 passed (4)
+   Start at  20:02:23
+   Duration  794ms (transform 102ms, setup 0ms, collect 606ms, tests 701ms, environment 1ms, prepare 415ms)
+
+.venv/bin/python -m pytest -q
+....                                                                     [100%]
+4 passed in 1.06s
+/Library/Developer/CommandLineTools/usr/bin/make check-compose
+node deploy/scripts/check-compose.mjs
+check-compose OK: 11 service, 21 variabel env terdokumentasi, port sesuai TDD §6
+docker tidak ditemukan: 'docker compose config' dilewati (validasi statis saja).
+/Library/Developer/CommandLineTools/usr/bin/make test-scripts
+bash deploy/scripts/test-scripts.sh
+[1] sintaks shell
+  ok  sh -n deploy/mosquitto/init-dynsec.sh
+  ok  sh -n db/scripts/set_role_passwords.sh
+  ok  bash -n deploy/certs/gen.sh
+  ok  bash -n deploy/scripts/wait-healthy.sh
+  ok  bash -n deploy/scripts/test-scripts.sh
+[2] gen.sh
+  ok  server.crt ditandatangani ca.crt
+  ok  SAN: localhost, mosquitto, 127.0.0.1
+  ok  idempoten tanpa FORCE=1
+[3] set_role_passwords.sh
+  ok  5 role di-ALTER lewat variabel psql (password tidak diinterpolasi ke SQL)
+  ok  gagal bila password role kosong
+[4] wait-healthy.sh
+  ok  semua healthy + migrate exit 0 -> exit 0
+  ok  migrate exit 1 -> gagal
+  ok  service belum healthy -> timeout gagal
+  ok  unhealthy -> gagal cepat
+test-scripts OK: 14 cek
+test-rls dilewati: butuh Docker + .env (stub sampai plan 011).
+make ci  7.62s user 4.08s system 89% cpu 13.149 total
+EXIT=0

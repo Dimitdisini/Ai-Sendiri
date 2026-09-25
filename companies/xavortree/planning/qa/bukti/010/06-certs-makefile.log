@@ -1,0 +1,51 @@
+# gen.sh + Makefile dry-run — Fri Sep 25 20:07:14 WIB 2026
+## openssl verify (sertifikat dibuat gen.sh di clone)
+server.crt: OK
+(openssl LibreSSL bawaan macOS tidak mengenal -ext; SAN dicek ulang dengan -text di bawah)
+-rw-------@ ca.key
+-rw-r--r--@ server.key
+## make -n up / down / demo-reset (Makefile valid, target tersedia)
+test -f .env || { echo "File .env belum ada. Jalankan: cp .env.example .env"; exit 1; }
+test -f deploy/certs/server.key || bash deploy/certs/gen.sh
+docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+COMPOSE="docker compose --env-file .env -f deploy/docker-compose.yml" bash deploy/scripts/wait-healthy.sh 300 migrate timescaledb mosquitto migrate api ingest alerter anomaly web
+docker compose --env-file .env -f deploy/docker-compose.yml ps
+---
+test -f .env || { echo "File .env belum ada. Jalankan: cp .env.example .env"; exit 1; }
+docker compose --env-file .env -f deploy/docker-compose.yml --profile sim --profile obs down --remove-orphans
+---
+test -f .env || { echo "File .env belum ada. Jalankan: cp .env.example .env"; exit 1; }
+test -f deploy/certs/server.key || bash deploy/certs/gen.sh
+docker compose --env-file .env -f deploy/docker-compose.yml --profile sim --profile obs down -v --remove-orphans
+docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+COMPOSE="docker compose --env-file .env -f deploy/docker-compose.yml" bash deploy/scripts/wait-healthy.sh 300 migrate timescaledb mosquitto migrate api ingest alerter anomaly web
+if [ -f db/seed/demo.sql ]; then \
+## make up tanpa .env -> pesan jelas
+File .env belum ada. Jalankan: cp .env.example .env
+make: *** [env-check] Error 1
+exit=2
+## make help
+  help         daftar perintah
+  certs        buat CA + sertifikat server dev (self-signed) bila belum ada
+  up           build dan nyalakan semua service inti
+  down         matikan service (volume dipertahankan)
+  logs         ikuti log semua service
+  ps           status service
+  config       validasi dan render compose
+  build        build image saja
+  demo-reset   hapus volume DB+MQTT, naik bersih, migrasi, seed demo (bila ada)
+  demo-up      service inti + simulator (profile sim)
+  sim-up       hanya simulator (service inti harus sudah jalan)
+  obs-up       prometheus + grafana (profile obs)
+  venv         virtualenv Python untuk lint/test lokal
+  lint         eslint + prettier + ruff
+  test         vitest + pytest (placeholder)
+  test-rls     uji isolasi RLS (stub; db/tests/rls.sql diisi plan 011)
+  check-compose validasi compose: statis (node) + `docker compose config` bila Docker ada
+  test-scripts uji skrip infra tanpa Docker (certs, role password, wait-healthy)
+  ci           lint + build + test + validasi compose + uji skrip + test-rls (lokal, pengganti CI hosted)
+## SAN & subjek & masa berlaku (openssl x509 -text)
+subject= /CN=mosquitto/O=Xavortree
+notAfter=Dec 28 13:03:28 2028 GMT
+            X509v3 Subject Alternative Name: 
+                DNS:localhost, DNS:mosquitto, IP Address:127.0.0.1

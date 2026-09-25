@@ -1,0 +1,60 @@
+# AC6 — isi README.md — Fri Sep 25 20:07:37 WIB 2026
+## Bagian
+6:## Prasyarat
+13:## Mulai cepat
+20:## Perintah Makefile
+43:## Port host
+56:## Struktur
+68:## Mosquitto dan dynamic security
+92:## Database
+## Prasyarat
+## Prasyarat
+- Docker ≥ 24 dengan Docker Compose v2 (`docker compose version`)
+- `make`, `bash`, `openssl` (untuk sertifikat dev), `git`
+- Untuk `make ci` lokal: Node.js 22 LTS + npm, Python 3.12 (3.9+ cukup untuk placeholder)
+- Opsional untuk uji manual: `mosquitto_pub`/`mosquitto_sub`/`mosquitto_ctrl`, `psql`
+  (atau pakai `docker compose exec mosquitto ...` / `docker compose exec timescaledb psql ...`)
+
+## Target Makefile wajib (plan) tercantum di README?
+up          ada
+down        ada
+logs        ada
+ci          ada
+test-rls    ada
+demo-reset  ada
+demo-up     ada
+sim-up      ada
+## Target Makefile yang ada vs README
+help           tidak disebut
+certs          di README
+up             di README
+down           di README
+logs           di README
+ps             di README
+config         di README
+build          tidak disebut
+demo-reset     di README
+demo-up        di README
+sim-up         di README
+obs-up         di README
+venv           tidak disebut
+lint           di README
+test           di README
+test-rls       di README
+check-compose  di README
+test-scripts   di README
+ci             di README
+## Port
+## Port host
+| Service | Port host | Catatan |
+|---|---|---|
+| web (nginx) | `3000` | halaman placeholder; `/api/` di-proxy ke api |
+| api | `8080` | `/healthz` |
+| mosquitto | `8883` | MQTT TLS untuk perangkat fisik; CA di `deploy/certs/ca.crt` |
+| mosquitto 1883 | tidak dipublikasikan | hanya jaringan compose (ingest, simulator) |
+| timescaledb | `127.0.0.1:5432` | dev saja |
+| simulator (profile `sim`) | `127.0.0.1:8090` | HTTP kontrol skenario |
+| prometheus (profile `obs`) | `127.0.0.1:9090` | |
+| grafana (profile `obs`) | `127.0.0.1:3001` | user `admin`, password `GRAFANA_ADMIN_PASSWORD` |
+| ingest / alerter / anomaly | internal `8081` / `8082` / `8083` | `/healthz` hanya dari jaringan compose |
+
