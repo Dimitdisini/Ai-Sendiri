@@ -23,3 +23,4 @@
 | A13 | 2026-09-25 | M09 modul terpisah pemilik data; M10 bukan modul kode tapi integrasi demo milik devops di MS4 | ASUMSI | Terima usulan Architect | Dianggap disetujui | Dijawab |
 | A14 | 2026-09-25 | Detektor ambang dan offline di alerter Node, bukan service AI; debounce default 2 | ASUMSI | Perlu konfirmasi AI Engineer saat plan MS1 | Menunggu AI Engineer | Dikerjakan |
 | Q6 | 2026-09-25 | Docker belum terpasang di Mac CEO; AC1-AC5 plan 010 tidak bisa diuji. Pasang Docker Desktop (atau OrbStack) di Mac, atau uji di mesin lain? | BLOKIR | A: pasang OrbStack di Mac ini, ringan dan gratis untuk pribadi | | Menunggu |
+| Q7 | 2026-09-25 | Monitoring Gudang Pintar dihentikan: bukan kebutuhan bisnis nyata, hanya project uji coba pipeline tim yang dipilih Orkestrator sendiri | Keputusan CEO | Hentikan, jangan lanjutkan detail teknis (MQTT/Supabase) | Dihentikan | Selesai |

@@ -2,5 +2,5 @@
 
 | Prioritas | Item | Sumber (kickoff / event / revisi) | Status |
 |---|---|---|---|
-| P1 | Monitoring Gudang Pintar: dokumen lengkap (BRD, PRD, FD, TDD, AI-SPEC, Timeline); MS0 plan 010 sampai 014 mulai dikerjakan | kickoff | Dikerjakan |
-| P1 | Repo GitHub Xavortree untuk Monitoring Gudang | kickoff | Menunggu CEO (Q4) |
+| P1 | Monitoring Gudang Pintar: DIHENTIKAN oleh CEO 2026-09-25. Tetap project uji coba pipeline yang berhasil (BRD sampai QA PASS bersyarat terbukti jalan). Bukan kebutuhan bisnis nyata Xavortree. | kickoff | Dihentikan |
+

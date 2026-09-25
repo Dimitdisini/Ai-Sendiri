@@ -1,4 +1,6 @@
 # Roadmap — Xavortree
+
+> Monitoring Gudang Pintar (M01-M10 di bawah) DIHENTIKAN 2026-09-25. Dipertahankan sebagai riwayat: pipeline BRD→PRD→FD→TDD→plan→QA terbukti jalan sampai QA PASS bersyarat. Bukan project aktif.
 Diperbarui: 2026-09-25 (mengikuti TIMELINE.md v0.1, status usulan; target demo internal 2026-11-06). Plan MS0 010–014 ditulis Analyst dari FD/TDD v0.1; M09 dan M10 dikonfirmasi di FD §6.
 
 | Fase | Modul | Plan | Progres | Status |
