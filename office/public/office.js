@@ -559,6 +559,7 @@
   // --- API publik ---
   window.office = {
     update(list, rosterIn, metaIn) {
+      window.office._last = [list, rosterIn, metaIn];
       roster = rosterIn || roster;
       agents = {};
       (list || []).forEach((a) => (agents[a.type] = a));

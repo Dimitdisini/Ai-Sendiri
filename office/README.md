@@ -76,3 +76,14 @@ BRD → Business Analyst, PRD/TIMELINE → PM, FD/TDD/plans → Architect, AI-SP
 Perusahaan ditebak dari path companies/<slug>/ di file atau perintah yang disentuh.
 
 Uji tanpa mengganggu data asli: `OFFICE_EVENTS=/path/events-uji.jsonl OFFICE_PORT=4546 node office/server.mjs`
+
+## Kantor 3D (office3d.js) — Fase 2d
+
+Pengganti canvas 2D bila WebGL tersedia. Three.js 0.170 dari CDN jsdelivr (import map di index.html), aset CC0:
+- `public/assets/furniture/` Kenney Furniture Kit (140 model GLB), `public/assets/characters/` Kenney Mini Characters (12 karakter beranimasi: idle, walk, sit, interact, emote). Kredit di `public/assets/CREDITS.md`.
+- Kamera ortografik isometrik, bisa diputar dan di-zoom (OrbitControls). Bayangan aktif.
+- Tata letak sama dengan office.js: 11 meja, ruang rapat kaca, sudut istirahat. Karakter per peran memakai model berbeda; label nama dan gelembung memakai CSS2DRenderer (HTML di atas canvas).
+- Animasi: kerja = duduk + sesekali "interact" (mengetik), jalan = walk, rapat = duduk di meja rapat, istirahat = ke sofa (duduk) atau berdiri idle.
+- Papan roadmap dan papan ruang rapat digambar sebagai tekstur canvas.
+- Kalau WebGL gagal, `#office3d` disembunyikan dan canvas 2D lama tampil lagi. Debug dari konsol: `window.office3d`.
+Menyesuaikan posisi: ubah SEATS / MEETING_SEATS / BREAK_SPOTS di atas office3d.js (grid meter, x ke kanan, y ke bawah layar).

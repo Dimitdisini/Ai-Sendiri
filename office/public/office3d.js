@@ -1,0 +1,293 @@
+// Kantor 3D Team Dimitri — Three.js + aset CC0 Kenney (Furniture Kit, Mini Characters).
+// Mengganti office.js (canvas 2D) bila WebGL tersedia. API sama: window.office.update(agents, roster, meta).
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import { clone as skeletonClone } from "three/addons/utils/SkeletonUtils.js";
+
+const container = document.getElementById("office3d");
+const legacyCanvas = document.getElementById("officeCanvas");
+if (!container) throw new Error("#office3d tidak ada");
+
+// ---------- Tata letak (grid meter, x ke kanan, z ke bawah layar) ----------
+const GRID_W = 17, GRID_H = 10;
+const MEET_X = 10.5, MEET_Y = 5.6;
+const SEATS = {
+  "business-analyst": { x: 2, y: 1.6 }, pm: { x: 4, y: 1.6 }, analyst: { x: 6, y: 1.6 }, "ai-engineer": { x: 8, y: 1.6 },
+  backend: { x: 2, y: 4.6 }, frontend: { x: 4, y: 4.6 }, data: { x: 6, y: 4.6 }, devops: { x: 8, y: 4.6 },
+  qa: { x: 2, y: 7.6 }, "chief-of-staff": { x: 4, y: 7.6 }, orchestrator: { x: 7.2, y: 7.6 },
+};
+const CHAR_MODEL = {
+  orchestrator: "male-a", "business-analyst": "female-a", pm: "female-b", analyst: "male-b", "ai-engineer": "female-c",
+  backend: "male-c", frontend: "male-d", data: "female-d", devops: "male-e", qa: "female-e", "chief-of-staff": "male-f",
+};
+const MEETING_SEATS = [{ x: 11.6, y: 2.65, r: Math.PI / 2 }, { x: 12.6, y: 1.45, r: Math.PI }, { x: 13.7, y: 1.45, r: Math.PI }, { x: 14.8, y: 1.45, r: Math.PI }, { x: 12.6, y: 3.95, r: 0 }, { x: 13.7, y: 3.95, r: 0 }, { x: 14.8, y: 3.95, r: 0 }, { x: 16.0, y: 2.0, r: -Math.PI / 2 }, { x: 16.0, y: 3.3, r: -Math.PI / 2 }];
+const BREAK_SPOTS = [{ x: 12.0, y: 8.55, sit: true }, { x: 12.9, y: 8.55, sit: true }, { x: 13.8, y: 8.55, sit: true }, { x: 15.3, y: 7.4 }, { x: 11.2, y: 7.3 }, { x: 12.4, y: 7.0 }, { x: 13.6, y: 7.0 }, { x: 14.8, y: 8.6 }, { x: 16.0, y: 8.2 }, { x: 11.0, y: 8.8 }, { x: 15.9, y: 6.6 }];
+const CHATTER = ["Ngopi dulu ☕", "Nunggu keputusan CEO", "Rehat bentar", "Tadi QA-nya ketat banget", "Plan berikutnya apa ya?", "Kopi kedua nih", "Main sama kucing kantor 🐈"];
+const MEETING_CHATTER = ["Setuju, catat di notulen", "Itu ASUMSI atau BLOKIR?", "Rekomendasiku opsi A", "AC-nya harus bisa diuji", "Tanya CEO dulu yang ini"];
+
+const wx = (gx) => gx - GRID_W / 2;
+const wz = (gy) => gy - GRID_H / 2;
+
+// ---------- Scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf3eee4);
+const aspect = () => container.clientWidth / Math.max(1, container.clientHeight);
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+function setCamera() {
+  const half = 6.0, a = aspect();
+  camera.left = -half * a; camera.right = half * a; camera.top = half; camera.bottom = -half;
+  camera.updateProjectionMatrix();
+}
+camera.position.set(13, 12, 13);
+camera.lookAt(0.3, 0, 0.2);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+container.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.style.position = "absolute";
+labelRenderer.domElement.style.top = "0";
+labelRenderer.domElement.style.pointerEvents = "none";
+container.appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0.3, 0, 0.2);
+controls.enablePan = false;
+controls.minZoom = 0.7; controls.maxZoom = 2.2;
+controls.maxPolarAngle = Math.PI / 2.3; controls.minPolarAngle = Math.PI / 5;
+controls.enableDamping = true;
+
+function resize() {
+  const w = container.clientWidth, h = Math.round(w * 0.56);
+  container.style.height = h + "px";
+  renderer.setSize(w, h); labelRenderer.setSize(w, h); setCamera();
+}
+window.addEventListener("resize", resize);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xd8cdb4, 1.15));
+const sun = new THREE.DirectionalLight(0xfff4e0, 1.4);
+sun.position.set(-6, 14, 8); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 12, bottom: -12, near: 1, far: 40 });
+scene.add(sun);
+
+// ---------- Ruangan ----------
+function floorZone(x0, y0, x1, y1, color) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), new THREE.MeshStandardMaterial({ color, roughness: 0.9 }));
+  m.rotation.x = -Math.PI / 2; m.position.set(wx((x0 + x1) / 2), 0, wz((y0 + y1) / 2)); m.receiveShadow = true; scene.add(m);
+}
+floorZone(0, 0, MEET_X, GRID_H, 0xead8b4);            // ruang kerja kayu
+floorZone(MEET_X, 0, GRID_W, MEET_Y, 0xcfc9e0);       // ruang rapat
+floorZone(MEET_X, MEET_Y, GRID_W, GRID_H, 0xbfcdb4);  // sudut istirahat
+// garis ubin tipis
+const grid = new THREE.GridHelper(Math.max(GRID_W, GRID_H), Math.max(GRID_W, GRID_H), 0xc9b48c, 0xc9b48c);
+grid.position.set(wx(GRID_W / 2) - (GRID_W - GRID_H) / 2 + (GRID_W - GRID_H) / 2, 0.005, 0);
+grid.material.opacity = 0.18; grid.material.transparent = true; scene.add(grid);
+
+function wall(x0, y0, x1, y1, h, color, opts = {}) {
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  const geo = new THREE.BoxGeometry(len, h, 0.14);
+  const mat = opts.glass ? new THREE.MeshPhysicalMaterial({ color: 0xbfe0f2, transparent: true, opacity: 0.28, roughness: 0.1, transmission: 0.2 }) : new THREE.MeshStandardMaterial({ color, roughness: 0.95 });
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(wx((x0 + x1) / 2), h / 2, wz((y0 + y1) / 2));
+  m.rotation.y = -Math.atan2(y1 - y0, x1 - x0);
+  m.castShadow = !opts.glass; m.receiveShadow = true; scene.add(m); return m;
+}
+wall(0, 0, GRID_W, 0, 2.7, 0xe8e2d5);      // dinding belakang
+wall(0, 0, 0, GRID_H, 2.7, 0xded7c8);      // dinding kiri
+wall(MEET_X, 0, MEET_X, MEET_Y - 1.2, 2.3, 0, { glass: true }); // kaca ruang rapat (dengan celah pintu)
+wall(MEET_X, MEET_Y, GRID_W, MEET_Y, 2.3, 0, { glass: true });
+// jendela di dinding belakang
+for (const x0 of [1.4, 5.4, 12.0]) {
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.3), new THREE.MeshStandardMaterial({ color: 0xbfe3f5, emissive: 0x7fc4e8, emissiveIntensity: 0.35 }));
+  win.position.set(wx(x0 + 1.3), 1.7, wz(0) + 0.08); scene.add(win);
+}
+
+// Papan tulis bertekstur canvas (roadmap di dinding kiri, ruang rapat di dinding belakang)
+function makeBoard(w, h) {
+  const cv = document.createElement("canvas"); cv.width = 512; cv.height = 256;
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex }));
+  return { mesh, cv, tex };
+}
+const roadBoard = makeBoard(2.8, 1.4); roadBoard.mesh.position.set(wx(0) + 0.08, 1.75, wz(3.4)); roadBoard.mesh.rotation.y = Math.PI / 2; scene.add(roadBoard.mesh);
+const meetBoard = makeBoard(2.8, 1.4); meetBoard.mesh.position.set(wx(14.3), 1.75, wz(0) + 0.08); scene.add(meetBoard.mesh);
+function drawBoard(b, lines, accent) {
+  const c = b.cv.getContext("2d"); c.fillStyle = "#ffffff"; c.fillRect(0, 0, 512, 256);
+  c.strokeStyle = "#9ca3af"; c.lineWidth = 6; c.strokeRect(3, 3, 506, 250);
+  c.fillStyle = "#1f2430"; c.font = "bold 34px sans-serif"; c.fillText(lines[0] || "", 24, 56);
+  c.font = "26px sans-serif"; c.fillStyle = accent || "#374151";
+  lines.slice(1).forEach((l, i) => c.fillText(l, 24, 110 + i * 40));
+  b.tex.needsUpdate = true;
+}
+
+// ---------- Loader + cache ----------
+const loader = new GLTFLoader();
+const cache = new Map();
+function load(path) {
+  if (!cache.has(path)) cache.set(path, new Promise((res, rej) => loader.load(path, (g) => res(g), undefined, rej)));
+  return cache.get(path);
+}
+function prepShadow(o) { o.traverse((n) => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } }); }
+// Normalisasi ukuran: skala supaya dimensi terbesar di bidang XZ = target (meter)
+function fitXZ(o, target) {
+  const b = new THREE.Box3().setFromObject(o); const s = new THREE.Vector3(); b.getSize(s);
+  const k = target / Math.max(s.x, s.z, 0.001); o.scale.multiplyScalar(k);
+  const b2 = new THREE.Box3().setFromObject(o); o.position.y -= b2.min.y; // taruh di lantai
+  return o;
+}
+async function furniture(name, gx, gy, size, rotY = 0, lift = 0) {
+  const g = await load(`/assets/furniture/${name}.glb`);
+  const o = g.scene.clone(true); prepShadow(o);
+  const group = new THREE.Group(); group.add(o); fitXZ(o, size);
+  group.position.set(wx(gx), lift, wz(gy)); group.rotation.y = rotY; scene.add(group); return group;
+}
+
+async function buildFurniture() {
+  const jobs = [];
+  for (const [type, s] of Object.entries(SEATS)) {
+    const big = type === "orchestrator";
+    jobs.push(furniture(big ? "deskCorner" : "desk", s.x, s.y, big ? 1.7 : 1.3, 0));
+    jobs.push(furniture("computerScreen", s.x - 0.05, s.y - 0.1, 0.42, 0, 0.72));
+    jobs.push(furniture("computerKeyboard", s.x, s.y + 0.16, 0.36, 0, 0.72));
+    if (big) jobs.push(furniture("laptop", s.x + 0.6, s.y - 0.05, 0.4, -0.4, 0.72));
+    jobs.push(furniture("chairDesk", s.x, s.y + 0.62, 0.5, 0));
+  }
+  // ruang rapat
+  jobs.push(furniture("table", 13.2, 2.7, 1.7, 0)); jobs.push(furniture("table", 14.6, 2.7, 1.7, 0));
+  for (const ms of MEETING_SEATS.slice(0, 7)) jobs.push(furniture("chair", ms.x, ms.y, 0.48, ms.r + Math.PI));
+  jobs.push(furniture("bookcaseOpen", 16.4, 4.9, 1.3, -Math.PI / 2));
+  // sudut istirahat
+  jobs.push(furniture("loungeSofaLong", 13.0, 8.8, 2.7, Math.PI));
+  jobs.push(furniture("tableCoffee", 13.0, 7.7, 1.1, 0));
+  jobs.push(furniture("kitchenCabinet", 16.3, 6.6, 0.9, -Math.PI / 2));
+  jobs.push(furniture("kitchenCoffeeMachine", 16.3, 6.6, 0.42, -Math.PI / 2, 0.9));
+  jobs.push(furniture("rugRectangle", 13.2, 8.2, 3.6, 0));
+  jobs.push(furniture("lampRoundFloor", 11.0, 9.3, 0.5, 0));
+  jobs.push(furniture("televisionModern", 11.4, 6.3, 1.1, Math.PI / 2, 0));
+  // tanaman & pernak-pernik
+  jobs.push(furniture("pottedPlant", 0.7, 9.3, 0.6)); jobs.push(furniture("pottedPlant", 9.6, 0.7, 0.6));
+  jobs.push(furniture("pottedPlant", 16.3, 9.3, 0.6)); jobs.push(furniture("plantSmall1", 9.8, 9.2, 0.45));
+  jobs.push(furniture("bookcaseClosedWide", 5.0, 0.35, 1.8, 0)); jobs.push(furniture("trashcan", 9.6, 7.9, 0.35));
+  jobs.push(furniture("bear", 11.6, 9.4, 0.35, Math.PI / 4)); // "kucing kantor" versi Kenney
+  await Promise.allSettled(jobs);
+}
+
+// ---------- Karakter ----------
+const actors = {};
+let roster = {}, agents = {}, meta = { meeting: { active: false } };
+
+function makeLabel(text, color) {
+  const div = document.createElement("div"); div.className = "tag3d"; div.textContent = text; div.style.background = color;
+  const bubble = document.createElement("div"); bubble.className = "bubble3d"; bubble.style.display = "none";
+  const wrap = document.createElement("div"); wrap.className = "label3d"; wrap.appendChild(bubble); wrap.appendChild(div);
+  const obj = new CSS2DObject(wrap); obj.position.set(0, 1.25, 0); return { obj, div, bubble };
+}
+async function spawnActor(type, i) {
+  const g = await load(`/assets/characters/character-${CHAR_MODEL[type] || "male-a"}.glb`);
+  const model = skeletonClone(g.scene); prepShadow(model);
+  const root = new THREE.Group(); root.add(model);
+  const b = new THREE.Box3().setFromObject(model); const s = new THREE.Vector3(); b.getSize(s);
+  model.scale.multiplyScalar(0.95 / Math.max(s.y, 0.001)); model.position.y = 0;
+  const mixer = new THREE.AnimationMixer(model);
+  const clips = {}; for (const c of g.animations) clips[c.name] = mixer.clipAction(c, model);
+  const seat = SEATS[type];
+  root.position.set(wx(seat.x), 0, wz(seat.y + 0.62)); root.rotation.y = Math.PI; // duduk menghadap meja (ke -z)
+  scene.add(root);
+  const label = makeLabel(type, "#64748b"); root.add(label.obj);
+  actors[type] = { root, mixer, clips, current: null, x: seat.x, y: seat.y + 0.62, tx: seat.x, ty: seat.y + 0.62, faceY: Math.PI, mode: "diam", label, bubbleUntil: 0, nextChat: performance.now() + 3000 + i * 1500, idx: i };
+  play(actors[type], "sit");
+}
+function play(a, name) {
+  const next = a.clips[name] || a.clips.idle; if (!next || a.current === next) return;
+  next.reset().setEffectiveWeight(1).fadeIn(0.25).play();
+  if (a.current) a.current.fadeOut(0.25);
+  a.current = next;
+}
+
+function step(dt, t) {
+  const quotaOut = meta.quota && meta.quota.status !== "ok";
+  const meeting = meta.meeting && meta.meeting.active ? meta.meeting : null;
+  const participants = meeting ? meeting.participants || [] : [];
+  for (const [type, a] of Object.entries(actors)) {
+    const ag = agents[type], seat = SEATS[type], info = roster[type] || { nickname: type, role: type, color: "#64748b" };
+    const inMeeting = !quotaOut && meeting && participants.includes(type);
+    const wantWork = !quotaOut && !inMeeting && ag && ag.status === "kerja";
+    const wantBreak = ag && (ag.status === "istirahat" || quotaOut) && !inMeeting;
+    let goal = "diam", faceY = Math.PI, sit = true;
+    if (inMeeting) { const ms = MEETING_SEATS[Math.min(participants.indexOf(type), MEETING_SEATS.length - 1)]; a.tx = ms.x; a.ty = ms.y; faceY = ms.r; goal = "rapat"; }
+    else if (wantWork) { a.tx = seat.x; a.ty = seat.y + 0.62; goal = "kerja"; }
+    else if (wantBreak) { const bs = BREAK_SPOTS[a.idx % BREAK_SPOTS.length]; a.tx = bs.x; a.ty = bs.y; goal = "istirahat"; sit = !!bs.sit; faceY = 0; }
+    else { a.tx = seat.x; a.ty = seat.y + 0.62; }
+    const dx = a.tx - a.x, dy = a.ty - a.y, dist = Math.hypot(dx, dy);
+    if (dist > 0.04) {
+      const sp = 1.4 * dt; a.x += (dx / dist) * Math.min(sp, dist); a.y += (dy / dist) * Math.min(sp, dist);
+      a.mode = "jalan"; a.root.rotation.y = Math.atan2(dx, dy); play(a, "walk");
+    } else {
+      a.mode = goal; a.root.rotation.y = faceY;
+      if (goal === "kerja") play(a, t % 6000 < 4500 ? "sit" : "interact-right");
+      else if (goal === "rapat" || (goal === "istirahat" && sit) || goal === "diam") play(a, "sit");
+      else play(a, "idle");
+    }
+    a.root.position.set(wx(a.x), 0, wz(a.y));
+    // label
+    a.label.div.textContent = `${info.nickname} · ${info.role}`;
+    a.label.div.style.background = ag ? info.color : "#9ca3af";
+    let bubble = null;
+    if (quotaOut && ag && t > a.bubbleUntil) { bubble = meta.quota.status === "habis" ? "Kuota habis, ngopi dulu ☕" : "API error, nunggu perintah"; a.bubbleUntil = t + 5000; a.nextChat = t + 12000; }
+    else if (a.mode === "rapat" && t > a.nextChat) { bubble = ag && ag.status === "kerja" && ag.lastSummary ? ag.lastSummary.slice(0, 40) : MEETING_CHATTER[(a.idx + Math.floor(t / 9000)) % MEETING_CHATTER.length]; a.bubbleUntil = t + 4500; a.nextChat = t + 7000 + Math.random() * 6000; }
+    else if (wantWork && ag.lastSummary && t > a.bubbleUntil) { bubble = ag.lastSummary.slice(0, 40); a.bubbleUntil = t + 6000; }
+    else if (wantBreak && !quotaOut && t > a.nextChat) { bubble = CHATTER[(a.idx + Math.floor(t / 10000)) % CHATTER.length]; a.bubbleUntil = t + 4000; a.nextChat = t + 9000 + Math.random() * 6000; }
+    if (bubble) { a.label.bubble.textContent = bubble; a.label.bubble.style.display = "block"; }
+    if (t > a.bubbleUntil) a.label.bubble.style.display = "none";
+    a.mixer.update(dt);
+  }
+}
+
+// ---------- Loop ----------
+const clock = new THREE.Clock();
+function frame() {
+  const dt = Math.min(0.1, clock.getDelta()), t = performance.now();
+  step(dt, t); controls.update();
+  renderer.render(scene, camera); labelRenderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+function refreshBoards() {
+  drawBoard(roadBoard, [`Roadmap ${meta.name || ""}`, `${meta.roadmapProgress || 0}% · ${meta.planCount || 0} plan · ${meta.qaReports || 0} QA`, `Tertahan: ${meta.blokir || 0} BLOKIR`]);
+  const m = meta.meeting && meta.meeting.active;
+  drawBoard(meetBoard, ["Ruang Rapat", m ? `● Rapat: ${meta.meeting.title || ""}` : "○ Kosong", m ? `${(meta.meeting.participants || []).length} peserta` : ""], m ? "#b91c1c" : "#6b7280");
+}
+
+// Pasang API yang sama dengan office.js, sembunyikan canvas 2D
+let lastArgs = null;
+window.office3d = { scene, camera, actors, THREE }; // untuk debugging dari konsol
+const api = {
+  update(list, rosterIn, metaIn) {
+    lastArgs = [list, rosterIn, metaIn];
+    roster = rosterIn || roster; agents = {}; (list || []).forEach((a) => (agents[a.type] = a)); meta = metaIn || meta;
+    refreshBoards();
+  },
+};
+
+(async () => {
+  if (!renderer.getContext()) throw new Error("WebGL tidak tersedia");
+  if (legacyCanvas) legacyCanvas.style.display = "none";
+  container.style.display = "block"; // tampilkan dulu, baru ukur, supaya clientWidth tidak nol
+  resize();
+  const prev = window.office;
+  window.office = api;
+  await buildFurniture();
+  await Promise.allSettled(Object.keys(SEATS).map((type, i) => spawnActor(type, i)));
+  refreshBoards();
+  frame();
+  if (prev && prev._last) api.update(...prev._last);
+})().catch((e) => {
+  console.error("Kantor 3D gagal, kembali ke canvas 2D:", e);
+  container.style.display = "none"; if (legacyCanvas) legacyCanvas.style.display = "block";
+});

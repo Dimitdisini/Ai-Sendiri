@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kantor AI · Team Dimitri</title>
   <link rel="stylesheet" href="/style.css" />
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 </head>
 <body>
 
@@ -78,6 +79,7 @@
     <section class="page active" id="pageOverview">
       <!-- Kanvas isometrik -->
       <div class="canvas-wrap">
+        <div id="office3d" style="display:none;position:relative;width:100%"></div>
         <canvas id="officeCanvas" width="1200" height="640"></canvas>
       </div>
       <!-- Grid kartu agen -->
@@ -128,5 +130,6 @@
 
   <script src="/office.js"></script>
   <script src="/app.js"></script>
+  <script type="module" src="/office3d.js"></script>
 </body>
 </html>

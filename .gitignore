@@ -3,3 +3,4 @@ node_modules/
 .DS_Store
 office/.env
 companies/*/code/
+office/public/assets/_downloads/

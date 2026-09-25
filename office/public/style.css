@@ -591,3 +591,11 @@ body {
   .content { overflow-y: auto; }
   .page { padding: 16px; }
 }
+
+/* ================================================
+   KANTOR 3D (office3d.js) — label CSS2D
+   ================================================ */
+#office3d canvas { display: block; width: 100%; height: 100%; }
+.label3d { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; transform: translateY(-6px); }
+.tag3d { color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.2); font-family: var(--font); }
+.bubble3d { background: #fff; color: #1f2430; font-size: 11px; padding: 4px 9px; border-radius: 10px; border: 1px solid #d1d5db; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 2px 6px rgba(0,0,0,0.12); font-family: var(--font); }

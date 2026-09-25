@@ -188,7 +188,7 @@ Uji dashboard tanpa mengganggu data asli: `OFFICE_EVENTS=/path/uji.jsonl OFFICE_
 - Endpoint POST /api/event supaya tool non-Claude bisa melapor ke dashboard.
 - Loop kerja nyata pertama sampai QA PASS (plan 010 → 014).
 - Kalibrasi hardware (A10) dan repo GitHub (Q4).
-- Rumah "2 ruangan" per perusahaan: saat ini satu kantor dengan switch tab perusahaan; ruang rapat sudah ada.
+- Rumah "2 ruangan" per perusahaan: saat ini satu kantor dengan switch tab perusahaan; ruang rapat sudah ada. Visual 3D dengan aset Kenney sudah dibangun (office3d.js), lihat office/README.md.
 - Kerja malam otomatis: aktifkan jadwal setelah satu plan pernah PASS.
 - Memindahkan kredensial Telegram ke keychain.
 - git init proyek ini.
