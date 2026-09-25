@@ -87,3 +87,12 @@ Pengganti canvas 2D bila WebGL tersedia. Three.js 0.170 dari CDN jsdelivr (impor
 - Papan roadmap dan papan ruang rapat digambar sebagai tekstur canvas.
 - Kalau WebGL gagal, `#office3d` disembunyikan dan canvas 2D lama tampil lagi. Debug dari konsol: `window.office3d`.
 Menyesuaikan posisi: ubah SEATS / MEETING_SEATS / BREAK_SPOTS di atas office3d.js (grid meter, x ke kanan, y ke bawah layar).
+
+## Studio 3D (studio.html)
+
+Halaman terpisah untuk mengerjakan visual tanpa dashboard: http://localhost:4545/studio.html
+- Tombol skenario: Semua kerja, Campur, Rapat, Semua istirahat, Kuota habis (data contoh, tidak menyentuh data asli).
+- Mode bench untuk melihat arah hadap dan pivot model: `studio.html?zoom=3&bench=desk,chairDesk,character-male-a`
+  Panah biru = +z model. Aturan: karakter dan kursi menghadap +z pada rotasi 0; chairModernCushion menghadap +x.
+- Semua model dipusatkan ke tengah alas bounding box (fitXZ), jadi koordinat SEATS adalah titik tengah benda.
+index.html memakai office3d.js yang sama, jadi perbaikan di studio otomatis masuk ke dashboard.

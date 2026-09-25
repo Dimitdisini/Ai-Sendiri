@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>Studio Kantor 3D</title>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+  <style>
+    html,body{margin:0;height:100%;background:#efe9dd;font-family:-apple-system,sans-serif}
+    #office3d{position:relative;width:100vw;height:100vh}
+    #office3d canvas{display:block}
+    .label3d{display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
+    .tag3d{color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+    .bubble3d{background:#fff;color:#1f2430;font-size:11px;padding:4px 9px;border-radius:10px;border:1px solid #d1d5db;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #panel{position:fixed;top:10px;left:10px;background:rgba(255,255,255,.92);border:1px solid #ddd;border-radius:10px;padding:10px;font-size:12px;z-index:5}
+    #panel button{margin:2px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div id="panel">
+    <b>Studio</b> · data contoh
+    <div>
+      <button onclick="S.scenario('kerja')">Semua kerja</button>
+      <button onclick="S.scenario('campur')">Campur</button>
+      <button onclick="S.scenario('rapat')">Rapat</button>
+      <button onclick="S.scenario('istirahat')">Semua istirahat</button>
+      <button onclick="S.scenario('kuota')">Kuota habis</button>
+    </div>
+  </div>
+  <div id="office3d"></div>
+  <script>window.OFFICE_STUDIO = true;</script>
+  <script type="module" src="/office3d.js"></script>
+  <script>
+    const ROSTER = {"orchestrator":{"role":"Orkestrator","nickname":"Kai","color":"#7c3aed"},"business-analyst":{"role":"Business Analyst","nickname":"Tari","color":"#0d9488"},"pm":{"role":"PM","nickname":"Sari","color":"#2563eb"},"analyst":{"role":"Architect","nickname":"Bima","color":"#0891b2"},"ai-engineer":{"role":"AI Engineer","nickname":"Naya","color":"#9333ea"},"backend":{"role":"Backend","nickname":"Raka","color":"#16a34a"},"frontend":{"role":"Frontend","nickname":"Gilang","color":"#65a30d"},"data":{"role":"Data","nickname":"Wulan","color":"#ca8a04"},"devops":{"role":"DevOps","nickname":"Yoga","color":"#dc2626"},"qa":{"role":"QA","nickname":"Dewi","color":"#ea580c"},"chief-of-staff":{"role":"Chief of Staff","nickname":"Arga","color":"#334155"}};
+    const TYPES = Object.keys(ROSTER);
+    const S = {
+      scenario(name) {
+        const now = Date.now();
+        const mk = (t, status, summary) => ({ type: t, status, nickname: ROSTER[t].nickname, role: ROSTER[t].role, color: ROSTER[t].color, lastSummary: summary, lastTs: now, actions: 12, sessions: 2 });
+        let agents = [], meeting = { active: false }, quota = { status: "ok" };
+        if (name === "kerja") agents = TYPES.map((t) => mk(t, "kerja", "Write: docs/PRD.md"));
+        if (name === "campur") agents = TYPES.map((t, i) => mk(t, i % 3 === 0 ? "istirahat" : "kerja", i % 3 ? "Bash: npm test" : "Selesai, laporan dikirim"));
+        if (name === "rapat") { agents = TYPES.map((t) => mk(t, "kerja", "Bahas BRD monitoring gudang")); meeting = { active: true, title: "kickoff · monitoring-gudang", participants: ["orchestrator", "business-analyst", "pm", "analyst", "ai-engineer"] }; }
+        if (name === "istirahat") agents = TYPES.map((t) => mk(t, "istirahat", "Ngopi"));
+        if (name === "kuota") { agents = TYPES.map((t) => mk(t, "kerja", "Write: x")); quota = { status: "habis", since: now - 60000, resumeAt: now + 3600000 }; }
+        const push = () => window.office && window.office.update && window.office.update(agents, ROSTER, { name: "Xavortree", roadmapProgress: 34, planCount: 5, qaReports: 2, blokir: 1, quota, meeting });
+        push(); setTimeout(push, 1500); setTimeout(push, 4000);
+      },
+    };
+    window.S = S; setTimeout(() => S.scenario("campur"), 800);
+  </script>
+</body>
+</html>
