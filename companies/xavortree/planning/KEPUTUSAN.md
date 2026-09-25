@@ -12,7 +12,7 @@
 | A5 | 2026-09-25 | Lingkungan demo: Docker Compose lokal, tanpa VPS | ASUMSI | Hemat biaya untuk demo internal | Dianggap disetujui | Dijawab |
 | A6 | 2026-09-25 | Hardware demo 3 sampai 4 set ESP32 plus SHT31, dipesan 29 Sep | ASUMSI | Cukup untuk dua zona demo | Dianggap disetujui | Dijawab |
 | A7 | 2026-09-25 | Modul baru M09 simulator plus dataset dan M10 skenario demo | ASUMSI | Dikonfirmasi Architect di FD | Menunggu Architect | Dikerjakan |
-| Q4 | 2026-09-25 | Repo GitHub Xavortree belum ada; MS0 tidak bisa mulai tanpa repo | BLOKIR | Buat repo kosong xavortree/monitoring-gudang, beri akses ke tim | | Menunggu |
+| Q4 | 2026-09-25 | Repo GitHub Xavortree belum ada; MS0 tidak bisa mulai tanpa repo | BLOKIR | Buat repo kosong xavortree/monitoring-gudang, beri akses ke tim | Tidak relevan (project dihentikan) | Selesai |
 | A8 | 2026-09-25 | Rilis pertama anomali tanpa ML: 6 detektor statistik plus aturan, parameter per tenant; ML menyusul setelah 2 tenant x 3 bulan data | ASUMSI | Terima, lebih bisa dipercaya tanpa data nyata | Dianggap disetujui | Dijawab |
 | A9 | 2026-09-25 | LLM tidak dipakai di rilis 1; opsional rilis 1.1 untuk /jelaskan, sekitar US$15 per 1.000 alert | ASUMSI | Terima | Dianggap disetujui | Dijawab |
 | A10 | 2026-09-25 | Beli 2 unit ESP32 plus SHT31 sekitar Rp300 ribu untuk kalibrasi simulator 14 hari di lokasi Xavortree | ASUMSI | Terima, biaya kecil | Menunggu CEO | Menunggu |
@@ -25,12 +25,13 @@
 | Q6 | 2026-09-25 | Docker belum terpasang di Mac CEO; AC1-AC5 plan 010 tidak bisa diuji. Pasang Docker Desktop (atau OrbStack) di Mac, atau uji di mesin lain? | BLOKIR | A: pasang OrbStack di Mac ini, ringan dan gratis untuk pribadi | | Menunggu |
 | Q7 | 2026-09-25 | Monitoring Gudang Pintar dihentikan: bukan kebutuhan bisnis nyata, hanya project uji coba pipeline tim yang dipilih Orkestrator sendiri | Keputusan CEO | Hentikan, jangan lanjutkan detail teknis (MQTT/Supabase) | Dihentikan | Selesai |
 | Q8 | 2026-09-25 | /kickoff berikutnya untuk perusahaan mana: A fleek-project atau B xavortree | BLOKIR | A: fleek-project, belum punya project | B: xavortree, project "SaaS AI IoT Cepat (eksplorasi)": gali AI IoT dan software supaya bisa bikin SaaS dengan waktu dev singkat (Telegram) | Dijawab |
-| Q9 | 2026-09-25 | Eksplorasi I01 SaaS AI IoT Cepat: lanjut ke Fase 1 validasi pembayar, tunda, atau tolak? | BLOKIR | Lanjut Fase 1 (2-4 minggu wawancara prospek, tanpa kode) | | Menunggu |
-| Q10 | 2026-09-25 | Platform MVP: A ThingsBoard CE self-host (Apache 2.0, multi-tenant, alarm, dashboard bawaan) atau B stack sendiri sesuai A1 (Node/Python, MQTT, TimescaleDB) | BLOKIR sebelum plan kode | A, memotong 3-5 minggu; kode gudang baru kerangka | | Menunggu |
-| Q11 | 2026-09-25 | Segmen awal: A kepatuhan suhu (apotek, klinik, farmasi) atau B hemat listrik (pabrik UKM, gedung) | BLOKIR | A, pakai ulang desain detektor, tidak butuh data historis, 5-7 minggu ke demo berbayar | | Menunggu |
+| Q9 | 2026-09-25 | Eksplorasi I01 SaaS AI IoT Cepat: lanjut ke Fase 1 validasi pembayar, tunda, atau tolak? | BLOKIR | Lanjut Fase 1 (2-4 minggu wawancara prospek, tanpa kode) | C: Tolak | Selesai |
+| Q10 | 2026-09-25 | Platform MVP: A ThingsBoard CE self-host atau B stack sendiri | BLOKIR sebelum plan kode | A | Tidak relevan (Q9 ditolak) | Selesai |
+| Q11 | 2026-09-25 | Segmen awal: A kepatuhan suhu atau B hemat listrik | BLOKIR | A | Tidak relevan (Q9 ditolak) | Selesai |
 | A15 | 2026-09-25 | Calon klien pertama: cari design partner berbayar dari relasi Xavortree; bila tidak ada, wawancara 5-10 prospek | ASUMSI | Terima | Dianggap disetujui | Dijawab |
 | A16 | 2026-09-25 | Definisi "dev singkat": ≤8 minggu ke klien berbayar pertama, AI tipis, satu jenis sensor | ASUMSI | Terima | Dianggap disetujui | Dijawab |
 | A17 | 2026-09-25 | Perangkat: modul umum + firmware siap pakai (ESPHome/Tasmota, gateway Modbus), bukan firmware sendiri | ASUMSI | Terima, firmware bukan pembeda produk | Dianggap disetujui | Dijawab |
 | A18 | 2026-09-25 | Lingkungan demo/produksi: VPS di Indonesia (biaya rupiah, data di dalam negeri, UU PDP) | ASUMSI | Terima | Dianggap disetujui | Dijawab |
 | A19 | 2026-09-25 | Cakupan AI rilis 1: detektor statistik + penjelasan alert + laporan bulanan via LLM (claude-opus-5, sekitar US$14,6/bulan untuk 10 tenant); tanya-jawab data ditunda rilis 2 | ASUMSI | Terima supaya target ≤8 minggu aman | Dianggap disetujui | Dijawab |
 | A20 | 2026-09-25 | Beli 2 unit ESP32 + SHT31 sekitar Rp300 ribu untuk kalibrasi detektor sejak Fase 1 (lanjutan A10) | ASUMSI | Terima, biaya kecil; pembelian tetap menunggu "ya" CEO | Menunggu CEO | Menunggu |
+| Q12 | 2026-09-25 | Docker/OrbStack untuk Xavortree | BLOKIR | A: pasang OrbStack | A: CEO akan pasang sendiri | Menunggu CEO pasang |

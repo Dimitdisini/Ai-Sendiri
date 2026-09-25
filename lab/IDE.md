@@ -6,7 +6,7 @@ sebuah eksplorasi dimulai atau statusnya berubah.
 
 | ID | Tanggal | Judul | Perusahaan | Status | File |
 |---|---|---|---|---|---|
-| I01 | 2026-09-25 | SaaS AI IoT Cepat | Xavortree | Draft — menunggu CEO | companies/xavortree/docs/saas-ai-iot-cepat/BRD.md |
+| I01 | 2026-09-25 | SaaS AI IoT Cepat | Xavortree | Ditolak (Q9, 2026-09-25) | companies/xavortree/docs/saas-ai-iot-cepat/BRD.md |
 
 ## Status yang dipakai
 - **Draft — menunggu CEO**: BRD eksplorasi ditulis, belum ada keputusan.

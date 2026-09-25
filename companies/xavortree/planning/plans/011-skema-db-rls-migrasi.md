@@ -1,5 +1,5 @@
 # Plan 011 — skema-db-rls-migrasi
-Perusahaan: Xavortree | Modul: M01 Fondasi (MS0) | Ukuran: M | Status: Siap | Pemilik: backend
+Perusahaan: Xavortree | Modul: M01 Fondasi (MS0) | Ukuran: M | Status: Dibatalkan (I01 ditolak, Q9 2026-09-25) | Pemilik: backend
 
 ## Tujuan
 Semua tabel FD §3 tersedia lewat migrasi SQL: hypertable `reading`, RLS FORCE per tenant, continuous aggregate + retention + kompresi, tabel kebutuhan AI-SPEC (`anomaly_event`, `alert_feedback`, `detector_config`, feature flag tenant), seed demo 2 tenant, dan uji RLS otomatis yang bisa dijalankan QA.

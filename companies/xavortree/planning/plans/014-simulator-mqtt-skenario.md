@@ -1,5 +1,5 @@
 # Plan 014 — simulator-mqtt-skenario
-Perusahaan: Xavortree | Modul: M09 Simulator + dataset (MS0) | Ukuran: M | Status: Siap | Pemilik: data
+Perusahaan: Xavortree | Modul: M09 Simulator + dataset (MS0) | Ukuran: M | Status: Dibatalkan (I01 ditolak, Q9 2026-09-25) | Pemilik: data
 
 ## Tujuan
 Simulator F02: N node virtual menerbitkan data dan heartbeat ke Mosquitto persis seperti firmware (kontrak FD §4), masing-masing dengan kredensial device dari API (plan 012), dan skenario per node dapat diubah saat berjalan lewat HTTP lokal atau CLI tanpa restart.

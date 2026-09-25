@@ -1,5 +1,5 @@
 # Plan 013 — simcore-dan-generator-dataset
-Perusahaan: Xavortree | Modul: M09 Simulator + dataset (MS0) | Ukuran: M | Status: Siap | Pemilik: data
+Perusahaan: Xavortree | Modul: M09 Simulator + dataset (MS0) | Ukuran: M | Status: Dibatalkan (I01 ditolak, Q9 2026-09-25) | Pemilik: data
 
 ## Tujuan
 Paket Python `simcore` (model sinyal gudang + injeksi kejadian berlabel, reproducible per seed) dan generator dataset sintetis berlabel (F03) yang menjadi bahan kalibrasi/eval AI-SPEC dan sumber sinyal simulator MQTT (plan 014).

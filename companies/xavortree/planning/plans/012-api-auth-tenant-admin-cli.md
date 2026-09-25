@@ -1,5 +1,5 @@
 # Plan 012 — api-auth-tenant-admin-cli
-Perusahaan: Xavortree | Modul: M01 Fondasi (MS0) | Ukuran: M | Status: Siap | Pemilik: backend
+Perusahaan: Xavortree | Modul: M01 Fondasi (MS0) | Ukuran: M | Status: Dibatalkan (I01 ditolak, Q9 2026-09-25) | Pemilik: backend
 
 ## Tujuan
 API fondasi multi-tenant (F01) dan onboarding lewat API/CLI (F09 tanpa UI): login JWT, konteks tenant + RLS di setiap request, endpoint admin tenant/user/zona/device, provisioning kredensial MQTT ke Mosquitto dynsec tanpa restart, CLI `xt`, dan uji isolasi tenant otomatis.
