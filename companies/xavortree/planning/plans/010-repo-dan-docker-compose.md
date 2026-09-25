@@ -1,5 +1,5 @@
 # Plan 010 — repo-dan-docker-compose
-Perusahaan: Xavortree | Modul: M01 Fondasi (MS0) | Ukuran: M | Status: Siap QA | Pemilik: devops
+Perusahaan: Xavortree | Modul: M01 Fondasi (MS0) | Ukuran: M | Status: PASS bersyarat (AC1-AC5 menunggu Docker) | Pemilik: devops
 
 ## Tujuan
 Repo kode monitoring-gudang ada dan `make up` menyalakan TimescaleDB, Mosquitto (dynamic security + TLS), migrasi kosong, dan kerangka semua service dengan healthcheck, sehingga plan 011–014 punya tempat bekerja.
@@ -73,3 +73,4 @@ make ps | make logs | make down | make demo-reset | make demo-up | make sim-up |
 ## Riwayat QA
 | Ronde | Verdict | File |
 |---|---|---|
+| 1 | PASS BERSYARAT (AC6, AC7 PASS; AC1–AC5 tidak dapat diuji tanpa Docker, wajib diuji ulang) | planning/qa/010-qa-r1.md |
