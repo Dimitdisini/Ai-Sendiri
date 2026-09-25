@@ -311,6 +311,31 @@ function serveEvidence(req, res, urlPath) {
   res.end(readFileSync(filePath));
 }
 
+// ---------- Konfigurasi per perusahaan: formasi (team.json) + profil (baris "- Kunci: nilai" di CLAUDE.md) ----------
+function allRoles() { try { roster = JSON.parse(readFileSync(join(OFFICE_DIR, "roster.json"), "utf8")); } catch { /* pakai lama */ } return Object.keys(roster); }
+function readTeam(slug) {
+  const f = join(COMPANIES_DIR, slug, "team.json");
+  try { const t = JSON.parse(readFileSync(f, "utf8")); const r = (t.roles || []).filter((x) => roster[x]); if (!r.includes("orchestrator")) r.unshift("orchestrator"); return { roles: r, notes: t.notes || "", configured: true }; }
+  catch { return { roles: allRoles(), notes: "", configured: false }; }
+}
+function readProfile(slug) {
+  const f = join(COMPANIES_DIR, slug, "CLAUDE.md");
+  if (!existsSync(f)) return [];
+  return readFileSync(f, "utf8").split("\n").map((l) => l.match(/^- ([^:]{2,80}):\s?(.*)$/)).filter(Boolean).map((m) => ({ key: m[1].trim(), value: m[2] }));
+}
+function writeProfile(slug, fields, name) {
+  const f = join(COMPANIES_DIR, slug, "CLAUDE.md");
+  if (!existsSync(f)) return;
+  const map = new Map(fields.map((x) => [String(x.key), String(x.value ?? "").replace(/[\r\n]+/g, " ").slice(0, 600)]));
+  const lines = readFileSync(f, "utf8").split("\n").map((l, i) => {
+    const m = l.match(/^- ([^:]{2,80}):\s?(.*)$/);
+    if (m && map.has(m[1].trim())) return `- ${m[1].trim()}: ${map.get(m[1].trim())}`;
+    if (i === 0 && name) return `# ${String(name).replace(/[\r\n#]/g, "").slice(0, 80)} — Konteks`;
+    return l;
+  });
+  writeFileSync(f, lines.join("\n"));
+}
+
 function authorized(req) {
   const h = req.headers.authorization || "";
   const got = Buffer.from(h.replace(/^Bearer\s+/i, "")), want = Buffer.from(TOKEN);
@@ -404,6 +429,21 @@ const server = createServer(async (req, res) => {
     sendJSON(res, 200, { ok: true }); return;
   }
 
+  const mCfg = path.match(/^\/api\/company\/([a-z0-9._-]+)\/config$/i);
+  if (mCfg) {
+    const slug = mCfg[1];
+    if (!existsSync(join(COMPANIES_DIR, slug))) { sendJSON(res, 404, { error: "perusahaan tidak ada" }); return; }
+    if (req.method === "GET") { sendJSON(res, 200, { slug, name: companyMeta(slug).name, team: readTeam(slug), profile: readProfile(slug), roster }); return; }
+    if (req.method === "POST") {
+      if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }
+      let b; try { b = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
+      const roles = [...new Set(["orchestrator", ...(Array.isArray(b.roles) ? b.roles : [])])].filter((r) => roster[r]);
+      writeFileSync(join(COMPANIES_DIR, slug, "team.json"), JSON.stringify({ roles, notes: String(b.notes || "").slice(0, 2000), updated: new Date().toISOString() }, null, 2) + "\n");
+      if (Array.isArray(b.profile)) writeProfile(slug, b.profile, b.name);
+      broadcast(); sendJSON(res, 200, { ok: true, team: readTeam(slug), profile: readProfile(slug) }); return;
+    }
+  }
+
   if (path === "/api/roster") {
     // Baca ulang tiap request supaya ganti nama/warna di roster.json langsung terlihat tanpa restart
     try {
@@ -435,6 +475,7 @@ const server = createServer(async (req, res) => {
         keputusanTertahan: keputusan.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui/i.test(Object.values(r).join(" "))).length,
         planCount: plans.length,
         qaReports: qaFiles.length,
+        team: readTeam(slug).roles,
         agents,
       };
     });

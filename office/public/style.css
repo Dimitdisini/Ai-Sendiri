@@ -631,3 +631,22 @@ body {
 .cmd-out{margin:0;padding:8px 12px 12px;white-space:pre-wrap;font-family:var(--mono,monospace);font-size:12px;color:var(--ink-2,#44403c);max-height:260px;overflow:auto}
 .cmd-empty{font-size:12px;color:var(--muted,#78726a);padding:4px 2px}
 @media (max-width:640px){.cmd-row{flex-wrap:wrap}.cmd-row select{flex:1}.cmd-row input{flex-basis:100%;order:3}}
+
+/* Pengaturan perusahaan */
+.cfg-form{display:flex;flex-direction:column;gap:16px}
+.cfg-card{background:var(--surface,#fff);border:1px solid var(--border,#e8e2d6);border-radius:14px;padding:16px 18px}
+.cfg-card h3{font-size:15px;margin-bottom:4px}
+.cfg-hint{font-size:12px;color:var(--muted,#78726a);margin-bottom:12px}
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.cfg-field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted,#78726a)}
+.cfg-field input,.cfg-field textarea{border:1px solid var(--border-2,#d6cfc0);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color:var(--ink,#1a1814);background:#fff}
+.cfg-wide{grid-column:1/-1}
+.cfg-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:12px}
+.cfg-role{display:flex;align-items:center;gap:8px;border:1px solid var(--border,#e8e2d6);border-left:4px solid var(--c);border-radius:10px;padding:8px 10px;cursor:pointer;font-size:13px;opacity:.55;background:var(--surface-2,#faf8f4)}
+.cfg-role.on{opacity:1;background:#fff}
+.cfg-role span{color:var(--muted,#78726a);font-size:11px;margin-left:auto}
+.cfg-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.cfg-msg{font-size:12px;color:var(--muted,#78726a)}
+.cfg-save{border:0;border-radius:10px;padding:10px 22px;font:inherit;font-weight:700;background:var(--accent,#6b4f3a);color:#fff;cursor:pointer}
+.label3d.hover .tag3d{outline:2px solid #fff;transform:scale(1.08)}
+.theme3d .lbl{border-left:1px solid rgba(0,0,0,.1);border-radius:0 7px 7px 0}

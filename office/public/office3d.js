@@ -890,6 +890,22 @@ function applyPose(h, p, k) {
 // AKTOR: data -> tujuan -> jalan (A*) -> pose
 // =====================================================================
 const actors = {};
+const pickables = [];
+let labelMode = "ringkas";
+try { labelMode = localStorage.getItem("office3d-labels") || "ringkas"; } catch { /* abaikan */ }
+const LABEL_NEXT = { ringkas: "lengkap", lengkap: "mati", mati: "ringkas" };
+const LABEL_TEXT = { ringkas: "🏷 Label: ringkas", lengkap: "🏷 Label: lengkap", mati: "🏷 Label: mati" };
+const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
+let hovered = null;
+renderer.domElement.addEventListener("pointermove", (e) => {
+  const r = renderer.domElement.getBoundingClientRect();
+  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(pickables.filter((m) => actors[m.userData.actor] && actors[m.userData.actor].h.root.visible), false)[0];
+  hovered = hit ? hit.object.userData.actor : null;
+  renderer.domElement.style.cursor = hovered ? "pointer" : "";
+});
+renderer.domElement.addEventListener("pointerleave", () => { hovered = null; });
 let roster = {}, agents = {}, meta = { meeting: { active: false } };
 const owner = {}; // spotId -> type
 const CHATTER = ["Ngopi dulu ☕", "Nunggu keputusan CEO", "Tadi QA-nya ketat banget", "Plan berikutnya apa ya?", "Kopi kedua nih", "Rehat 5 menit", "Siapa yang habisin gula?"];
@@ -906,8 +922,9 @@ function spawnActors() {
     const tag = document.createElement("div"); tag.className = "tag3d";
     wrap.appendChild(bubble); wrap.appendChild(tag);
     const lbl = new CSS2DObject(wrap); lbl.position.set(0, 0.52, 0); h.head.add(lbl);
-    actors[type] = { type, idx, h, x: s.x, z: s.z, ry: s.ry, targetRy: s.ry, spot: s, atSpot: true, path: [], moving: false, walkPhase: 0, pose: "deskIdle", seatH: s.seatH, monitors: MONITORS[type] || 2, tag, bubble, bubbleUntil: 0, nextChat: 3000 + idx * 1700, lastTag: "" };
+    actors[type] = { wrap, hover: false, type, idx, h, x: s.x, z: s.z, ry: s.ry, targetRy: s.ry, spot: s, atSpot: true, path: [], moving: false, walkPhase: 0, pose: "deskIdle", seatH: s.seatH, monitors: MONITORS[type] || 2, tag, bubble, bubbleUntil: 0, nextChat: 3000 + idx * 1700, lastTag: "" };
     owner[s.id] = type;
+    h.root.traverse((o) => { if (o.isMesh) { o.userData.actor = type; pickables.push(o); } });
     h.root.position.set(s.x, 0, s.z); h.root.rotation.y = s.ry;
     applyPose(h, targetPose(actors[type], 0), 1);
   });
@@ -948,7 +965,12 @@ function angLerp(a, b, k) { let d = b - a; while (d > Math.PI) d -= Math.PI * 2;
 
 function stepActors(dt, t) {
   const quotaOut = meta.quota && meta.quota.status !== "ok";
+  const team = Array.isArray(meta.team) && meta.team.length ? meta.team : null;
+  let bubblesShown = 0;
   for (const a of Object.values(actors)) {
+    const inTeam = !team || team.includes(a.type);
+    a.h.root.visible = inTeam;
+    if (!inTeam) { a.wrap.style.display = "none"; const dd = DESKS[a.type]; if (dd) for (const s of dd.screens) if (s.mat.map !== lockTex) { s.mat.map = lockTex; s.mat.needsUpdate = true; } continue; }
     const want = wantedSpot(a);
     if (want !== a.spot) goTo(a, want);
     if (a.path.length) {
@@ -969,7 +991,12 @@ function stepActors(dt, t) {
     const ag = agents[a.type], info = roster[a.type] || {};
     const nick = info.nickname || (ag && ag.nickname) || a.type, role = info.role || a.type;
     const st = !ag ? "belum aktif" : a.moving ? "jalan" : statusLabel(ag);
-    const tagText = container.classList.contains("o3d-compact") ? `${nick} · ${st}` : `${nick} (${role}) · ${st}`;
+    const isHover = hovered === a.type;
+    const full = isHover || labelMode === "lengkap";
+    const tagText = full ? (container.classList.contains("o3d-compact") && !isHover ? `${nick} · ${st}` : `${nick} (${role}) · ${st}`) : nick;
+    const showTag = isHover || labelMode === "lengkap" || (labelMode === "ringkas" && ag);
+    a.wrap.style.display = showTag ? "" : "none";
+    a.wrap.classList.toggle("hover", isHover);
     if (tagText !== a.lastTag) { a.tag.textContent = tagText; a.lastTag = tagText; a.tag.style.background = ag ? info.color || ag.color || "#64748b" : "#8b8f98"; }
     let bub = null;
     if (!a.moving && a.atSpot) {
@@ -978,8 +1005,11 @@ function stepActors(dt, t) {
       else if (a.pose === "type" && ag && ag.lastSummary && t > a.nextChat) { bub = ag.lastSummary; a.bubbleUntil = t + 5000; a.nextChat = t + 11000 + Math.random() * 9000; }
       else if (["sofa", "stool", "mug", "bean", "arcade"].includes(a.pose) && !quotaOut && t > a.nextChat) { bub = a.pose === "arcade" ? "Satu ronde lagi 🎮" : CHATTER[(a.idx + Math.floor(t / 10000)) % CHATTER.length]; a.bubbleUntil = t + 4000; a.nextChat = t + 12000 + Math.random() * 8000; }
     }
-    if (bub) { a.bubble.textContent = String(bub).replace(/^Bash: /, "$ ").slice(0, 60); a.bubble.style.display = "block"; }
-    if (t > a.bubbleUntil) a.bubble.style.display = "none";
+    const bubbleAllowed = isHover || labelMode === "lengkap" || (labelMode === "ringkas" && ["type", "meet", "present"].includes(a.pose) && bubblesShown < 3);
+    if (bub) { a.bubble.textContent = String(bub).replace(/^Bash: /, "$ ").slice(0, 60); }
+    const bubbleOn = bubbleAllowed && t < a.bubbleUntil && a.bubble.textContent;
+    a.bubble.style.display = bubbleOn ? "block" : "none";
+    if (bubbleOn) bubblesShown++;
 
     // layar meja: menyala saat pemiliknya mengetik
     const d = DESKS[a.type];
@@ -1029,9 +1059,10 @@ function zoneLabel(text, x, y, z) { const d = document.createElement("div"); d.c
 function setTheme(t) { themeChoice = t; try { localStorage.setItem("office3d-theme", t); } catch { /* abaikan */ } appliedTheme = null; applyTheme(); }
 function themeButtons() {
   const box = document.createElement("div"); box.className = "theme3d";
-  box.innerHTML = `<button data-t="auto">🕘 Otomatis</button><button data-t="day">☀️ Terang</button><button data-t="night">🌙 Gelap</button><button data-t="reset">↺ Kamera</button>`;
+  box.innerHTML = `<button data-t="auto">🕘 Otomatis</button><button data-t="day">☀️ Terang</button><button data-t="night">🌙 Gelap</button><button data-t="reset">↺ Kamera</button><button data-t="labels" class="lbl">${LABEL_TEXT[labelMode]}</button>`;
   box.addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.t === "labels") { labelMode = LABEL_NEXT[labelMode]; try { localStorage.setItem("office3d-labels", labelMode); } catch { /* abaikan */ } b.textContent = LABEL_TEXT[labelMode]; document.querySelectorAll(".zone3d").forEach((z) => (z.style.display = labelMode === "mati" ? "none" : "")); return; }
     if (b.dataset.t === "reset") { camera.position.copy(CAM_HOME); controls.target.set(0.3, 0, 0.3); return; }
     setTheme(b.dataset.t);
   });
@@ -1044,8 +1075,10 @@ function themeButtons() {
 const clock = new THREE.Clock();
 let lastTick = 0;
 function frame() {
-  const dt = Math.min(0.1, clock.getDelta()), t = performance.now();
-  stepActors(dt, t); stepCat(dt, t); controls.update();
+  // Tab tersembunyi memperlambat frame; pecah waktu jadi langkah kecil supaya orang tetap sampai tepat waktu
+  let left = Math.min(3, clock.getDelta()); const t = performance.now();
+  while (left > 1e-4) { const dt = Math.min(0.1, left); stepActors(dt, t); stepCat(dt, t); left -= dt; }
+  controls.update();
   if (t - lastTick > 30000) { lastTick = t; drawClock(); drawTV(); applyTheme(); }
   renderer.render(scene, camera); labelRenderer.render(scene, camera);
   requestAnimationFrame(frame);

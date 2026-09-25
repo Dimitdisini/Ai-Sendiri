@@ -18,6 +18,7 @@
 .theme3d button{border:0;background:transparent;font-size:12px;padding:4px 8px;border-radius:7px;cursor:pointer;color:#374151}
 .theme3d button.on{background:#2563eb;color:#fff}
 .tag3d{box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .label3d.hover .tag3d{outline:2px solid #fff;transform:scale(1.08)}
   </style>
 </head>
 <body>
@@ -47,7 +48,7 @@
         if (name === "rapat") { agents = TYPES.map((t) => mk(t, "kerja", "Bahas BRD monitoring gudang")); meeting = { active: true, title: "kickoff · monitoring-gudang", participants: ["orchestrator", "business-analyst", "pm", "analyst", "ai-engineer"] }; }
         if (name === "istirahat") agents = TYPES.map((t) => mk(t, "istirahat", "Ngopi"));
         if (name === "kuota") { agents = TYPES.map((t) => mk(t, "kerja", "Write: x")); quota = { status: "habis", since: now - 60000, resumeAt: now + 3600000 }; }
-        const push = () => window.office && window.office.update && window.office.update(agents, ROSTER, { name: "Xavortree", roadmapProgress: 34, planCount: 5, qaReports: 2, blokir: 1, quota, meeting });
+        const push = () => window.office && window.office.update && window.office.update(agents, ROSTER, { team: window.STUDIO_TEAM || null, name: "Xavortree", roadmapProgress: 34, planCount: 5, qaReports: 2, blokir: 1, quota, meeting });
         push(); setTimeout(push, 1500); setTimeout(push, 4000);
       },
     };

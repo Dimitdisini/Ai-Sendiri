@@ -154,6 +154,7 @@ function updateOffice() {
       planCount: c.planCount,
       qaReports: c.qaReports,
       blokir: c.keputusanTertahan,
+      team: c.team,
       quota: q,
       meeting: c.meeting || { active: false },
     });
@@ -164,7 +165,8 @@ function updateOffice() {
 // TABS & PAGES
 // -------------------------------------------------------------------
 function showPage(tab) {
-  const pages = { overview: "pageOverview", roadmap: "pageRoadmap", keputusan: "pageKeputusan", output: "pageOutput", bukti: "pageBukti" };
+  const pages = { overview: "pageOverview", roadmap: "pageRoadmap", keputusan: "pageKeputusan", output: "pageOutput", bukti: "pageBukti", pengaturan: "pagePengaturan" };
+  if (tab === "pengaturan") loadConfig();
   Object.values(pages).forEach((id) => { const el = document.getElementById(id); if (el) el.classList.remove("active"); });
   const target = document.getElementById(pages[tab]);
   if (target) target.classList.add("active");
@@ -344,3 +346,42 @@ document.getElementById("cmdList")?.addEventListener("click", async (e) => {
 });
 loadCommands();
 setInterval(() => { renderCompanySelect(); loadCommands(); }, 3000);
+
+// -------------------------------------------------------------------
+// PENGATURAN PERUSAHAAN -> /api/company/:slug/config
+// -------------------------------------------------------------------
+let cfgLoadedFor = null;
+async function loadConfig(force) {
+  if (!activeCompany || (!force && cfgLoadedFor === activeCompany)) return;
+  const cfg = await (await fetch(`/api/company/${activeCompany}/config`)).json();
+  cfgLoadedFor = activeCompany;
+  document.getElementById("cfgCompanyLabel").textContent = `${cfg.name} · companies/${cfg.slug}`;
+  const nameField = `<label class="cfg-field"><span>Nama tampilan</span><input data-name value="${escapeHtml(cfg.name)}"></label>`;
+  document.getElementById("cfgProfile").innerHTML = nameField + cfg.profile.map((p, i) =>
+    `<label class="cfg-field${p.value.length > 60 ? " cfg-wide" : ""}"><span>${escapeHtml(p.key)}</span><input data-key="${escapeHtml(p.key)}" value="${escapeHtml(p.value)}"></label>`).join("");
+  const on = new Set(cfg.team.roles);
+  document.getElementById("cfgRoles").innerHTML = Object.entries(cfg.roster).map(([id, r]) => {
+    const lock = id === "orchestrator";
+    return `<label class="cfg-role${on.has(id) ? " on" : ""}" style="--c:${r.color}"><input type="checkbox" value="${id}" ${on.has(id) ? "checked" : ""} ${lock ? "disabled" : ""}><b>${escapeHtml(r.nickname)}</b><span>${escapeHtml(r.role)}</span></label>`;
+  }).join("");
+  document.getElementById("cfgNotes").value = cfg.team.notes || "";
+  document.getElementById("cfgMsg").textContent = cfg.team.configured ? "" : "Belum pernah diatur: semua peran dianggap aktif.";
+}
+document.getElementById("cfgRoles")?.addEventListener("change", (e) => { const l = e.target.closest(".cfg-role"); if (l) l.classList.toggle("on", e.target.checked); });
+document.getElementById("cfgForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const body = {
+    name: document.querySelector("#cfgProfile [data-name]").value,
+    profile: [...document.querySelectorAll("#cfgProfile [data-key]")].map((i) => ({ key: i.dataset.key, value: i.value })),
+    roles: [...document.querySelectorAll("#cfgRoles input:checked")].map((i) => i.value),
+    notes: document.getElementById("cfgNotes").value,
+  };
+  const send = (token) => fetch(`/api/company/${activeCompany}/config`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(body) });
+  let res = await send(getToken(false));
+  if (res.status === 401) res = await send(getToken(true));
+  const msg = document.getElementById("cfgMsg");
+  if (res.ok) { msg.textContent = "Tersimpan. Tim memakai formasi ini mulai perintah berikutnya."; cfgLoadedFor = null; fetchState(); }
+  else msg.textContent = "Gagal menyimpan (" + res.status + ")";
+});
+// Pindah perusahaan di sidebar saat halaman pengaturan terbuka -> muat ulang
+setInterval(() => { if (document.getElementById("pagePengaturan")?.classList.contains("active") && cfgLoadedFor !== activeCompany) loadConfig(); }, 800);

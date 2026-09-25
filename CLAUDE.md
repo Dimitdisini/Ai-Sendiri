@@ -9,6 +9,13 @@ Tim ini bernama Team Dimitri: satu tim AI untuk satu orang. Formasi lengkap ada 
 - Subagen (lihat .claude/agents/): business-analyst, pm, analyst, ai-engineer, backend, frontend, data, devops, qa, chief-of-staff.
 - Perusahaan di companies/ adalah klien atau unit bisnis yang dilayani tim ini, bukan tim terpisah.
 
+## Formasi per perusahaan
+- Sebelum memanggil peran untuk sebuah perusahaan, baca companies/<p>/team.json. Panggil HANYA peran yang ada di "roles". Orkestrator selalu aktif.
+- Kalau file itu tidak ada, semua peran dianggap aktif.
+- Kalau pekerjaan butuh peran yang tidak aktif, jangan panggil dia. Catat sebagai ASUMSI di planning/KEPUTUSAN.md dengan rekomendasi mengaktifkan peran itu, lalu kerjakan sebisanya dengan peran yang ada.
+- "notes" di team.json adalah kebutuhan khusus dari CEO untuk perusahaan itu. Perlakukan sebagai aturan tambahan.
+- CEO mengatur formasi dan profil lewat halaman Pengaturan di dashboard.
+
 ## Prinsip
 1. Semua pekerjaan lewat file. Kalau tidak ada filenya, pekerjaan itu belum ada.
 2. Satu perusahaan satu folder di companies/. Jangan campur konteks, kredensial, atau kode antar perusahaan.
