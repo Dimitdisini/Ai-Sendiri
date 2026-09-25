@@ -1,13 +1,62 @@
 {
-  "orchestrator":     { "role": "Orkestrator",      "nickname": "Kai",    "color": "#7c3aed" },
-  "business-analyst": { "role": "Business Analyst", "nickname": "Tari",   "color": "#0d9488" },
-  "pm":               { "role": "PM",               "nickname": "Sari",   "color": "#2563eb" },
-  "analyst":          { "role": "Architect",        "nickname": "Bima",   "color": "#0891b2" },
-  "ai-engineer":      { "role": "AI Engineer",      "nickname": "Naya",   "color": "#9333ea" },
-  "backend":          { "role": "Backend",          "nickname": "Raka",   "color": "#16a34a" },
-  "frontend":         { "role": "Frontend",         "nickname": "Gilang", "color": "#65a30d" },
-  "data":             { "role": "Data",             "nickname": "Wulan",  "color": "#ca8a04" },
-  "devops":           { "role": "DevOps",           "nickname": "Yoga",   "color": "#dc2626" },
-  "qa":               { "role": "QA",               "nickname": "Dewi",   "color": "#ea580c" },
-  "chief-of-staff":   { "role": "Chief of Staff",   "nickname": "Arga",   "color": "#334155" }
+  "orchestrator": {
+    "role": "Orkestrator",
+    "nickname": "Kai",
+    "color": "#7c3aed"
+  },
+  "business-analyst": {
+    "role": "Business Analyst",
+    "nickname": "Tari",
+    "color": "#0d9488"
+  },
+  "pm": {
+    "role": "PM",
+    "nickname": "Sari",
+    "color": "#2563eb"
+  },
+  "analyst": {
+    "role": "Architect",
+    "nickname": "Bima",
+    "color": "#0891b2"
+  },
+  "ai-engineer": {
+    "role": "AI Engineer",
+    "nickname": "Naya",
+    "color": "#9333ea"
+  },
+  "backend": {
+    "role": "Backend",
+    "nickname": "Raka",
+    "color": "#16a34a"
+  },
+  "frontend": {
+    "role": "Frontend",
+    "nickname": "Gilang",
+    "color": "#65a30d"
+  },
+  "data": {
+    "role": "Data",
+    "nickname": "Wulan",
+    "color": "#ca8a04"
+  },
+  "devops": {
+    "role": "DevOps",
+    "nickname": "Yoga",
+    "color": "#dc2626"
+  },
+  "qa": {
+    "role": "QA",
+    "nickname": "Dewi",
+    "color": "#ea580c"
+  },
+  "chief-of-staff": {
+    "role": "Chief of Staff",
+    "nickname": "Arga",
+    "color": "#334155"
+  },
+  "peneliti": {
+    "role": "Peneliti",
+    "nickname": "Rian",
+    "color": "#0e7490"
+  }
 }
