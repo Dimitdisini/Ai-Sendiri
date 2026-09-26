@@ -44,6 +44,7 @@ if (!process.env.OFFICE_TOKEN) {
 const TOKEN = process.env.OFFICE_TOKEN;
 const HOST = process.env.OFFICE_HOST || "127.0.0.1"; // default hanya dari laptop ini; akses HP lewat tailscale serve
 const CLAUDE_BIN = process.env.CLAUDE_BIN || (existsSync(join(homedir(), ".local/bin/claude")) ? join(homedir(), ".local/bin/claude") : "claude");
+const AGY_BIN = process.env.AGY_BIN || (existsSync(join(homedir(), ".local/bin/agy")) ? join(homedir(), ".local/bin/agy") : "agy");
 const COMMANDS_FILE = join(DATA_DIR, "commands.jsonl");
 
 let roster = {};
@@ -408,6 +409,82 @@ if (EXECUTOR === "api") {
   catch (e) { console.error("Gagal memuat @anthropic-ai/claude-agent-sdk, fallback ke CLI:", e.message); }
 }
 
+// ---------- Eksekutor Antigravity CLI (agy) — pakai langganan Google Pro, bukan Claude ----------
+// agy tidak mengenal format .claude/agents/*.md, jadi kita baca sendiri file peran itu dan
+// tempelkan sebagai instruksi peran di depan prompt. Estafet multi-peran (kerja malam) juga
+// diorkestrasi manual di sini (panggil agy berkali-kali per peran), bukan lewat Task tool bawaan.
+function bacaAgen(peranSlug) {
+  const p = join(ROOT, ".claude", "agents", `${peranSlug}.md`);
+  if (!existsSync(p)) return null;
+  return readFileSync(p, "utf8").replace(/^---[\s\S]*?---\n/, "").trim();
+}
+function jalankanAgy(promptText, { timeoutMs = 20 * 60 * 1000, onChild = null } = {}) {
+  return new Promise((resolve) => {
+    const child = spawn(AGY_BIN, ["-p", promptText, "--output-format", "text", "--dangerously-skip-permissions"], { cwd: ROOT, env: process.env });
+    if (onChild) onChild(child);
+    let out = "", err = "";
+    const t = setTimeout(() => { try { child.kill("SIGTERM"); } catch { /* abaikan */ } }, timeoutMs);
+    child.stdout.on("data", (d) => { out += d; });
+    child.stderr.on("data", (d) => { err += d; });
+    child.on("close", (code) => { clearTimeout(t); resolve({ ok: code === 0, out: out.trim(), err: err.trim() }); });
+    child.on("error", (e) => { clearTimeout(t); resolve({ ok: false, out: out.trim(), err: String(e) }); });
+  });
+}
+function jalankanViaAgy(j) {
+  running = j;
+  jalankanAgy(buatPrompt(j), { onChild: (c) => { j._child = c; j.pid = c.pid; } })
+    .then((r) => selesaikanJob(j, r.out, r.err, r.ok ? 0 : 1));
+}
+
+// Baca header plan "Perusahaan: .. | Modul: .. | Status: .. | Pemilik: .." -> { status, pemilik }
+function bacaHeaderPlan(isi) {
+  const baris = isi.split("\n").find((l) => l.includes("Status:")) || "";
+  const status = (baris.match(/Status:\s*([^|]+)/) || [, ""])[1].trim();
+  const pemilik = (baris.match(/Pemilik:\s*([^|]+)/) || [, ""])[1].trim().toLowerCase().replace(/\s+/g, "-");
+  return { status, pemilik };
+}
+function cariPlanSiap(maksPerPerusahaan = 2) {
+  const hasil = [];
+  for (const slug of listCompanies()) {
+    const dir = join(COMPANIES_DIR, slug, "planning", "plans");
+    if (!existsSync(dir)) continue;
+    const files = readdirSync(dir).filter((f) => f.endsWith(".md")).sort();
+    let ambil = 0;
+    for (const f of files) {
+      if (ambil >= maksPerPerusahaan) break;
+      const path = join(dir, f);
+      const isi = readFileSync(path, "utf8");
+      const { status, pemilik } = bacaHeaderPlan(isi);
+      if (status === "Siap" && pemilik) { hasil.push({ company: slug, file: f, path, pemilik }); ambil++; }
+    }
+  }
+  return hasil;
+}
+async function jalankanKerjaMalamAgy(j) {
+  running = j;
+  const plans = cariPlanSiap(2);
+  if (plans.length === 0) { selesaikanJob(j, "tidak ada plan siap", "", 0); return; }
+  const ringkasan = [];
+  for (const p of plans) {
+    if (j.status !== "jalan") { ringkasan.push("Dihentikan dari dashboard."); break; }
+    const peranMd = bacaAgen(p.pemilik);
+    if (!peranMd) { ringkasan.push(`${p.company}/${p.file}: peran "${p.pemilik}" tidak ditemukan di .claude/agents/, dilewati.`); continue; }
+    let verdict = "FAIL", ronde = 0;
+    while (ronde < 3 && verdict !== "PASS") {
+      ronde++;
+      if (j.status !== "jalan") break; // dihentikan dari dashboard
+      const rDev = await jalankanAgy(`${peranMd}\n\n---\nKerja malam tanpa CEO, ronde ${ronde}. Perusahaan: ${p.company}. Kerjakan plan companies/${p.company}/planning/plans/${p.file} sampai tuntas sesuai acceptance criteria-nya. Tulis progress/handback di file plan itu sendiri. Jangan menyentuh folder perusahaan lain, jangan deploy produksi, jangan kirim email/pesan. Jawab akhir maksimal 5 baris.`, { onChild: (c) => { j._child = c; j.pid = c.pid; } });
+      if (j.status !== "jalan") break;
+      const qaMd = bacaAgen("qa");
+      const rQa = await jalankanAgy(`${qaMd}\n\n---\nKerja malam tanpa CEO, ronde ${ronde}. Perusahaan: ${p.company}. Uji plan companies/${p.company}/planning/plans/${p.file} terhadap acceptance criteria. Tulis planning/qa/${p.file.replace(".md", "")}-qa-r${ronde}.md dari templates/QA-REPORT.md. WAJIB akhiri jawabanmu persis dengan salah satu: "VERDICT: PASS" atau "VERDICT: FAIL".`, { onChild: (c) => { j._child = c; j.pid = c.pid; } });
+      verdict = /VERDICT:\s*PASS/i.test(rQa.out) ? "PASS" : "FAIL";
+      if (!rDev.ok || !rQa.ok) { ringkasan.push(`${p.company}/${p.file}: error teknis ronde ${ronde} (dev ok=${rDev.ok}, qa ok=${rQa.ok}).`); break; }
+    }
+    ringkasan.push(`${p.company}/${p.file} (pemilik ${p.pemilik}): ${verdict} setelah ${ronde} ronde.`);
+  }
+  selesaikanJob(j, ringkasan.join("\n"), "", 0);
+}
+
 function buatPrompt(j) {
   const where = j.company ? `Perusahaan: ${j.company} (folder companies/${j.company}/). ` : "";
   return j.origin === "jadwal"
@@ -467,10 +544,12 @@ function nextJob() {
   if (running) return;
   const j = jobs.find((x) => x.status === "antre"); if (!j) return;
   running = j; j.status = "jalan"; j.started = Date.now(); saveJob(j); broadcast();
+  if (j.jadwalId === "kerja-malam" && j.executor === "agy") { jalankanKerjaMalamAgy(j); return; }
+  if (j.executor === "agy") { jalankanViaAgy(j); return; }
   if (EXECUTOR === "api" && sdkQuery) jalankanViaApi(j); else jalankanViaCli(j);
 }
-function enqueueJob({ text, company = null, origin = "manual", jadwalId = null, diam = false }) {
-  const j = { id: randomBytes(6).toString("hex"), text, company, origin, jadwalId, diam, status: "antre", created: Date.now(), output: "" };
+function enqueueJob({ text, company = null, origin = "manual", jadwalId = null, diam = false, executor = null }) {
+  const j = { id: randomBytes(6).toString("hex"), text, company, origin, jadwalId, diam, executor, status: "antre", created: Date.now(), output: "" };
   jobs.push(j); saveJob(j); nextJob(); broadcast();
   return j;
 }
@@ -498,7 +577,7 @@ function cekJadwal() {
     if (telat < 0) continue;
     if (telat > JADWAL_TELAT_MAKS_MS) { state[t.id] = { tanggal: hari, status: "terlewat", ts: Date.now() }; ubah = true; continue; }
     if (jobs.some((x) => x.jadwalId === t.id && (x.status === "antre" || x.status === "jalan"))) continue;
-    const j = enqueueJob({ text: t.perintah, company: t.perusahaan || null, origin: "jadwal", jadwalId: t.id, diam: !!t.diam });
+    const j = enqueueJob({ text: t.perintah, company: t.perusahaan || null, origin: "jadwal", jadwalId: t.id, diam: !!t.diam, executor: t.executor || null });
     state[t.id] = { tanggal: hari, status: telat > 5 * 60 * 1000 ? "dikejar (telat " + Math.round(telat / 60000) + " menit)" : "tepat waktu", job: j.id, ts: Date.now() };
     ubah = true;
   }
@@ -532,7 +611,8 @@ const server = createServer(async (req, res) => {
     const text = String(body.text || "").trim().slice(0, 4000);
     if (!text) { sendJSON(res, 400, { error: "Perintah kosong" }); return; }
     const company = body.company && /^[a-z0-9._-]+$/i.test(body.company) && existsSync(join(COMPANIES_DIR, body.company)) ? body.company : null;
-    const j = enqueueJob({ text, company, origin: "manual" });
+    const executor = body.executor === "agy" ? "agy" : null;
+    const j = enqueueJob({ text, company, origin: "manual", executor });
     sendJSON(res, 200, publicJob(j)); return;
   }
 

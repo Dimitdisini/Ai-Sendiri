@@ -227,3 +227,30 @@ Server bisa menjalankan tugas dengan dua cara:
 Otomatis pilih **api** begitu `ANTHROPIC_API_KEY` terisi di `.env`. Paksa salah satu dengan `CLAUDE_EXECUTOR=api`
 atau `CLAUDE_EXECUTOR=cli` di `.env`. Dependency `@anthropic-ai/claude-agent-sdk` ada di `office/package.json`,
 pasang dengan `npm install` di folder `office/`.
+
+## Eksekutor Antigravity CLI (agy) — pakai langganan Google Pro
+
+Selain "cli" (Claude Code) dan "api" (Claude API), ada eksekutor ketiga: **agy** (Antigravity CLI,
+`~/.local/bin/agy`), pakai langganan Google Pro, model Gemini (atau Claude lewat routing Antigravity
+sendiri). Tidak butuh API key tambahan, tapi tetap butuh Mac ini login Google via `agy` sekali
+(`agy` di terminal, ikuti browser login).
+
+Bedanya dengan cli/api: agy TIDAK baca format `.claude/agents/*.md` secara otomatis. Server
+menyiasati ini dengan cara:
+- **Tugas satu-langkah** (laporan pagi, diskusi pagi, riset, dll): kirim instruksi lengkap sebagai
+  satu prompt ke agy, sama seperti cli/api.
+- **Kerja malam** (butuh estafet pemilik plan → QA, berulang sampai PASS): diorkestrasi manual di
+  `office/server.mjs` (`jalankanKerjaMalamAgy`) — baca file `.claude/agents/<peran>.md` sendiri lalu
+  tempelkan sebagai instruksi peran, panggil agy berkali-kali (pemilik plan, lalu QA, ulang maks 3
+  ronde per plan). Bukan Task tool bawaan seperti di Claude Code.
+
+Pilih eksekutor per jadwal lewat field `"executor": "agy"` di `office/jadwal.json` (default: `cli`
+kalau field ini tidak ada). Untuk perintah manual dari dashboard/API, kirim `"executor": "agy"` di
+body POST `/api/command`.
+
+Status sekarang: laporan-pagi, diskusi-pagi, kerja-malam pakai agy. rekap-malam tetap di cli karena
+ada langkah `git commit && git push` yang belum diuji lewat agy.
+
+Keterbatasan yang belum tertutup: tombol "hentikan" di dashboard baru bisa memutus proses agy yang
+sedang jalan saat itu (satu panggilan), belum bisa membatalkan seluruh sisa estafet kerja-malam
+secara instan kalau sedang di antara dua panggilan.

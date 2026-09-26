@@ -5,6 +5,7 @@
     "jam": "06:00",
     "hari": [0, 1, 2, 3, 4, 5, 6],
     "diam": true,
+    "executor": "agy",
     "perintah": "Jalankan protokol .claude/skills/briefing/SKILL.md (laporan pagi). Ikuti CLAUDE.md root persis, termasuk bagian SOP, Ingatan, dan Laporan harian. Panggil hanya peran chief-of-staff. Output: bagian \"## Pagi\" di hq/jurnal/<tanggal hari ini>.md dari templates/JURNAL.md. Bagian \"### Untuk CEO\" dikirim otomatis ke Telegram oleh bot, jadi jangan mengirim pesan sendiri dan jangan membaca office/.env. Jangan menambah pekerjaan baru dan jangan mengusulkan project baru. Di akhir cukup satu baris: path file jurnal."
   },
   {
@@ -13,6 +14,7 @@
     "jam": "07:00",
     "hari": [1, 2, 3, 4, 5],
     "diam": true,
+    "executor": "agy",
     "perintah": "Jalankan protokol .claude/skills/diskusi-pagi/SKILL.md untuk semua perusahaan di companies/. Ikuti CLAUDE.md root, SCOPE.md, dan .claude/agents/peneliti.md persis. Batas biaya: maksimal 1 peneliti + 4 peran per perusahaan, tanpa ronde kedua. Kalau tidak ada tema layak untuk suatu perusahaan, itu hasil yang sah. Di akhir cukup satu baris per perusahaan: ada tema atau tidak."
   },
   {
@@ -29,6 +31,7 @@
     "jam": "23:00",
     "hari": [0, 1, 2, 3, 4],
     "diam": false,
+    "executor": "agy",
     "perintah": "Kerja malam tanpa CEO. Ikuti CLAUDE.md root dan SOP yang relevan. 1) Untuk setiap perusahaan di companies/*, ambil plan di planning/plans/ yang statusnya tepat \"Siap\" (abaikan Dibatalkan, Selesai, PASS bersyarat), urut nomor terkecil, maksimal 2 plan per perusahaan per malam. Kalau tidak ada plan Siap, berhenti dan tulis \"tidak ada plan siap\" — jangan mencari atau mengarang pekerjaan. 2) Untuk tiap plan: panggil peran sesuai kolom Pemilik di header plan (backend, frontend, data, ai-engineer, atau devops), lalu qa untuk menguji. Ulangi pemilik→qa sampai PASS, maksimal 3 ronde malam ini; kalau belum PASS, tandai plan \"Perlu CEO\" dan lanjut. 3) Item BLOKIR di planning/KEPUTUSAN.md jangan dikerjakan atau ditebak. 4) Dilarang: deploy produksi, mengirim email/pesan, mengubah scope atau timeline, menyentuh folder perusahaan lain. 5) Hasilnya tercatat di file plan dan planning/qa/; laporan pagi besok yang merangkumnya. Jawab akhir maksimal 8 baris: plan apa yang dikerjakan dan verdict QA-nya."
   }
 ]

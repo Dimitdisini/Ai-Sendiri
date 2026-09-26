@@ -23,7 +23,7 @@ Tujuan: sistem tidak mati sendiri, dan CEO bisa lihat biayanya.
 | 0.6 | Laporan pagi dan rekap malam di jurnal harian, dikirim otomatis ke Telegram | AI | Pesan pagi dan malam benar-benar sampai di HP CEO |
 | 0.7 | Folder proyek bisa dibuka sebagai vault Obsidian (HOME.md) | AI, lalu **CEO** membuka | CEO bisa baca jurnal dan keputusan dari Obsidian |
 
-Status 2026-09-26: 0.1, 0.2, dan 0.3 selesai dan teruji (Docker via OrbStack, `docker compose` terpasang dan jalan). Jadwal dipindah ke penjadwal lokal di server.mjs. 0.5, 0.6, 0.7 selesai dibangun (0.6 menunggu kiriman pertama terverifikasi besok 06:00). 0.4 menunggu CEO.
+Status 2026-09-26: 0.1, 0.2, dan 0.3 selesai dan teruji. Jadwal dipindah ke penjadwal lokal, dan sebagian (laporan pagi, diskusi pagi, kerja malam) dipindah ke eksekutor Antigravity CLI (langganan Google Pro, gratis) sebagai alternatif dari langganan Claude. 0.5, 0.6, 0.7 selesai dibangun. 0.4 menunggu CEO.
 
 Terinspirasi dari cara kerja @teguhgunaw: fondasi file teks + jadwal, satu manajer (HQ = Kai), SOP yang tumbuh
 dari kerja nyata, ingatan di file bukan di sesi, laporan 2x sehari ke chat. Yang TIDAK ditiru: sesi per klien yang
