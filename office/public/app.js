@@ -512,26 +512,24 @@ function renderCompanySelect() {
   }
   if (!sel.dataset.touched && activeCompany) sel.value = activeCompany;
 }
+let cmdListCache = [];
+function cmdRow(j) {
+  const dur = j.ended && j.started ? ` · ${Math.round((j.ended - j.started) / 1000)} dtk` : "";
+  const badge = CMD_BADGE[j.status] || CMD_BADGE.antre;
+  const stop = j.status === "jalan" || j.status === "antre" ? `<button class="cmd-stop shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-rose-200 text-rose-600 hover:bg-rose-50" data-id="${j.id}">Hentikan</button>` : "";
+  return `<div class="cmd-row bg-white border border-slate-200 rounded-lg flex items-center gap-1.5 px-2 py-1 cursor-pointer hover:border-blue-300 hover:bg-blue-50/40 transition" data-id="${j.id}">
+      <span class="shrink-0 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase border ${badge}">${CMD_LABEL[j.status] || j.status}</span>
+      <span class="flex-1 min-w-0 truncate font-medium text-slate-700">${escapeHtml(j.text)}</span>
+      <span class="shrink-0 text-slate-400 text-[9px]">${j.company ? escapeHtml(j.company) + " · " : ""}${fmtTime(j.created)}${dur}</span>
+      ${stop}
+    </div>`;
+}
 async function loadCommands() {
   try {
     const list = await (await fetch("/api/commands")).json();
+    cmdListCache = list;
     const el = document.getElementById("cmdList"); if (!el) return;
-    el.innerHTML = list.slice(0, 5).map((j) => {
-      const dur = j.ended && j.started ? ` · ${Math.round((j.ended - j.started) / 1000)} dtk` : "";
-      const open = j.status === "jalan" || (j.ended && Date.now() - j.ended < 120000);
-      const badge = CMD_BADGE[j.status] || CMD_BADGE.antre;
-      const stop = j.status === "jalan" || j.status === "antre" ? `<button class="cmd-stop shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-rose-200 text-rose-600 hover:bg-rose-50" data-id="${j.id}">Hentikan</button>` : "";
-      const outText = j.output || (j.status === "antre" ? "Menunggu giliran..." : "Orkestrator sedang bekerja...");
-      return `<details class="bg-white border border-slate-200 rounded-lg"${open ? " open" : ""}>
-        <summary class="flex items-center gap-1.5 px-2 py-1 cursor-pointer list-none">
-          <span class="shrink-0 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase border ${badge}">${CMD_LABEL[j.status] || j.status}</span>
-          <span class="flex-1 min-w-0 truncate font-medium text-slate-700">${escapeHtml(j.text)}</span>
-          <span class="shrink-0 text-slate-400 text-[9px]">${j.company ? escapeHtml(j.company) + " · " : ""}${fmtTime(j.created)}${dur}</span>
-          ${stop}
-        </summary>
-        <pre class="m-0 px-2 pb-1.5 pt-0.5 whitespace-pre-wrap font-mono text-[9.5px] text-slate-600 max-h-[90px] overflow-y-auto cscroll">${escapeHtml(outText).slice(0, 800)}</pre>
-      </details>`;
-    }).join("") || `<div class="text-slate-400 text-[10.5px] py-1.5 px-1">Belum ada perintah dari dashboard.</div>`;
+    el.innerHTML = list.slice(0, 5).map(cmdRow).join("") || `<div class="text-slate-400 text-[10.5px] py-1.5 px-1">Belum ada perintah dari dashboard.</div>`;
     const sum = document.getElementById("cmdSummary");
     if (sum) {
       const antre = list.filter((j) => j.status === "antre").length;
@@ -539,8 +537,69 @@ async function loadCommands() {
       const selesai = list.filter((j) => j.status === "selesai").length;
       sum.textContent = `${antre} antre, ${jalan} jalan, ${selesai} selesai`;
     }
+    // Kalau popup detail sedang buka job yang ini, refresh isinya (misal status baru berubah)
+    if (openModalJobId) { const j = list.find((x) => x.id === openModalJobId); if (j) fillCmdModal(j); }
   } catch { /* server mungkin sedang restart */ }
 }
+
+// -------------------------------------------------------------------
+// POPUP: detail perintah + feedback CEO, dan "lihat semua riwayat"
+// -------------------------------------------------------------------
+let openModalJobId = null;
+function fillCmdModal(j) {
+  document.getElementById("cmdModalTitle").textContent = (j.company ? j.company + " · " : "") + fmtTime(j.created);
+  const badge = CMD_BADGE[j.status] || CMD_BADGE.antre;
+  document.getElementById("cmdModalBody").innerHTML = `
+    <div class="flex items-center gap-2">
+      <span class="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border ${badge}">${CMD_LABEL[j.status] || j.status}</span>
+      <span class="font-semibold text-slate-800">${escapeHtml(j.text)}</span>
+    </div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 whitespace-pre-wrap font-mono text-[10.5px] text-slate-700 max-h-[45vh] overflow-y-auto cscroll">${escapeHtml(j.output || (j.status === "antre" ? "Menunggu giliran..." : "Orkestrator sedang bekerja..."))}</div>`;
+}
+function openCmdModal(id) {
+  const j = cmdListCache.find((x) => x.id === id); if (!j) return;
+  openModalJobId = id;
+  fillCmdModal(j);
+  document.getElementById("cmdFeedbackText").value = "";
+  document.getElementById("cmdFeedbackMsg").textContent = "";
+  document.getElementById("cmdModal").classList.remove("hidden");
+}
+function closeCmdModal() { openModalJobId = null; document.getElementById("cmdModal").classList.add("hidden"); }
+document.getElementById("cmdModalClose")?.addEventListener("click", closeCmdModal);
+document.getElementById("cmdModal")?.addEventListener("click", (e) => { if (e.target.id === "cmdModal") closeCmdModal(); });
+
+document.getElementById("cmdFeedbackSend")?.addEventListener("click", async () => {
+  const j = cmdListCache.find((x) => x.id === openModalJobId); if (!j) return;
+  const fb = document.getElementById("cmdFeedbackText").value.trim();
+  if (!fb) return;
+  const msg = document.getElementById("cmdFeedbackMsg");
+  msg.textContent = "Mengirim...";
+  await sendCommand(`Feedback CEO untuk perintah "${j.text}": ${fb}`, j.company || null);
+  msg.textContent = "Terkirim, masuk antrean.";
+  document.getElementById("cmdFeedbackText").value = "";
+});
+
+document.getElementById("cmdHistoryAllBtn")?.addEventListener("click", () => {
+  const body = document.getElementById("cmdAllModalBody");
+  body.innerHTML = cmdListCache.map(cmdRow).join("") || `<div class="text-slate-400 text-[10.5px] py-1.5 px-1">Belum ada perintah dari dashboard.</div>`;
+  document.getElementById("cmdAllModal").classList.remove("hidden");
+});
+document.getElementById("cmdAllModalClose")?.addEventListener("click", () => document.getElementById("cmdAllModal").classList.add("hidden"));
+document.getElementById("cmdAllModal")?.addEventListener("click", (e) => { if (e.target.id === "cmdAllModal") document.getElementById("cmdAllModal").classList.add("hidden"); });
+document.getElementById("cmdAllModalBody")?.addEventListener("click", async (e) => {
+  const stopBtn = e.target.closest(".cmd-stop");
+  if (stopBtn) {
+    e.preventDefault();
+    const token = getToken(false); if (!token) return;
+    await fetch(`/api/command/${stopBtn.dataset.id}/stop`, { method: "POST", headers: { Authorization: "Bearer " + token } });
+    loadCommands();
+    document.getElementById("cmdHistoryAllBtn").click();
+    return;
+  }
+  const row = e.target.closest(".cmd-row"); if (!row) return;
+  document.getElementById("cmdAllModal").classList.add("hidden");
+  openCmdModal(row.dataset.id);
+});
 async function sendCommand(text, company, retried) {
   const token = getToken(false); if (!token) return;
   const res = await fetch("/api/command", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ text, company }) });
@@ -559,7 +618,8 @@ document.getElementById("cmdCompany")?.addEventListener("change", (e) => {
   if (e.target.value) { activeCompany = e.target.value; backlogLoadedFor = null; render(); }
 });
 document.getElementById("cmdList")?.addEventListener("click", async (e) => {
-  const b = e.target.closest(".cmd-stop"); if (!b) return;
+  const b = e.target.closest(".cmd-stop");
+  if (!b) { const row = e.target.closest(".cmd-row"); if (row) openCmdModal(row.dataset.id); return; }
   e.preventDefault();
   const token = getToken(false); if (!token) return;
   await fetch(`/api/command/${b.dataset.id}/stop`, { method: "POST", headers: { Authorization: "Bearer " + token } });
