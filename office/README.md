@@ -166,3 +166,14 @@ Jadi kamu bisa kirim perintah dari HP atau dari laptop, hasilnya tetap masuk ke 
 
 Perintah bebas: tidak ada batasan jenis tugas. Bisa "ringkas dokumen X", "analisa Y", "buatkan Z" —
 semuanya diteruskan apa adanya ke Kai, yang memanggil peran yang sesuai.
+
+## Rahasia & kredensial — konvensi
+
+Tiga tempat, beda kegunaan:
+1. **macOS Keychain** — untuk token command-line (GitHub, dll). Diatur lewat `git config --global credential.helper osxkeychain` (sudah aktif). Sekali masuk lewat prompt terminal, tersimpan otomatis.
+2. **`office/.env`** — untuk kredensial yang dibaca sistem Kantor AI saat jalan (`OFFICE_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`). File mode 600, ada di `.gitignore`, tidak pernah ikut commit.
+3. **`.env` di dalam folder kode tiap project klien** (`companies/<p>/code/<repo>/.env`) — rahasia milik project itu (API key pihak ketiga, dll). Selalu ada `.env.example` sebagai contoh format tanpa nilai asli.
+
+**Aturan emas: jangan pernah tempel token/password di percakapan chat dengan Claude.** Kalau sebuah kredensial pernah muncul di chat, anggap bocor dan revoke, walau Claude tidak menyimpannya. Ketik atau tempel langsung ke terminal/file, bukan ke chat.
+
+Untuk mengingat kredensial jangka panjang (bukan yang dipakai sistem), pakai password manager (1Password/Bitwarden), bukan catatan teks biasa.
