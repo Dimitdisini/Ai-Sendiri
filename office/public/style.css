@@ -593,9 +593,7 @@ body:not(.sidebar-hidden) .sidebar-toggle { left: calc(var(--sidebar-w) - 15px);
   .sidebar-brand { border-bottom: none; border-right: 1px solid var(--sidebar-border); padding: 12px; }
   .sidebar-clock { border-bottom: none; border-right: 1px solid var(--sidebar-border); }
   .sidebar-nav { flex-direction: row; padding: 8px; gap: 2px; }
-  .sidebar-divider, .sidebar-section-label, .company-list, .sidebar-bottom { display: none; }
-  .nav-item span { display: none; }
-  .nav-item { padding: 8px; justify-content: center; }
+  .sidebar-divider, .sidebar-section-label, .sidebar-bottom { display: none; }
 
   .content { overflow-y: auto; }
   .page { padding: 16px; }

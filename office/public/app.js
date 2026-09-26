@@ -1,16 +1,19 @@
 // Sidebar bisa disembunyikan biar area kerja (kolom aktivitas/kantor/backlog) lebih lega.
 (() => {
   const btn = document.getElementById("sidebarToggle");
+  const showBtn = document.getElementById("sidebarShowBtn");
   let hidden = false;
   try { hidden = localStorage.getItem("sidebar-hidden") === "1"; } catch { /* abaikan */ }
-  const apply = () => { document.body.classList.toggle("sidebar-hidden", hidden); btn.textContent = hidden ? "▸" : "◂"; };
+  const apply = () => { document.body.classList.toggle("sidebar-hidden", hidden); };
   apply();
-  btn?.addEventListener("click", () => {
+  const toggle = () => {
     hidden = !hidden;
     try { localStorage.setItem("sidebar-hidden", hidden ? "1" : "0"); } catch { /* abaikan */ }
     apply();
     window.dispatchEvent(new Event("resize")); // kantor 3D ikut menyesuaikan
-  });
+  };
+  btn?.addEventListener("click", toggle);
+  showBtn?.addEventListener("click", toggle);
 })();
 
 let state = null;
@@ -60,27 +63,30 @@ function renderSidebar() {
     if (el.dataset.sig !== sig) {
       el.innerHTML = "";
       const colors = ["#6b4f3a", "#3d6b52", "#2563eb", "#9333ea", "#dc2626"];
+      const baseCls = "flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition";
+      const onCls = "bg-blue-50 text-blue-700 border-blue-100";
+      const offCls = "bg-white text-slate-600 border-slate-200 hover:bg-slate-50";
       state.companies.forEach((c, i) => {
         const btn = document.createElement("button");
-        btn.className = "company-item" + (c.slug === activeCompany ? " active" : "");
+        btn.className = `${baseCls} ${c.slug === activeCompany ? onCls : offCls}`;
         btn.dataset.slug = c.slug;
-        btn.innerHTML = `<span class="company-dot" style="background:${colors[i % colors.length]}"></span>${c.name}`;
+        btn.innerHTML = `<span class="w-2 h-2 rounded-full shrink-0" style="background:${colors[i % colors.length]}"></span><span class="truncate">${escapeHtml(c.name)}</span>`;
         btn.onclick = () => { activeCompany = c.slug; render(); };
         el.appendChild(btn);
       });
       el.dataset.sig = sig;
     } else {
-      [...el.children].forEach((b) => b.classList.toggle("active", b.dataset.slug === activeCompany));
+      [...el.children].forEach((b) => {
+        const on = b.dataset.slug === activeCompany;
+        b.className = `${"flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition"} ${on ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`;
+      });
     }
   }
 
-  // Stats bawah sidebar
+  // Stats bawah sidebar (BLOKIR & Aksi sekarang di bar atas)
   const c = currentCompany();
   document.getElementById("sideRoadmap").textContent = c ? `${c.roadmapProgress}%` : "—";
   document.getElementById("sidePlan").textContent    = c ? `${c.planCount} / ${c.qaReports}` : "—";
-  document.getElementById("sideBlokir").textContent  = c ? (c.keputusanTertahan || 0) : "—";
-  const u = c && c.usage;
-  document.getElementById("sideUsage").textContent = u ? `${u.todayActions} / ${u.weekActions}` : "—";
 }
 
 // -------------------------------------------------------------------
@@ -103,9 +109,21 @@ function renderQuota() {
 // AGENT GRID
 // -------------------------------------------------------------------
 function statusBadge(status) {
-  if (status === "kerja")     return '<span class="agent-status-badge badge-kerja">Kerja</span>';
-  if (status === "rapat")     return '<span class="agent-status-badge badge-rapat">Rapat</span>';
-  return                              '<span class="agent-status-badge badge-istirahat">Istirahat</span>';
+  if (status === "kerja") return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">KERJA</span>';
+  if (status === "rapat") return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-200">RAPAT</span>';
+  return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">ISTIRAHAT</span>';
+}
+// Model per peran (dari Pengaturan) -> label singkat buat badge kartu tim
+let modelPeranMap = {};
+async function loadModelPeranMap() {
+  try { modelPeranMap = (await (await fetch("/api/model-peran")).json()).peran || {}; } catch { modelPeranMap = {}; }
+}
+loadModelPeranMap();
+setInterval(loadModelPeranMap, 30000);
+function modelBadge(type) {
+  const m = modelPeranMap[type];
+  if (!m || (!m.model && !m.effort)) return "Bawaan";
+  return [m.model, m.effort].filter(Boolean).join(" · ");
 }
 
 function renderAgents() {
@@ -116,8 +134,8 @@ function renderAgents() {
 
   if (!c || !c.agents || !c.agents.length) {
     grid.innerHTML = `
-      <div class="empty" style="grid-column:1/-1">
-        <strong>Belum ada aktivitas tercatat</strong>
+      <div class="empty col-span-full text-sm text-slate-400 text-center py-6">
+        <strong class="block text-slate-600 mb-1">Belum ada aktivitas tercatat</strong>
         Buka sesi Claude Code di folder companies/${c ? c.slug : "…"} dan jalankan /kickoff.
       </div>`;
     subtitle.textContent = "—";
@@ -132,27 +150,29 @@ function renderAgents() {
     const info   = roster[a.type] || {};
     const color  = a.color || info.color || "#78726a";
     const initials = (a.nickname || a.type).slice(0, 2).toUpperCase();
-    const summary  = (a.lastSummary || "Belum ada aktivitas").replace(/</g, "&lt;").slice(0, 120);
+    const summary  = escapeHtml((a.lastSummary || "Belum ada aktivitas").slice(0, 90));
 
     const card = document.createElement("div");
-    card.className = "agent-card";
-    card.style.setProperty("--card-color", color);
-    card.style.cssText += `border-top: 3px solid ${color}`;
+    card.className = "bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition";
+    card.style.borderTop = `3px solid ${color}`;
 
     card.innerHTML = `
-      <div class="agent-card-head">
-        <div class="agent-avatar" style="background:${color}">${initials}</div>
-        <div class="agent-info">
-          <div class="agent-name">${a.nickname || a.type}</div>
-          <div class="agent-role">${a.role}</div>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="w-5 h-5 rounded-full text-white text-[9px] font-bold flex items-center justify-center shrink-0" style="background:${color}">${initials}</span>
+            <span class="text-[11px] font-bold text-slate-800 truncate">${escapeHtml(a.nickname || a.type)}</span>
+          </div>
+          ${statusBadge(a.status)}
         </div>
-        ${statusBadge(a.status)}
+        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1 gap-1">
+          <span class="truncate">${escapeHtml(a.role)}</span>
+          <span class="text-[9px] bg-slate-100 text-slate-600 px-1 rounded font-mono shrink-0">${escapeHtml(modelBadge(a.type))}</span>
+        </div>
+        <p class="text-[10px] text-slate-700 font-medium truncate mb-2 leading-tight" title="${summary}">${summary}</p>
       </div>
-      <div class="agent-summary">${summary}</div>
-      <div class="agent-meta">
-        <span>${a.actions} aksi</span>
-        <span>${a.sessions} sesi</span>
-        <span>${fmtTime(a.lastTs)}</span>
+      <div class="text-[9px] text-slate-400 font-medium pt-1 border-t border-slate-100">
+        ${a.actions} aksi · ${a.sessions} sesi · ${fmtTime(a.lastTs)}
       </div>`;
     grid.appendChild(card);
   }
@@ -184,11 +204,14 @@ function updateOffice() {
 function showPage(tab) {
   const pages = { overview: "pageOverview", roadmap: "pageRoadmap", keputusan: "pageKeputusan", output: "pageOutput", bukti: "pageBukti", pengaturan: "pagePengaturan" };
   if (tab === "pengaturan") loadConfig();
-  Object.values(pages).forEach((id) => { const el = document.getElementById(id); if (el) el.classList.remove("active"); });
-  const target = document.getElementById(pages[tab]);
-  if (target) target.classList.add("active");
-
-  document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+  Object.entries(pages).forEach(([t, id]) => { const el = document.getElementById(id); if (el) el.classList.toggle("hidden", t !== tab); });
+  document.querySelectorAll(".nav-item").forEach((b) => {
+    const on = b.dataset.tab === tab;
+    b.classList.toggle("active", on);
+    b.classList.toggle("bg-blue-50", on); b.classList.toggle("text-blue-600", on); b.classList.toggle("border-blue-100", on);
+    b.classList.toggle("text-slate-600", !on);
+  });
+  window.dispatchEvent(new Event("resize")); // kantor 3D perlu tahu kalau container berubah
 }
 
 // Roadmap
@@ -308,8 +331,8 @@ setInterval(() => {
   const el = document.getElementById("tsJam");
   if (el) el.textContent = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }, 1000);
-loadJadwalCache();
-setInterval(loadJadwalCache, 30000);
+loadJadwalCache().then(() => { if (typeof renderCronPanel === "function") renderCronPanel(); });
+setInterval(() => loadJadwalCache().then(() => { if (typeof renderCronPanel === "function") renderCronPanel(); }), 30000);
 
 function render() {
   renderSidebar();
@@ -359,6 +382,30 @@ setInterval(loadActivity, 4000);
 // -------------------------------------------------------------------
 // BACKLOG & KEPUTUSAN (kolom kanan Overview)
 // -------------------------------------------------------------------
+function renderCronPanel() {
+  const el = document.getElementById("panelCron"); if (!el) return;
+  const rutin = jadwalCache.filter((t) => t.aktif);
+  document.getElementById("cronCount").textContent = rutin.length;
+  el.innerHTML = rutin.length ? rutin.map((t) => `
+    <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
+      <div><div class="font-bold text-slate-800 text-[10.5px]">${escapeHtml(t.id)}</div><div class="text-[9.5px] text-slate-400">${t.executor === "agy" ? "Antigravity" : "Claude"}${t.diam ? " · senyap" : ""}</div></div>
+      <span class="font-mono font-bold text-slate-700 text-xs">${escapeHtml(t.jam)}</span>
+    </div>`).join("") : `<div class="backlog-empty text-slate-400 text-xs py-2">Belum ada jadwal aktif.</div>`;
+}
+document.getElementById("tabBacklogBtn")?.addEventListener("click", () => {
+  document.getElementById("tabBacklogBtn").className = "font-bold text-slate-900 border-b-2 border-slate-900 pb-1";
+  document.getElementById("tabCronBtn").className = "font-medium text-slate-400 hover:text-slate-700 pb-1";
+  document.getElementById("panelBacklog").classList.remove("hidden");
+  document.getElementById("panelCron").classList.add("hidden");
+});
+document.getElementById("tabCronBtn")?.addEventListener("click", () => {
+  document.getElementById("tabCronBtn").className = "font-bold text-slate-900 border-b-2 border-slate-900 pb-1";
+  document.getElementById("tabBacklogBtn").className = "font-medium text-slate-400 hover:text-slate-700 pb-1";
+  document.getElementById("panelCron").classList.remove("hidden");
+  document.getElementById("panelBacklog").classList.add("hidden");
+  renderCronPanel();
+});
+
 async function renderBacklogPanel() {
   const elK = document.getElementById("panelKeputusan"), elB = document.getElementById("panelBacklog");
   if (!elK || !elB || !activeCompany) return;
@@ -371,14 +418,42 @@ async function renderBacklogPanel() {
     ]);
     const kepOpen = kep.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui|selesai|dihentikan|ditolak/i.test(r.Status || ""));
     const blOpen = bl.rows.filter((r) => !/dihentikan|ditolak|selesai/i.test(r.Status || ""));
-    elK.innerHTML = kepOpen.length ? kepOpen.map((r) => `<div class="backlog-item"><b>${escapeHtml(r.ID || "")}</b> — ${escapeHtml(r.Pertanyaan || Object.values(r).join(" · "))}</div>`).join("") : `<div class="backlog-empty">Tidak ada yang menunggu.</div>`;
-    elB.innerHTML = blOpen.length ? blOpen.map((r) => `<div class="backlog-item">${escapeHtml(r.Item || Object.values(r).join(" · "))} <span class="activity-tool">· ${escapeHtml(r.Status || "")}</span></div>`).join("") : `<div class="backlog-empty">Backlog kosong.</div>`;
+    document.getElementById("panelKeputusanCount").textContent = kepOpen.length;
+    document.getElementById("panelBacklogCount").textContent = blOpen.length;
+    document.getElementById("tsBlokirCard").classList.toggle("animate-pulse", kepOpen.length > 0);
+
+    elK.innerHTML = kepOpen.length ? kepOpen.map((r) => `
+      <div class="bg-white rounded-lg p-2 border border-rose-200/90 shadow-sm">
+        <div class="flex items-start justify-between gap-1 mb-1">
+          <span class="text-[9.5px] font-bold text-rose-600 bg-rose-50 px-1 py-0.5 rounded">${escapeHtml(r.ID || "BLOKIR")}</span>
+        </div>
+        <p class="text-[10.5px] font-semibold text-slate-800 leading-tight">${escapeHtml(r.Pertanyaan || Object.values(r).join(" · "))}</p>
+        ${r.Rekomendasi ? `<p class="text-[9.5px] text-slate-500 mt-1 mb-2">Rekomendasi: ${escapeHtml(r.Rekomendasi)}</p>` : ""}
+        <div class="flex items-center gap-1.5 mt-1.5">
+          <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1 rounded transition btn-setuju" data-id="${escapeHtml(r.ID || "")}" data-rek="${escapeHtml(r.Rekomendasi || "")}">Setujui rekomendasi</button>
+          <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold px-2 py-1 rounded transition btn-diskusi" data-id="${escapeHtml(r.ID || "")}">Jawab sendiri</button>
+        </div>
+      </div>`).join("") : `<div class="text-[10.5px] text-slate-400 py-2">Tidak ada yang menunggu.</div>`;
+
+    elB.innerHTML = blOpen.length ? blOpen.map((r) => `
+      <label class="flex items-center justify-between gap-1.5"><span class="text-slate-700 truncate">${escapeHtml(r.Item || Object.values(r).join(" · "))}</span><span class="text-[9px] text-slate-400 shrink-0">${escapeHtml(r.Status || "")}</span></label>`).join("") : `<div class="text-slate-400 py-2">Backlog kosong.</div>`;
+
+    // Tombol Setujui: kirim command asli ke antrean (jawaban = rekomendasi tertulis)
+    elK.querySelectorAll(".btn-setuju").forEach((b) => b.addEventListener("click", () => {
+      sendCommand(`${activeCompany}: ${b.dataset.id} disetujui${b.dataset.rek ? " -> " + b.dataset.rek : ""}, tandai Dijawab di KEPUTUSAN.md`, activeCompany);
+    }));
+    // Tombol Jawab sendiri: isi kotak perintah, CEO yang lengkapi lalu Kirim manual
+    elK.querySelectorAll(".btn-diskusi").forEach((b) => b.addEventListener("click", () => {
+      const input = document.getElementById("cmdText");
+      input.value = `${activeCompany}: ${b.dataset.id}: `;
+      input.focus();
+    }));
   } catch {
-    elK.innerHTML = elB.innerHTML = `<div class="backlog-empty">Gagal memuat.</div>`;
+    elK.innerHTML = elB.innerHTML = `<div class="text-slate-400 py-2">Gagal memuat.</div>`;
   }
 }
 // Pindah perusahaan -> muat ulang panel
-setInterval(() => { if (activeTab === "overview") renderBacklogPanel(); }, 800);
+setInterval(() => { if (activeTab === "overview") { renderBacklogPanel(); if (!document.getElementById("panelCron").classList.contains("hidden")) renderCronPanel(); } }, 800);
 
 // -------------------------------------------------------------------
 // EVENT LISTENERS
@@ -440,6 +515,13 @@ async function loadCommands() {
       const stop = j.status === "jalan" || j.status === "antre" ? `<button class="cmd-stop" data-id="${j.id}">Hentikan</button>` : "";
       return `<details class="cmd-item"${open}><summary><span class="cmd-st st-${j.status}">${CMD_LABEL[j.status] || j.status}</span><span class="cmd-q">${escapeHtml(j.text)}</span><span class="cmd-meta">${j.company ? escapeHtml(j.company) + " · " : ""}${fmtTime(j.created)}${dur}</span>${stop}</summary><pre class="cmd-out">${escapeHtml(j.output || (j.status === "antre" ? "Menunggu giliran..." : "Orkestrator sedang bekerja..."))}</pre></details>`;
     }).join("") || `<div class="cmd-empty">Belum ada perintah dari dashboard.</div>`;
+    const sum = document.getElementById("cmdSummary");
+    if (sum) {
+      const antre = list.filter((j) => j.status === "antre").length;
+      const jalan = list.filter((j) => j.status === "jalan").length;
+      const selesai = list.filter((j) => j.status === "selesai").length;
+      sum.textContent = `${antre} antre, ${jalan} jalan, ${selesai} selesai`;
+    }
   } catch { /* server mungkin sedang restart */ }
 }
 async function sendCommand(text, company, retried) {
