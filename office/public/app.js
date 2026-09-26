@@ -404,11 +404,16 @@ document.getElementById("tabCronBtn")?.addEventListener("click", () => {
   renderCronPanel();
 });
 
-async function renderBacklogPanel() {
+let backlogLastFetch = 0;
+async function renderBacklogPanel(force) {
   const elK = document.getElementById("panelKeputusan"), elB = document.getElementById("panelBacklog");
   if (!elK || !elB || !activeCompany) return;
-  if (backlogLoadedFor === activeCompany) return;
+  const gantiPerusahaan = backlogLoadedFor !== activeCompany;
+  // Refresh sendiri tiap ~4 detik (bukan cuma sekali), supaya feedback yang baru dikirim/dijawab
+  // langsung kelihatan tanpa reload manual. Ganti perusahaan atau force=true selalu langsung fetch.
+  if (!gantiPerusahaan && !force && Date.now() - backlogLastFetch < 4000) return;
   backlogLoadedFor = activeCompany;
+  backlogLastFetch = Date.now();
   try {
     const [kep, bl] = await Promise.all([
       fetch(`/api/company/${activeCompany}/keputusan`).then((r) => r.json()),

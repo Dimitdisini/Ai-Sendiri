@@ -22,6 +22,7 @@ Tim ini bernama Team Dimitri: satu tim AI untuk satu orang. Formasi lengkap ada 
 3. Keputusan:
    - ASUMSI: agen jalan dengan rekomendasi, dicatat di planning/KEPUTUSAN.md. CEO bisa membatalkan.
    - BLOKIR: item itu berhenti, item lain lanjut. Tunggu CEO.
+   - **Wajib, tanpa kecuali**: kalau jawaban ke CEO mengandung pertanyaan/hal yang masih terbuka, item itu HARUS sudah jadi baris baru (ID, Status "Menunggu") di planning/KEPUTUSAN.md perusahaan terkait SEBELUM giliran itu selesai — bukan cuma ditulis di teks jawaban atau notulen rapat. Dashboard cuma baca KEPUTUSAN.md, jadi pertanyaan yang tidak masuk situ tidak akan pernah terlihat CEO di luar chat ini. Ini sudah 3x kejadian, jangan diulang.
 4. Setiap giliran ke CEO: ringkasan maks 10 baris, lalu maks 3 pertanyaan. Setiap pertanyaan punya opsi A/B, rekomendasi, dan alasan satu kalimat.
 5. Tidak ada perubahan scope atau timeline tanpa change request (/revisi).
 6. QA yang memutuskan PASS/FAIL. Developer tidak boleh menyatakan selesai sendiri.
