@@ -53,6 +53,13 @@ function resize() {
   camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", resize);
+// Kontainer bisa berubah ukuran bukan cuma karena window resize (mis. layout kolom berubah,
+// sidebar disembunyikan, konten sebelahnya selesai dimuat) — pantau langsung ukurannya sendiri.
+let resizeRaf = null;
+new ResizeObserver(() => {
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(resize);
+}).observe(container);
 
 // =====================================================================
 // MATERIAL & GEOMETRI BANTU

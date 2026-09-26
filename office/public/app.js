@@ -1,3 +1,18 @@
+// Sidebar bisa disembunyikan biar area kerja (kolom aktivitas/kantor/backlog) lebih lega.
+(() => {
+  const btn = document.getElementById("sidebarToggle");
+  let hidden = false;
+  try { hidden = localStorage.getItem("sidebar-hidden") === "1"; } catch { /* abaikan */ }
+  const apply = () => { document.body.classList.toggle("sidebar-hidden", hidden); btn.textContent = hidden ? "▸" : "◂"; };
+  apply();
+  btn?.addEventListener("click", () => {
+    hidden = !hidden;
+    try { localStorage.setItem("sidebar-hidden", hidden ? "1" : "0"); } catch { /* abaikan */ }
+    apply();
+    window.dispatchEvent(new Event("resize")); // kantor 3D ikut menyesuaikan
+  });
+})();
+
 let state = null;
 let roster = {};
 let activeCompany = null;
@@ -308,7 +323,7 @@ async function renderBacklogPanel() {
       fetch(`/api/company/${activeCompany}/keputusan`).then((r) => r.json()),
       fetch(`/api/company/${activeCompany}/backlog`).then((r) => r.json()),
     ]);
-    const kepOpen = kep.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui/i.test(r.Status || ""));
+    const kepOpen = kep.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui|selesai|dihentikan|ditolak/i.test(r.Status || ""));
     const blOpen = bl.rows.filter((r) => !/dihentikan|ditolak|selesai/i.test(r.Status || ""));
     elK.innerHTML = kepOpen.length ? kepOpen.map((r) => `<div class="backlog-item"><b>${escapeHtml(r.ID || "")}</b> — ${escapeHtml(r.Pertanyaan || Object.values(r).join(" · "))}</div>`).join("") : `<div class="backlog-empty">Tidak ada yang menunggu.</div>`;
     elB.innerHTML = blOpen.length ? blOpen.map((r) => `<div class="backlog-item">${escapeHtml(r.Item || Object.values(r).join(" · "))} <span class="activity-tool">· ${escapeHtml(r.Status || "")}</span></div>`).join("") : `<div class="backlog-empty">Backlog kosong.</div>`;

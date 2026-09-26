@@ -776,7 +776,7 @@ const server = createServer(async (req, res) => {
         roadmapProgress: roadmapProgress(roadmap.rows),
         roadmapRows: roadmap.rows.length,
         backlogOpen: backlog.rows.length,
-        keputusanTertahan: keputusan.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui/i.test(Object.values(r).join(" "))).length,
+        keputusanTertahan: keputusan.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui|selesai|dihentikan|ditolak/i.test(r.Status || "")).length,
         planCount: plans.length,
         qaReports: qaFiles.length,
         team: readTeam(slug).roles,

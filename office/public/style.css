@@ -84,7 +84,16 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width .15s ease, min-width .15s ease;
 }
+body.sidebar-hidden .sidebar { width: 0; min-width: 0; border-right: none; }
+.sidebar-toggle {
+  position: fixed; top: 10px; left: 10px; z-index: 50;
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border,#e8e2d6);
+  background: var(--surface,#fff); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm,none);
+}
+body:not(.sidebar-hidden) .sidebar-toggle { left: calc(var(--sidebar-w) - 15px); }
 
 .content {
   flex: 1;
