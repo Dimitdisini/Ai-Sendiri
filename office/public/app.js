@@ -484,6 +484,15 @@ try {
 // KOTAK PERINTAH -> /api/command (Orkestrator via claude -p)
 // -------------------------------------------------------------------
 const CMD_LABEL = { antre: "antre", jalan: "jalan", selesai: "selesai", gagal: "gagal", dihentikan: "dihentikan", dibatalkan: "dibatalkan", terhenti: "terhenti" };
+const CMD_BADGE = {
+  antre: "bg-slate-100 text-slate-600 border-slate-200",
+  jalan: "bg-blue-50 text-blue-700 border-blue-200",
+  selesai: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  gagal: "bg-rose-50 text-rose-700 border-rose-200",
+  dihentikan: "bg-amber-50 text-amber-700 border-amber-200",
+  dibatalkan: "bg-slate-100 text-slate-500 border-slate-200",
+  terhenti: "bg-amber-50 text-amber-700 border-amber-200",
+};
 function getToken(forcePrompt) {
   let t = "";
   try { t = localStorage.getItem("office-token") || ""; } catch { /* abaikan */ }
@@ -509,10 +518,20 @@ async function loadCommands() {
     const el = document.getElementById("cmdList"); if (!el) return;
     el.innerHTML = list.slice(0, 5).map((j) => {
       const dur = j.ended && j.started ? ` · ${Math.round((j.ended - j.started) / 1000)} dtk` : "";
-      const open = j.status === "jalan" || (j.ended && Date.now() - j.ended < 120000) ? " open" : "";
-      const stop = j.status === "jalan" || j.status === "antre" ? `<button class="cmd-stop" data-id="${j.id}">Hentikan</button>` : "";
-      return `<details class="cmd-item"${open}><summary><span class="cmd-st st-${j.status}">${CMD_LABEL[j.status] || j.status}</span><span class="cmd-q">${escapeHtml(j.text)}</span><span class="cmd-meta">${j.company ? escapeHtml(j.company) + " · " : ""}${fmtTime(j.created)}${dur}</span>${stop}</summary><pre class="cmd-out">${escapeHtml(j.output || (j.status === "antre" ? "Menunggu giliran..." : "Orkestrator sedang bekerja..."))}</pre></details>`;
-    }).join("") || `<div class="cmd-empty">Belum ada perintah dari dashboard.</div>`;
+      const open = j.status === "jalan" || (j.ended && Date.now() - j.ended < 120000);
+      const badge = CMD_BADGE[j.status] || CMD_BADGE.antre;
+      const stop = j.status === "jalan" || j.status === "antre" ? `<button class="cmd-stop shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-rose-200 text-rose-600 hover:bg-rose-50" data-id="${j.id}">Hentikan</button>` : "";
+      const outText = j.output || (j.status === "antre" ? "Menunggu giliran..." : "Orkestrator sedang bekerja...");
+      return `<details class="bg-white border border-slate-200 rounded-lg"${open ? " open" : ""}>
+        <summary class="flex items-center gap-1.5 px-2 py-1 cursor-pointer list-none">
+          <span class="shrink-0 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase border ${badge}">${CMD_LABEL[j.status] || j.status}</span>
+          <span class="flex-1 min-w-0 truncate font-medium text-slate-700">${escapeHtml(j.text)}</span>
+          <span class="shrink-0 text-slate-400 text-[9px]">${j.company ? escapeHtml(j.company) + " · " : ""}${fmtTime(j.created)}${dur}</span>
+          ${stop}
+        </summary>
+        <pre class="m-0 px-2 pb-1.5 pt-0.5 whitespace-pre-wrap font-mono text-[9.5px] text-slate-600 max-h-[90px] overflow-y-auto cscroll">${escapeHtml(outText).slice(0, 800)}</pre>
+      </details>`;
+    }).join("") || `<div class="text-slate-400 text-[10.5px] py-1.5 px-1">Belum ada perintah dari dashboard.</div>`;
     const sum = document.getElementById("cmdSummary");
     if (sum) {
       const antre = list.filter((j) => j.status === "antre").length;
