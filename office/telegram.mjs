@@ -78,12 +78,13 @@ async function handleMessage(text) {
   if (text === "/start" || text === "/help") {
     return send("Team Dimitri siap. Ketuk perintah dari menu / atau ketik manual (misal: /kickoff xavortree: ...). /status untuk ringkasan.");
   }
-  if (text === "/status") {
+  if (text === "/status" || text === "/antrean") {
     try {
       const s = await (await fetch(`${OFFICE_URL}/api/state`)).json();
       const lines = s.companies.map((c) => `${c.name}: roadmap ${c.roadmapProgress}%, ${c.planCount} plan, ${c.qaReports} QA, ${c.keputusanTertahan} BLOKIR, ${c.agents.filter((a) => a.status === "kerja").length} agen kerja`);
       const q = s.quota && s.quota.status !== "ok" ? `\nKuota: ${s.quota.status} sejak ${new Date(s.quota.since).toLocaleTimeString("id-ID")}` : "";
-      return send(lines.join("\n") + q);
+      const antrean = await ringkasanAntrean();
+      return send(lines.join("\n") + q + "\n\n" + antrean);
     } catch (e) {
       return send("Dashboard tidak bisa dihubungi. Pastikan `node office/server.mjs` jalan.");
     }
@@ -96,7 +97,6 @@ async function handleMessage(text) {
   }
   if (text === "/batal" && pending) { pending = null; return send("Dibatalkan."); }
 
-  await send("Diterima, masuk antrean (satu antrean dengan dashboard)...");
   try {
     const subRes = await fetch(`${OFFICE_URL}/api/command`, {
       method: "POST",
@@ -105,14 +105,31 @@ async function handleMessage(text) {
     });
     if (!subRes.ok) { const e = await subRes.json().catch(() => ({})); return send("Gagal mengirim ke antrean: " + (e.error || subRes.status)); }
     const job = await subRes.json();
+    await send("Diterima, masuk antrean.\n" + (await ringkasanAntrean()) + "\nKetik /antrean kapan saja buat cek progres.");
     // Poll status; hasil akhirnya tetap dikirim server via notifyTelegram, ini hanya jaga-jaga kalau server gagal kirim
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 300; i++) {
       await new Promise((r) => setTimeout(r, 2000));
       const cur = await (await fetch(`${OFFICE_URL}/api/command/${job.id}`)).json().catch(() => null);
       if (cur && cur.status !== "antre" && cur.status !== "jalan") return; // server sudah mengirim hasil
     }
   } catch (e) {
     return send("Dashboard tidak bisa dihubungi. Pastikan `node office/server.mjs` jalan.\n" + String(e).slice(0, 200));
+  }
+}
+
+// Ringkasan antrean: tugas yang sedang jalan (sudah berapa lama) + berapa yang masih menunggu
+async function ringkasanAntrean() {
+  try {
+    const list = await (await fetch(`${OFFICE_URL}/api/commands`)).json();
+    const jalan = list.find((j) => j.status === "jalan");
+    const antre = list.filter((j) => j.status === "antre").length;
+    if (!jalan) return antre > 0 ? `Ada ${antre} tugas menunggu, tidak ada yang sedang jalan (aneh, biasanya jalan sendiri).` : "Tidak ada tugas yang sedang jalan.";
+    const detik = Math.round((Date.now() - (jalan.started || Date.now())) / 1000);
+    const durasi = detik < 60 ? `${detik} detik` : `${Math.round(detik / 60)} menit`;
+    const label = jalan.origin === "jadwal" ? `jadwal ${jalan.jadwalId}` : (jalan.text || "").slice(0, 60);
+    return `Sedang jalan (${jalan.executor || "cli"}, ${durasi}): ${label}${antre > 0 ? `\n${antre} tugas lain menunggu giliran.` : ""}`;
+  } catch {
+    return "Tidak bisa mengecek antrean saat ini.";
   }
 }
 
