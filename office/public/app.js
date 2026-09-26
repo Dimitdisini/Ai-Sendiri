@@ -266,11 +266,57 @@ function renderDataTable(data) {
 // -------------------------------------------------------------------
 // RENDER UTAMA
 // -------------------------------------------------------------------
+// -------------------------------------------------------------------
+// BAR STATISTIK ATAS (data asli semua perusahaan, bukan taksiran)
+// -------------------------------------------------------------------
+let jadwalCache = [];
+async function loadJadwalCache() {
+  try { jadwalCache = (await (await fetch("/api/jadwal")).json()).jadwal || []; } catch { jadwalCache = []; }
+}
+function jadwalBerikutnya() {
+  if (!jadwalCache.length) return "—";
+  const now = new Date();
+  let terbaik = null;
+  for (const t of jadwalCache) {
+    if (!t.aktif) continue;
+    const [hh, mm] = String(t.jam || "").split(":").map(Number);
+    if (Number.isNaN(hh)) continue;
+    for (let d = 0; d < 8; d++) {
+      const target = new Date(now); target.setDate(now.getDate() + d); target.setHours(hh, mm || 0, 0, 0);
+      if (target <= now) continue;
+      if (!t.hari.includes(target.getDay())) continue;
+      if (!terbaik || target < terbaik.target) terbaik = { target, id: t.id };
+      break;
+    }
+  }
+  if (!terbaik) return "—";
+  const beda = Math.round((terbaik.target - now) / 60000);
+  const kapan = beda < 60 ? `${beda}m lagi` : beda < 24 * 60 ? `${terbaik.target.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}` : terbaik.target.toLocaleDateString("id-ID", { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  return `${terbaik.id} · ${kapan}`;
+}
+function renderTopStats() {
+  document.getElementById("tsJadwal").textContent = jadwalBerikutnya();
+  if (!state) return;
+  const aksi = state.companies.reduce((n, c) => n + (c.usage?.todayActions || 0), 0);
+  const sesi = state.companies.reduce((n, c) => n + c.agents.filter((a) => a.status === "kerja").length, 0);
+  const blokir = state.companies.reduce((n, c) => n + (c.keputusanTertahan || 0), 0);
+  document.getElementById("tsAksi").textContent = aksi;
+  document.getElementById("tsSesi").textContent = sesi;
+  document.getElementById("tsBlokir").textContent = blokir;
+}
+setInterval(() => {
+  const el = document.getElementById("tsJam");
+  if (el) el.textContent = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}, 1000);
+loadJadwalCache();
+setInterval(loadJadwalCache, 30000);
+
 function render() {
   renderSidebar();
   renderQuota();
   updateOffice();
   renderAgents();
+  renderTopStats();
 
   if (activeTab === "overview")  renderBacklogPanel();
   if (activeTab === "roadmap")   renderTabRoadmap();
