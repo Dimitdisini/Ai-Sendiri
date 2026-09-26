@@ -109,9 +109,9 @@ function renderQuota() {
 // AGENT GRID
 // -------------------------------------------------------------------
 function statusBadge(status) {
-  if (status === "kerja") return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">KERJA</span>';
-  if (status === "rapat") return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-200">RAPAT</span>';
-  return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">ISTIRAHAT</span>';
+  if (status === "kerja") return '<span class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">KERJA</span>';
+  if (status === "rapat") return '<span class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-600 border border-blue-200">RAPAT</span>';
+  return '<span class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">ISTIRAHAT</span>';
 }
 // Model per peran (dari Pengaturan) -> label singkat buat badge kartu tim
 let modelPeranMap = {};
@@ -160,18 +160,18 @@ function renderAgents() {
       <div>
         <div class="flex items-center justify-between mb-1">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-5 h-5 rounded-full text-white text-[9px] font-bold flex items-center justify-center shrink-0" style="background:${color}">${initials}</span>
+            <span class="w-5 h-5 rounded-full text-white text-[11px] font-bold flex items-center justify-center shrink-0" style="background:${color}">${initials}</span>
             <span class="text-[11px] font-bold text-slate-800 truncate">${escapeHtml(a.nickname || a.type)}</span>
           </div>
           ${statusBadge(a.status)}
         </div>
-        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1 gap-1">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1 gap-1">
           <span class="truncate">${escapeHtml(a.role)}</span>
-          <span class="text-[9px] bg-slate-100 text-slate-600 px-1 rounded font-mono shrink-0">${escapeHtml(modelBadge(a.type))}</span>
+          <span class="text-[11px] bg-slate-100 text-slate-600 px-1 rounded font-mono shrink-0">${escapeHtml(modelBadge(a.type))}</span>
         </div>
-        <p class="text-[10px] text-slate-700 font-medium truncate mb-2 leading-tight" title="${summary}">${summary}</p>
+        <p class="text-[11px] text-slate-700 font-medium truncate mb-2 leading-tight" title="${summary}">${summary}</p>
       </div>
-      <div class="text-[9px] text-slate-400 font-medium pt-1 border-t border-slate-100">
+      <div class="text-[11px] text-slate-400 font-medium pt-1 border-t border-slate-100">
         ${a.actions} aksi · ${a.sessions} sesi · ${fmtTime(a.lastTs)}
       </div>`;
     grid.appendChild(card);
@@ -388,7 +388,7 @@ function renderCronPanel() {
   document.getElementById("cronCount").textContent = rutin.length;
   el.innerHTML = rutin.length ? rutin.map((t) => `
     <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
-      <div><div class="font-bold text-slate-800 text-[10.5px]">${escapeHtml(t.id)}</div><div class="text-[9.5px] text-slate-400">${t.executor === "agy" ? "Antigravity" : "Claude"}${t.diam ? " · senyap" : ""}</div></div>
+      <div><div class="font-bold text-slate-800 text-[11.5px]">${escapeHtml(t.id)}</div><div class="text-[11.5px] text-slate-400">${t.executor === "agy" ? "Antigravity" : "Claude"}${t.diam ? " · senyap" : ""}</div></div>
       <span class="font-mono font-bold text-slate-700 text-xs">${escapeHtml(t.jam)}</span>
     </div>`).join("") : `<div class="backlog-empty text-slate-400 text-xs py-2">Belum ada jadwal aktif.</div>`;
 }
@@ -425,18 +425,18 @@ async function renderBacklogPanel() {
     elK.innerHTML = kepOpen.length ? kepOpen.map((r) => `
       <div class="bg-white rounded-lg p-2 border border-rose-200/90 shadow-sm">
         <div class="flex items-start justify-between gap-1 mb-1">
-          <span class="text-[9.5px] font-bold text-rose-600 bg-rose-50 px-1 py-0.5 rounded">${escapeHtml(r.ID || "BLOKIR")}</span>
+          <span class="text-[11.5px] font-bold text-rose-600 bg-rose-50 px-1 py-0.5 rounded">${escapeHtml(r.ID || "BLOKIR")}</span>
         </div>
-        <p class="text-[10.5px] font-semibold text-slate-800 leading-tight">${escapeHtml(r.Pertanyaan || Object.values(r).join(" · "))}</p>
-        ${r.Rekomendasi ? `<p class="text-[9.5px] text-slate-500 mt-1 mb-2">Rekomendasi: ${escapeHtml(r.Rekomendasi)}</p>` : ""}
+        <p class="text-[11.5px] font-semibold text-slate-800 leading-tight">${escapeHtml(r.Pertanyaan || Object.values(r).join(" · "))}</p>
+        ${r.Rekomendasi ? `<p class="text-[11.5px] text-slate-500 mt-1 mb-2">Rekomendasi: ${escapeHtml(r.Rekomendasi)}</p>` : ""}
         <div class="flex items-center gap-1.5 mt-1.5">
-          <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1 rounded transition btn-setuju" data-id="${escapeHtml(r.ID || "")}" data-rek="${escapeHtml(r.Rekomendasi || "")}">Setujui rekomendasi</button>
-          <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold px-2 py-1 rounded transition btn-diskusi" data-id="${escapeHtml(r.ID || "")}">Jawab sendiri</button>
+          <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-1 rounded transition btn-setuju" data-id="${escapeHtml(r.ID || "")}" data-rek="${escapeHtml(r.Rekomendasi || "")}">Setujui rekomendasi</button>
+          <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold px-2 py-1 rounded transition btn-diskusi" data-id="${escapeHtml(r.ID || "")}">Jawab sendiri</button>
         </div>
-      </div>`).join("") : `<div class="text-[10.5px] text-slate-400 py-2">Tidak ada yang menunggu.</div>`;
+      </div>`).join("") : `<div class="text-[11.5px] text-slate-400 py-2">Tidak ada yang menunggu.</div>`;
 
     elB.innerHTML = blOpen.length ? blOpen.map((r) => `
-      <label class="flex items-center justify-between gap-1.5"><span class="text-slate-700 truncate">${escapeHtml(r.Item || Object.values(r).join(" · "))}</span><span class="text-[9px] text-slate-400 shrink-0">${escapeHtml(r.Status || "")}</span></label>`).join("") : `<div class="text-slate-400 py-2">Backlog kosong.</div>`;
+      <label class="flex items-center justify-between gap-1.5"><span class="text-slate-700 truncate">${escapeHtml(r.Item || Object.values(r).join(" · "))}</span><span class="text-[11px] text-slate-400 shrink-0">${escapeHtml(r.Status || "")}</span></label>`).join("") : `<div class="text-slate-400 py-2">Backlog kosong.</div>`;
 
     // Tombol Setujui: kirim command asli ke antrean (jawaban = rekomendasi tertulis)
     elK.querySelectorAll(".btn-setuju").forEach((b) => b.addEventListener("click", () => {

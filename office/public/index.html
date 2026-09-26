@@ -25,7 +25,7 @@
   #sidebarShowBtn{display:none;position:fixed;top:10px;left:10px;z-index:50}
   body.sidebar-hidden #sidebarShowBtn{display:flex}
   .nav-item.active{background:#eff6ff;color:#2563eb;border-color:#dbeafe}
-  .of3d-wrap{position:relative;width:100%;height:470px;background:#cbd5e1;border-radius:12px;overflow:hidden}
+  .of3d-wrap{position:relative;width:100%;background:#cbd5e1;border-radius:12px;overflow:hidden}
   #office3d, #officeCanvas{width:100%;height:100%}
 </style>
 </head>
@@ -44,9 +44,9 @@
           <div>
             <div class="flex items-center gap-1.5">
               <span class="text-xs font-bold text-slate-900 tracking-tight leading-none">Kantor AI</span>
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">LIVE</span>
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">LIVE</span>
             </div>
-            <p class="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">Team Dimitri</p>
+            <p class="text-[11px] text-slate-400 font-medium leading-tight mt-0.5">Team Dimitri</p>
           </div>
         </div>
         <button class="w-6 h-6 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center" id="sidebarToggle" title="Sembunyikan/tampilkan menu">
@@ -55,7 +55,7 @@
       </div>
 
       <div class="mt-3">
-        <label class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Perusahaan</label>
+        <label class="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Perusahaan</label>
         <div id="companyList" class="flex flex-col gap-1"></div>
       </div>
 
@@ -84,17 +84,17 @@
     <div class="p-3 border-t border-slate-100 bg-slate-50/70 space-y-2">
       <div class="bg-white p-2 rounded-xl border border-slate-200/90">
         <div class="flex items-center justify-between mb-1">
-          <span class="text-[10px] font-bold text-slate-700 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Bot Telegram</span>
+          <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Bot Telegram</span>
         </div>
-        <div class="text-[9px] text-slate-500 leading-tight">Perintah cepat: <span class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">/status</span> <span class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">/antrean</span></div>
+        <div class="text-[11px] text-slate-500 leading-tight">Perintah cepat: <span class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">/status</span> <span class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">/antrean</span></div>
       </div>
-      <div class="flex items-center justify-between text-[10px] px-1 text-slate-500 font-medium">
+      <div class="flex items-center justify-between text-[11px] px-1 text-slate-500 font-medium">
         <span class="flex items-center gap-1"><span class="text-xs text-slate-400">🕐</span><span class="font-bold text-slate-700" id="liveTime">--:--:--</span></span>
-        <span class="text-[9px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Online</span>
+        <span class="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Online</span>
       </div>
-      <div class="grid grid-cols-2 gap-1.5 text-[10px] pt-1">
-        <div class="bg-white rounded-lg border border-slate-200 px-2 py-1"><div class="text-slate-400 text-[9px]">Roadmap</div><div class="font-bold text-slate-800" id="sideRoadmap">—</div></div>
-        <div class="bg-white rounded-lg border border-slate-200 px-2 py-1"><div class="text-slate-400 text-[9px]">Plan / QA</div><div class="font-bold text-slate-800" id="sidePlan">—</div></div>
+      <div class="grid grid-cols-2 gap-1.5 text-[11px] pt-1">
+        <div class="bg-white rounded-lg border border-slate-200 px-2 py-1"><div class="text-slate-400 text-[11px]">Roadmap</div><div class="font-bold text-slate-800" id="sideRoadmap">—</div></div>
+        <div class="bg-white rounded-lg border border-slate-200 px-2 py-1"><div class="text-slate-400 text-[11px]">Plan / QA</div><div class="font-bold text-slate-800" id="sidePlan">—</div></div>
       </div>
     </div>
   </aside>
@@ -105,23 +105,23 @@
     <!-- TOP BAR STATISTIK -->
     <header class="w-full flex flex-wrap items-center gap-2.5 mb-2.5">
       <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col shrink-0">
-        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">WIB</span>
+        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">WIB</span>
         <span class="font-bold text-slate-800 font-mono" id="tsJam">--:--:--</span>
       </div>
       <div class="bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl flex flex-col shrink-0" id="tsBlokirCard">
-        <span class="text-[9px] uppercase tracking-wider text-rose-700 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> BUTUH KEPUTUSAN</span>
+        <span class="text-[11px] uppercase tracking-wider text-rose-700 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> BUTUH KEPUTUSAN</span>
         <span class="font-bold text-rose-700 text-xs"><span id="tsBlokir">0</span> BLOKIR menunggu</span>
       </div>
       <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col shrink-0">
-        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">JADWAL BERIKUTNYA</span>
+        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">JADWAL BERIKUTNYA</span>
         <span class="font-bold text-slate-800 text-[11px]" id="tsJadwal">—</span>
       </div>
       <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col items-center min-w-[75px] shrink-0">
-        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">AKSI HARI INI</span>
+        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">AKSI HARI INI</span>
         <span class="font-bold text-slate-800" id="tsAksi">—</span>
       </div>
       <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col items-center min-w-[75px] shrink-0">
-        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">SESI AKTIF</span>
+        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">SESI AKTIF</span>
         <span class="font-bold text-emerald-600" id="tsSesi">—</span>
       </div>
     </header>
@@ -143,31 +143,31 @@
             <input id="cmdText" type="text" class="w-full bg-slate-50 border border-slate-200/90 rounded-lg text-xs py-1.5 px-3 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-800" placeholder="Perintah ke tim, misal: /briefing  atau  /kickoff xavortree: aplikasi absensi" />
           </div>
           <div class="flex items-center justify-between lg:justify-end gap-2 shrink-0">
-            <div class="text-[10px] text-slate-400 font-medium" id="cmdSummary">—</div>
+            <div class="text-[11px] text-slate-400 font-medium" id="cmdSummary">—</div>
             <button type="submit" id="cmdSend" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition">
               <span class="text-sm leading-none">➤</span><span>Kirim</span>
             </button>
           </div>
         </form>
-        <div class="text-[10px] text-slate-400 mt-1.5">Dijalankan Orkestrator (Kai) sesuai CLAUDE.md. Satu perintah jalan dalam satu waktu, sisanya antre.</div>
+        <div class="text-[11px] text-slate-400 mt-1.5">Dijalankan Orkestrator (Kai) sesuai CLAUDE.md. Satu perintah jalan dalam satu waktu, sisanya antre.</div>
       </section>
 
       <!-- 3 KOLOM -->
-      <main class="grid grid-cols-12 gap-2.5">
+      <main class="grid grid-cols-12 gap-2.5 items-start">
 
         <!-- KIRI: aktivitas -->
         <aside class="col-span-12 lg:col-span-3 bg-white rounded-xl p-3 border border-slate-200/80 flex flex-col">
           <div class="flex items-center justify-between mb-2">
             <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><span class="text-blue-600 text-sm">📡</span>Aktivitas langsung</h2>
           </div>
-          <div id="activityFilters" class="flex flex-wrap gap-1 mb-2.5 text-[9.5px]"></div>
+          <div id="activityFilters" class="flex flex-wrap gap-1 mb-2.5 text-[11.5px]"></div>
           <div id="activityFeed" class="space-y-2 overflow-y-auto max-h-[380px] cscroll pr-1 text-[11px] flex-1"></div>
 
           <div class="mt-2.5 pt-2 border-t border-slate-100">
-            <div class="flex items-center justify-between text-[10px] font-bold text-slate-700 mb-1.5">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-1.5">
               <span class="flex items-center gap-1"><span class="text-xs text-slate-400">🕘</span>Riwayat Perintah</span>
             </div>
-            <div id="cmdList" class="space-y-1 text-[10px] overflow-y-auto max-h-[220px] cscroll"></div>
+            <div id="cmdList" class="space-y-1 text-[11px] overflow-y-auto max-h-[220px] cscroll"></div>
           </div>
         </aside>
 
@@ -185,7 +185,7 @@
             <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-2.5">
               <div class="flex items-center justify-between mb-2">
                 <h2 class="text-xs font-bold text-rose-700 flex items-center gap-1.5"><span class="text-sm text-rose-600">🚨</span>Butuh Keputusan</h2>
-                <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white" id="panelKeputusanCount">0</span>
+                <span class="px-1.5 py-0.5 rounded text-[11px] font-extrabold bg-rose-600 text-white" id="panelKeputusanCount">0</span>
               </div>
               <div id="panelKeputusan" class="space-y-2"></div>
             </div>
@@ -193,12 +193,12 @@
             <div>
               <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-2.5">
                 <div class="flex items-center gap-2 text-xs">
-                  <button class="font-bold text-slate-900 border-b-2 border-slate-900 pb-1" id="tabBacklogBtn">Backlog <span class="bg-slate-100 text-slate-700 px-1 rounded text-[9.5px]" id="panelBacklogCount">0</span></button>
-                  <button class="font-medium text-slate-400 hover:text-slate-700 pb-1" id="tabCronBtn">Cron <span class="bg-slate-100 text-slate-500 px-1 rounded text-[9.5px]" id="cronCount">0</span></button>
+                  <button class="font-bold text-slate-900 border-b-2 border-slate-900 pb-1" id="tabBacklogBtn">Backlog <span class="bg-slate-100 text-slate-700 px-1 rounded text-[11.5px]" id="panelBacklogCount">0</span></button>
+                  <button class="font-medium text-slate-400 hover:text-slate-700 pb-1" id="tabCronBtn">Cron <span class="bg-slate-100 text-slate-500 px-1 rounded text-[11.5px]" id="cronCount">0</span></button>
                 </div>
               </div>
-              <div id="panelBacklog" class="space-y-1.5 text-[10.5px]"></div>
-              <div id="panelCron" class="space-y-1.5 text-[10.5px] hidden"></div>
+              <div id="panelBacklog" class="space-y-1.5 text-[11.5px]"></div>
+              <div id="panelCron" class="space-y-1.5 text-[11.5px] hidden"></div>
             </div>
           </div>
         </aside>
@@ -208,7 +208,7 @@
       <!-- TIM AKTIF -->
       <div class="flex items-center justify-between mt-1">
         <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tim Aktif</span>
-        <span class="text-[10px] text-slate-400" id="agentSubtitle">—</span>
+        <span class="text-[11px] text-slate-400" id="agentSubtitle">—</span>
       </div>
       <footer class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2" id="agentGrid"></footer>
     </section>
