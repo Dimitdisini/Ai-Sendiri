@@ -204,7 +204,7 @@ function updateOffice() {
 function showPage(tab) {
   const pages = { overview: "pageOverview", roadmap: "pageRoadmap", keputusan: "pageKeputusan", output: "pageOutput", bukti: "pageBukti", pengaturan: "pagePengaturan" };
   if (tab === "pengaturan") loadConfig();
-  Object.entries(pages).forEach(([t, id]) => { const el = document.getElementById(id); if (el) el.classList.toggle("hidden", t !== tab); });
+  Object.entries(pages).forEach(([t, id]) => { const el = document.getElementById(id); if (el) { el.classList.toggle("active", t === tab); el.classList.remove("hidden"); } });
   document.querySelectorAll(".nav-item").forEach((b) => {
     const on = b.dataset.tab === tab;
     b.classList.toggle("active", on);
