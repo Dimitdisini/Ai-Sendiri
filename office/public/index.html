@@ -33,10 +33,10 @@
   <!-- HEADER ATAS: bukan melayang, bagian tetap dari layout -->
   <header class="w-full bg-white border-b border-slate-200/80 px-3 py-2 shrink-0 flex items-center flex-wrap gap-2 shadow-xs z-20">
     <div class="flex items-center gap-2 shrink-0">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">KAI</div>
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0">KAI</div>
       <div>
         <div class="flex items-center gap-1.5">
-          <span class="text-xs font-bold text-slate-900 leading-none">Kantor AI</span>
+          <span class="text-[11px] font-bold text-slate-900 leading-none">Kantor AI</span>
           <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">LIVE</span>
         </div>
         <p class="text-[9.5px] text-slate-400 font-semibold leading-none mt-0.5">Team Dimitri</p>
@@ -47,25 +47,25 @@
 
     <!-- Menu halaman -->
     <nav class="flex items-center gap-0.5 bg-slate-50 rounded-xl p-0.5 border border-slate-200 shrink-0" id="sidebarNav">
-      <button class="nav-icon active w-7 h-7 rounded-lg flex items-center justify-center text-sm" data-tab="overview" title="Overview">🧭</button>
-      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-sm text-slate-500" data-tab="roadmap" title="Roadmap">🛣️</button>
-      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-sm text-slate-500" data-tab="keputusan" title="Keputusan">⚖️</button>
-      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-sm text-slate-500" data-tab="output" title="Output">📁</button>
-      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-sm text-slate-500" data-tab="bukti" title="Bukti QA">✅</button>
-      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-sm text-slate-500" data-tab="pengaturan" title="Pengaturan">⚙️</button>
+      <button class="nav-icon active w-7 h-7 rounded-lg flex items-center justify-center text-[11px]" data-tab="overview" title="Overview">🧭</button>
+      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-[11px] text-slate-500" data-tab="roadmap" title="Roadmap">🛣️</button>
+      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-[11px] text-slate-500" data-tab="keputusan" title="Keputusan">⚖️</button>
+      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-[11px] text-slate-500" data-tab="output" title="Output">📁</button>
+      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-[11px] text-slate-500" data-tab="bukti" title="Bukti QA">✅</button>
+      <button class="nav-icon w-7 h-7 rounded-lg flex items-center justify-center text-[11px] text-slate-500" data-tab="pengaturan" title="Pengaturan">⚙️</button>
     </nav>
 
     <div class="hidden sm:flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200 shrink-0">
       <span class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">Klien:</span>
-      <select id="cmdCompany" class="bg-transparent text-xs font-bold text-slate-800 border-none py-0 pl-0 pr-6 focus:ring-0 cursor-pointer"></select>
+      <select id="cmdCompany" class="bg-transparent text-[11px] font-bold text-slate-800 border-none py-0 pl-0 pr-6 focus:ring-0 cursor-pointer"></select>
     </div>
 
     <!-- Kotak perintah, mengisi sisa ruang -->
     <form class="flex-1 min-w-[220px] bg-slate-50 border border-slate-200/90 rounded-xl py-1 px-2.5 flex items-center gap-2 focus-within:bg-white focus-within:border-blue-400 transition" id="cmdForm" autocomplete="off">
-      <span class="text-blue-500 text-xs shrink-0">⌨️</span>
+      <span class="text-blue-500 text-[11px] shrink-0">⌨️</span>
       <input id="cmdText" type="text" class="flex-1 bg-transparent border-none text-[11px] py-0.5 px-1 placeholder:text-slate-400 focus:ring-0 text-slate-800 font-medium min-w-0" placeholder="Perintah ke tim, misal: /briefing  atau  /kickoff xavortree: aplikasi absensi" />
       <button type="submit" id="cmdSend" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-xs shrink-0">
-        <span class="text-xs">➤</span><span class="hidden md:inline">Kirim</span>
+        <span class="text-[11px]">➤</span><span class="hidden md:inline">Kirim</span>
       </button>
     </form>
 
@@ -97,9 +97,9 @@
       <div class="p-2.5 border-b border-slate-100 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-          <h2 class="text-xs font-bold text-slate-900">Aktivitas Langsung</h2>
+          <h2 class="text-[11px] font-bold text-slate-900">Aktivitas Langsung</h2>
         </div>
-        <button class="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 flex items-center justify-center text-xs" id="collapseLeftBtn" title="Kecilkan">‹</button>
+        <button class="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 flex items-center justify-center text-[11px]" id="collapseLeftBtn" title="Kecilkan">‹</button>
       </div>
       <div id="activityFilters" class="p-2 border-b border-slate-100 flex flex-wrap gap-1 text-[9.5px] bg-slate-50/50 shrink-0"></div>
       <div id="activityFeed" class="flex-1 overflow-y-auto cscroll p-2 space-y-1.5 min-h-0 text-[10.5px]"></div>
@@ -122,7 +122,7 @@
       </div>
       <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-slate-200/80 shrink-0">
         <div class="flex items-center justify-between mb-1.5 px-0.5">
-          <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Tim Aktif</span>
+          <span class="text-[11px] font-bold text-slate-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Tim Aktif</span>
           <span class="text-[10px] text-slate-500 font-medium" id="agentSubtitle">—</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5" id="agentGrid"></div>
@@ -132,8 +132,8 @@
     <!-- KANAN: keputusan + backlog/cron -->
     <aside class="aside-panel w-full lg:w-80 shrink-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col overflow-hidden max-h-[38vh] lg:max-h-none" id="asideRight">
       <div class="p-2.5 border-b border-slate-100 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-1.5"><span class="text-rose-600">⚖️</span><h2 class="text-xs font-bold text-slate-900">Keputusan &amp; Antrean</h2></div>
-        <button class="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 flex items-center justify-center text-xs" id="collapseRightBtn" title="Kecilkan">›</button>
+        <div class="flex items-center gap-1.5"><span class="text-rose-600">⚖️</span><h2 class="text-[11px] font-bold text-slate-900">Keputusan &amp; Antrean</h2></div>
+        <button class="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 flex items-center justify-center text-[11px]" id="collapseRightBtn" title="Kecilkan">›</button>
       </div>
       <div class="flex-1 overflow-y-auto cscroll p-2.5 space-y-2.5 min-h-0">
         <div class="bg-rose-50/70 border border-rose-200/90 rounded-2xl p-2.5">
@@ -161,42 +161,42 @@
   <!-- HALAMAN LAIN (menimpa layar penuh) -->
   <div class="hidden flex-1 bg-slate-50 overflow-y-auto cscroll p-4" id="pageWrap">
     <section class="page hidden max-w-5xl mx-auto" id="pageRoadmap">
-      <div class="page-header mb-2"><h2 class="text-lg font-bold">Roadmap</h2><span class="page-sub text-sm text-slate-500" id="roadmapCompanyLabel"></span></div>
+      <div class="page-header mb-2"><h2 class="text-lg font-bold">Roadmap</h2><span class="page-sub text-[11px] text-slate-500" id="roadmapCompanyLabel"></span></div>
       <div id="tabRoadmap" class="table-wrap bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
     <section class="page hidden max-w-5xl mx-auto" id="pageKeputusan">
-      <div class="page-header mb-2"><h2 class="text-lg font-bold">Keputusan</h2><span class="page-sub text-sm text-slate-500" id="keputusanCompanyLabel"></span></div>
+      <div class="page-header mb-2"><h2 class="text-lg font-bold">Keputusan</h2><span class="page-sub text-[11px] text-slate-500" id="keputusanCompanyLabel"></span></div>
       <div id="tabKeputusan" class="table-wrap bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
     <section class="page hidden max-w-5xl mx-auto" id="pageOutput">
-      <div class="page-header mb-2"><h2 class="text-lg font-bold">Output Dokumen</h2><span class="page-sub text-sm text-slate-500">File yang paling baru diubah</span></div>
+      <div class="page-header mb-2"><h2 class="text-lg font-bold">Output Dokumen</h2><span class="page-sub text-[11px] text-slate-500">File yang paling baru diubah</span></div>
       <div id="tabOutput" class="bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
     <section class="page hidden max-w-5xl mx-auto" id="pageBukti">
-      <div class="page-header mb-2"><h2 class="text-lg font-bold">Bukti QA</h2><span class="page-sub text-sm text-slate-500">Screenshot hasil pengujian</span></div>
+      <div class="page-header mb-2"><h2 class="text-lg font-bold">Bukti QA</h2><span class="page-sub text-[11px] text-slate-500">Screenshot hasil pengujian</span></div>
       <div id="tabBukti" class="bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
     <section class="page hidden max-w-3xl mx-auto" id="pagePengaturan">
-      <div class="page-header mb-2"><h2 class="text-lg font-bold">Pengaturan Perusahaan</h2><span class="page-sub text-sm text-slate-500" id="cfgCompanyLabel">Profil dan formasi tim untuk perusahaan yang dipilih</span></div>
+      <div class="page-header mb-2"><h2 class="text-lg font-bold">Pengaturan Perusahaan</h2><span class="page-sub text-[11px] text-slate-500" id="cfgCompanyLabel">Profil dan formasi tim untuk perusahaan yang dipilih</span></div>
       <form id="cfgForm" class="cfg-form space-y-3" autocomplete="off">
         <div class="cfg-card bg-white rounded-xl border border-slate-200/80 p-3">
-          <h3 class="font-bold text-sm mb-1">Profil</h3>
-          <p class="cfg-hint text-xs text-slate-500 mb-2">Disimpan ke companies/&lt;perusahaan&gt;/CLAUDE.md. Semua agen membaca ini sebelum bekerja.</p>
+          <h3 class="font-bold text-[11px] mb-1">Profil</h3>
+          <p class="cfg-hint text-[11px] text-slate-500 mb-2">Disimpan ke companies/&lt;perusahaan&gt;/CLAUDE.md. Semua agen membaca ini sebelum bekerja.</p>
           <div id="cfgProfile" class="cfg-grid"></div>
         </div>
         <div class="cfg-card bg-white rounded-xl border border-slate-200/80 p-3">
-          <h3 class="font-bold text-sm mb-1">Formasi tim</h3>
-          <p class="cfg-hint text-xs text-slate-500 mb-2">Centang peran yang bekerja di perusahaan ini. Kai (Orkestrator) selalu aktif.</p>
+          <h3 class="font-bold text-[11px] mb-1">Formasi tim</h3>
+          <p class="cfg-hint text-[11px] text-slate-500 mb-2">Centang peran yang bekerja di perusahaan ini. Kai (Orkestrator) selalu aktif.</p>
           <div id="cfgRoles" class="cfg-roles"></div>
-          <label class="cfg-field cfg-wide block mt-2"><span class="text-xs font-semibold">Catatan kebutuhan tim</span><textarea id="cfgNotes" rows="3" class="w-full border border-slate-200 rounded-lg text-xs p-2 mt-1" placeholder="Misal: fokus IoT, butuh review keamanan tiap rilis"></textarea></label>
+          <label class="cfg-field cfg-wide block mt-2"><span class="text-[11px] font-semibold">Catatan kebutuhan tim</span><textarea id="cfgNotes" rows="3" class="w-full border border-slate-200 rounded-lg text-[11px] p-2 mt-1" placeholder="Misal: fokus IoT, butuh review keamanan tiap rilis"></textarea></label>
         </div>
-        <div class="cfg-actions flex items-center gap-2"><span id="cfgMsg" class="cfg-msg text-xs"></span><button type="submit" class="cfg-save bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Simpan</button></div>
+        <div class="cfg-actions flex items-center gap-2"><span id="cfgMsg" class="cfg-msg text-[11px]"></span><button type="submit" class="cfg-save bg-blue-600 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg">Simpan</button></div>
       </form>
       <div class="cfg-card bg-white rounded-xl border border-slate-200/80 p-3 mt-3">
-        <h3 class="font-bold text-sm mb-1">Model per peran (semua perusahaan)</h3>
-        <p class="cfg-hint text-xs text-slate-500 mb-2">Cuma berlaku kalau tugas peran itu dijalankan lewat Antigravity. Kosongkan = pakai bawaan.</p>
+        <h3 class="font-bold text-[11px] mb-1">Model per peran (semua perusahaan)</h3>
+        <p class="cfg-hint text-[11px] text-slate-500 mb-2">Cuma berlaku kalau tugas peran itu dijalankan lewat Antigravity. Kosongkan = pakai bawaan.</p>
         <div id="modelPeranList" class="cfg-grid"></div>
-        <div class="cfg-actions flex items-center gap-2 mt-2"><span id="modelPeranMsg" class="cfg-msg text-xs"></span><button type="button" id="modelPeranSave" class="cfg-save bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Simpan model per peran</button></div>
+        <div class="cfg-actions flex items-center gap-2 mt-2"><span id="modelPeranMsg" class="cfg-msg text-[11px]"></span><button type="button" id="modelPeranSave" class="cfg-save bg-blue-600 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg">Simpan model per peran</button></div>
       </div>
     </section>
   </div>

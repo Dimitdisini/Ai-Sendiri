@@ -91,7 +91,7 @@ function renderAgents() {
 
   if (!c || !c.agents || !c.agents.length) {
     grid.innerHTML = `
-      <div class="empty col-span-full text-sm text-slate-400 text-center py-6">
+      <div class="empty col-span-full text-[11px] text-slate-400 text-center py-6">
         <strong class="block text-slate-600 mb-1">Belum ada aktivitas tercatat</strong>
         Buka sesi Claude Code di folder companies/${c ? c.slug : "…"} dan jalankan /kickoff.
       </div>`;
@@ -319,6 +319,41 @@ async function loadActivity() {
   try { activityData = await (await fetch("/api/activity")).json(); } catch { activityData = []; }
   renderActivity();
 }
+// Ubah nama tool + ringkasan teknis jadi satu kalimat manusiawi buat feed aktivitas.
+function namaFile(summary) {
+  const m = String(summary || "").match(/([^\/\\]+)$/);
+  return m ? m[1] : "";
+}
+function humankanAktivitas(a) {
+  const t = a.tool || "";
+  const s = a.summary || "";
+  if (t === "Read") return `Membaca file ${namaFile(s)}`;
+  if (t === "Write") return `Menulis file baru ${namaFile(s)}`;
+  if (t === "Edit" || t === "MultiEdit") return `Mengedit file ${namaFile(s)}`;
+  if (t === "Glob" || t === "Grep") return "Mencari file/teks di project";
+  if (t === "WebFetch" || t === "WebSearch") return "Mencari informasi di internet";
+  if (t === "Bash") {
+    const low = s.toLowerCase();
+    if (low.includes("git commit")) return "Menyimpan perubahan kode";
+    if (low.includes("git push")) return "Mengirim kode ke GitHub";
+    if (low.includes("git ")) return "Mengecek riwayat/status kode";
+    if (low.includes("npm install") || low.includes("npm i ")) return "Memasang dependencies";
+    if (low.includes("node --check") || low.includes("node -e")) return "Mengecek kode tidak ada salah ketik";
+    if (low.includes("curl") || low.includes("fetch")) return "Mengambil data dari internet";
+    if (low.includes("mkdir")) return "Membuat folder baru";
+    if (low.includes("launchctl")) return "Me-restart layanan kantor";
+    if (low.includes("grep") || low.includes("find ")) return "Mencari sesuatu di file project";
+    return "Menjalankan perintah di terminal";
+  }
+  if (t.startsWith("mcp__Claude_Browser__") || t.startsWith("mcp__claude-in-chrome__")) {
+    const sub = t.split("__").pop();
+    const map = { navigate: "Membuka halaman web", computer: "Klik/ketik di browser", javascript_tool: "Mengecek tampilan lewat kode", get_page_text: "Membaca isi halaman", read_page: "Membaca struktur halaman", find: "Mencari sesuatu di halaman", resize_window: "Mengubah ukuran tampilan", preview_start: "Membuka pratinjau website", read_console_messages: "Mengecek error di halaman" };
+    return map[sub] || "Mengecek tampilan dashboard di browser";
+  }
+  if (t.startsWith("mcp__")) return "Menjalankan alat bantu internal";
+  if (t === "AskUserQuestion") return "Menanyakan sesuatu ke CEO";
+  return s ? s.slice(0, 60) : "Bekerja";
+}
 function renderActivity() {
   const feedEl = document.getElementById("activityFeed"), filterEl = document.getElementById("activityFilters");
   if (!feedEl) return;
@@ -330,8 +365,8 @@ function renderActivity() {
     <div class="activity-item">
       <div class="activity-avatar" style="background:${a.color}">${escapeHtml((a.nickname || "?").slice(0, 2).toUpperCase())}</div>
       <div class="activity-body">
-        <div class="activity-row-top"><span><b>${escapeHtml(a.nickname)}</b> <span class="activity-tool">· ${escapeHtml(a.tool)}</span></span><span class="activity-time">${fmtTime(a.ts)}</span></div>
-        <div>${escapeHtml(a.summary)}</div>
+        <div class="activity-row-top"><span><b>${escapeHtml(a.nickname)}</b></span><span class="activity-time">${fmtTime(a.ts)}</span></div>
+        <div>${escapeHtml(humankanAktivitas(a))}</div>
       </div>
     </div>`).join("") : `<div class="backlog-empty">Belum ada aktivitas tercatat.</div>`;
 }
@@ -352,8 +387,8 @@ function renderCronPanel() {
   el.innerHTML = rutin.length ? rutin.map((t) => `
     <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
       <div><div class="font-bold text-slate-800 text-[11.5px]">${escapeHtml(t.id)}</div><div class="text-[11.5px] text-slate-400">${t.executor === "agy" ? "Antigravity" : "Claude"}${t.diam ? " · senyap" : ""}</div></div>
-      <span class="font-mono font-bold text-slate-700 text-xs">${escapeHtml(t.jam)}</span>
-    </div>`).join("") : `<div class="backlog-empty text-slate-400 text-xs py-2">Belum ada jadwal aktif.</div>`;
+      <span class="font-mono font-bold text-slate-700 text-[10.5px]">${escapeHtml(t.jam)}</span>
+    </div>`).join("") : `<div class="backlog-empty text-slate-400 text-[10.5px] py-2">Belum ada jadwal aktif.</div>`;
 }
 document.getElementById("tabBacklogBtn")?.addEventListener("click", () => {
   document.getElementById("tabBacklogBtn").className = "font-bold text-slate-900 border-b-2 border-slate-900 pb-1";
