@@ -4,6 +4,7 @@ Perusahaan: Xavortree (mitra teknologi) untuk klien PT Gocean Indonesia | Pemili
 **Referensi dokumen asli CEO:** kode BRD-XV-GCN-2026-V1, versi 1.0 (Enterprise Specification), status versi CEO "FINAL / APPROVED FOR IMPLEMENTATION", klasifikasi Strictly Confidential. Klien/pemilik produk: PT Gocean Indonesia (BoD & manajemen). Mitra teknologi: Xavortree. System Analyst & Lead Architect: Ardiansyah (Bang Ardi) & Dimitri Ahmad S. Target roadmap 24 bulan (Scope 1 & 2). Anggaran Rp 433.000.000 all-in turnkey (skema "Gas 433").
 Riwayat revisi asli: v0.1 (10 Sep) F1-F3 baseline MVP 4 bulan; v0.5 (12 Sep) ekspansi F1-F6 (Fintech, Invoicing, Chat, Dual Environment); v0.9 (14 Sep) roadmap 24 bulan, requirement phase +1 bulan, piloting 2x40 hari, dedicated ops standby; v1.0 (26 Sep) acuan kontrak dan penyusunan FD.
 Catatan status: status FINAL berlaku untuk dokumen versi CEO. Di sistem tim, BRD ini baru jadi acuan PRD/FD setelah teks lengkap diterima dan CEO menyetujui eksplisit.
+Catatan (2026-09-27): Q14 dijawab CEO — pilih opsi A, kirim ulang BRD sebagai file utuh (PDF/Word/txt) ke folder ini, bukan tempel teks di chat. File utuh belum diterima; bagian 1.3 dan 2-12 masih placeholder di bawah sampai file masuk.
 
 ## 1. Latar belakang
 PT Gocean Indonesia: perusahaan cold chain dan agregator perdagangan hasil laut (ekspor Asia Timur, Eropa, AS; domestik HORECA dan distributor grosir). Komoditas: tuna saku/loin, lobster, udang vaname, gurita, ikan pelagis bernilai tinggi; menuntut suhu -18°C s/d -25°C, traceability asal tangkapan, sertifikasi karantina.
