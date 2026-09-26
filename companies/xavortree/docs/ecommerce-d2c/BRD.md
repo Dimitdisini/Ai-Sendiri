@@ -1,5 +1,5 @@
 # BRD — Modern Web E-Commerce Platform (D2C & Retail)
-Perusahaan: Xavortree | Pemilik: PM | Status: Draft — isi dokumen CEO sudah lengkap (FR-01 s/d FR-22, NFR, tech stack, roadmap 8 minggu, acceptance criteria); menunggu jawaban CEO soal kepemilikan toko, budget, persona detail, dan diagram alur | Versi: 0.2 (2026-09-26)
+Perusahaan: Xavortree | Pemilik: PM | Status: Draft — isi dokumen CEO sudah lengkap (FR-01 s/d FR-22, NFR, tech stack, roadmap 8 minggu, acceptance criteria); pemilik toko terjawab: klien Xavortree (2026-09-27); menunggu jawaban CEO soal identitas klien, budget, persona detail, dan diagram alur | Versi: 0.2 (2026-09-26)
 
 **Referensi dokumen asli CEO:** "Business Requirements Document (BRD) — Platform Web E-Commerce Modern (Direct-to-Consumer & Retail). Dokumen Spesifikasi Kebutuhan Bisnis & Fungsional Pengembangan Website E-Commerce."
 - Nama Proyek: Modern Web E-Commerce Platform
@@ -13,7 +13,8 @@ Catatan: teks CEO diterima dalam dua kiriman (v0.1 terpotong di FR-16; lanjutan 
 
 ## 1. Latar belakang
 (Bagian 1.1 asli) Membangun platform website toko online (web e-commerce) mandiri yang responsif, cepat, dan terintegrasi otomatis dengan gerbang pembayaran lokal (Payment Gateway) dan kurir logistik Indonesia. Tujuannya adalah memiliki kanal penjualan resmi milik sendiri (brand-owned channel) tanpa ketergantungan penuh pada biaya komisi marketplace pihak ketiga (Shopee/Tokopedia).
-- Pemilik brand/toko (brand milik CEO sendiri atau klien Xavortree), jenis produk, dan kondisi penjualan saat ini (kanal, omzet, biaya komisi marketplace): [BUTUH KONFIRMASI CEO: belum ada di teks].
+- Pemilik brand/toko: **klien Xavortree** (dikonfirmasi CEO 2026-09-27, bukan brand internal); Xavortree sebagai pengembang.
+- Identitas klien spesifik (nama perusahaan, kontak, kontrak), jenis produk, dan kondisi penjualan saat ini (kanal, omzet, biaya komisi marketplace): [BUTUH KONFIRMASI CEO: belum ada di teks].
 
 ## 2. Tujuan bisnis dan metrik sukses
 (Bagian 1.2 asli, 4 tujuan dari CEO, dipertahankan utuh)
@@ -79,7 +80,7 @@ Metrik terukur dari dokumen CEO: checkout < 3 menit (tujuan 1); status UNPAID �
 (Bagian 4 asli) Diagram mermaid: [BUTUH KONFIRMASI CEO: hanya judul bagian yang diterima, isi diagram belum dikirim]. Urutan status yang sudah pasti dari teks: order dibuat (UNPAID/Pending, FR-18 tagihan) → PAID via webhook (FR-17, notifikasi bayar) → Diproses/Packing → Dikirim (resi, FR-15/FR-18) → Selesai (FR-21).
 
 ## 5. Pengguna dan pemangku kepentingan
-- Diketahui dari FR: pelanggan terdaftar, pelanggan tamu (guest, FR-04), admin/merchant yang mengoperasikan panel (Modul 7), pemilik brand.
+- Diketahui dari FR: pelanggan terdaftar, pelanggan tamu (guest, FR-04), admin/merchant yang mengoperasikan panel (Modul 7), pemilik brand (klien Xavortree).
 - Persona rinci (bagian 2 asli): [BUTUH KONFIRMASI CEO: belum diterima].
 
 ## 6. Kebutuhan non-fungsional (NFR)
@@ -125,15 +126,13 @@ Metrik terukur dari dokumen CEO: checkout < 3 menit (tujuan 1); status UNPAID �
 [ASUMSI] **L** untuk Modul 1–7 (22 FR, 4 integrasi eksternal, webhook pembayaran, admin). Mendekati batas atas L karena Modul 6–7 ikut MVP; bisa naik ke XL bila dibangun custom dari nol tanpa platform/headless. Estimasi presisi di PRD/TDD.
 
 ## 11. Pertanyaan untuk CEO
-1. Toko ini untuk siapa?
-   A: brand milik CEO sendiri (internal Xavortree). B: klien Xavortree (perlu kontrak, kontak klien, dan budget dari klien seperti gocean-b2b).
-   Rekomendasi: jawab dulu sebelum PRD, karena menentukan pemegang akun payment gateway/ongkir/WA dan batas budget.
+1. Toko ini untuk siapa? — **TERJAWAB (2026-09-27): B, klien Xavortree** (KEPUTUSAN.md Q13).
+   Masih terbuka: identitas klien spesifik (nama perusahaan, kontak, kontrak, budget klien) [BUTUH KONFIRMASI CEO], dibahas di meeting 2026-09-28.
 2. Budget dan biaya operasional bulanan?
    A: CEO memberi pagu angka (pengembangan + biaya bulanan). B: tim menyusun estimasi biaya vendor bulanan sebagai [ASUMSI] dengan rentang, CEO menyetujui.
    Rekomendasi: B bila pagu belum ada, karena biaya vendor (fee PG, ongkir, WA, hosting) bisa dihitung dari harga publik.
-3. Diagram alur transaksi (bagian 4) dan persona (bagian 2 asli) belum diterima.
-   A: CEO upload file BRD asli utuh (PDF/DOCX) ke companies/xavortree/docs/ecommerce-d2c/. B: tim menyusun diagram dan persona dari FR-01 s/d FR-22, CEO review.
-   Rekomendasi: A, karena sudah dua kali teks paste terpotong dan file utuh mencegah salah tafsir.
+3. Sumber diagram alur transaksi (bagian 4) — **TERJAWAB (2026-09-27): B, pakai draft tim**, bukan file BRD asli. Jawaban CEO via dashboard: "buatkan aja deh pake yang ada". Diagram yang dipakai: Mermaid di PRD.md bagian 2.1/2.2 (berlabel draft PM), CEO review.
+   Masih terbuka (terpisah, tidak ikut terjawab): persona detail — demografi, jenis produk, pain point, volume order [BUTUH KONFIRMASI CEO].
 
 ## Catatan Analyst (tinjauan awal, ditulis atas BRD v0.1)
 Oleh: Analyst (Bima), 2026-09-26. Bukan isi dokumen CEO; tidak menambah FR.

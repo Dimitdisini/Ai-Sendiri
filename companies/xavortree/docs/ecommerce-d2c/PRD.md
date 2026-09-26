@@ -1,10 +1,12 @@
 # PRD — Modern Web E-Commerce Platform (D2C & Retail)
-Perusahaan: Xavortree | Pemilik: PM (Sari) | Turunan dari: BRD.md v0.2 | Status: Draft — bahan meeting CEO 2026-09-27 | Versi: 0.1 (2026-09-26)
+Perusahaan: Xavortree | Pemilik: PM (Sari) | Turunan dari: BRD.md v0.2 | Status: Draft — bahan meeting CEO 2026-09-28 | Versi: 0.2 (2026-09-27)
+
+Riwayat versi: v0.1 (2026-09-26) draft awal. v0.2 (2026-09-27) pemilik toko terjawab (klien Xavortree, Q13 KEPUTUSAN.md), tanggal meeting dipindah ke 2026-09-28, bagian 7 dirapikan jadi agenda meeting. FR-01 s/d FR-22 tidak berubah.
 
 Catatan: disusun atas instruksi CEO "buatkan aja pakai yang ada". Sumber hanya FR-01 s/d FR-22, NFR, roadmap, dan AC MVP di BRD v0.2. Item yang belum dijawab CEO ditandai [BUTUH KONFIRMASI CEO]; keputusan PM yang bisa dibatalkan ditandai [ASUMSI].
 
 ## 1. Ringkasan produk
-Website toko online mandiri (brand-owned channel) untuk penjualan B2C/D2C ritel di Indonesia, dipakai pembeli dari HP (mobile-first) dan dioperasikan admin/merchant lewat panel admin. Pembeli bisa belanja dengan atau tanpa akun, mendapat ongkir real-time sesuai alamat dan berat, membayar via VA/QRIS/kartu, dan status pesanan berubah otomatis menjadi PAID lewat webhook dalam < 10 detik, lalu menerima notifikasi WA/email sampai nomor resi. Lebih baik dari kondisi sekarang karena tidak bergantung pada komisi marketplace (Shopee/Tokopedia), tidak ada verifikasi bukti transfer manual via WhatsApp, dan data pelanggan terkumpul di database sendiri. Pemilik toko (brand CEO sendiri atau klien Xavortree): [BUTUH KONFIRMASI CEO].
+Website toko online mandiri (brand-owned channel) untuk penjualan B2C/D2C ritel di Indonesia, dipakai pembeli dari HP (mobile-first) dan dioperasikan admin/merchant lewat panel admin. Pembeli bisa belanja dengan atau tanpa akun, mendapat ongkir real-time sesuai alamat dan berat, membayar via VA/QRIS/kartu, dan status pesanan berubah otomatis menjadi PAID lewat webhook dalam < 10 detik, lalu menerima notifikasi WA/email sampai nomor resi. Lebih baik dari kondisi sekarang karena tidak bergantung pada komisi marketplace (Shopee/Tokopedia), tidak ada verifikasi bukti transfer manual via WhatsApp, dan data pelanggan terkumpul di database sendiri. Pemilik toko: klien Xavortree (dikonfirmasi CEO 2026-09-27); Xavortree sebagai pengembang. Identitas klien spesifik (nama perusahaan, kontak, kontrak): [BUTUH KONFIRMASI CEO].
 
 ## 2. Persona dan alur utama
 [ASUMSI] Persona di bawah diturunkan minimal dari FR, bukan dari riset. Demografi, jenis produk, pain point, dan volume transaksi menunggu CEO (persona detail bagian 2 BRD asli belum diterima). CEO bisa membatalkan.
@@ -14,13 +16,13 @@ Website toko online mandiri (brand-owned channel) untuk penjualan B2C/D2C ritel 
 | P1 Pelanggan terdaftar | FR-01, FR-02, FR-03, FR-11 | Login cepat (email/WA/Google), alamat tersimpan, riwayat pesanan dan lacak resi, wishlist |
 | P2 Pelanggan tamu (guest) | FR-04 | Belanja sekali tanpa daftar, checkout < 3 menit dari HP |
 | P3 Admin/merchant | Modul 7, FR-15 | Pantau omzet dan order, proses order sampai kirim, cetak label thermal, stok menipis, ekspor laporan |
-| (Pemangku kepentingan) Pemilik brand | BRD bagian 5 | Kanal penjualan sendiri, database pelanggan. Identitas: [BUTUH KONFIRMASI CEO] |
+| (Pemangku kepentingan) Pemilik brand = klien Xavortree | BRD bagian 5 | Kanal penjualan sendiri, database pelanggan. Nama klien, kontak, kontrak: [BUTUH KONFIRMASI CEO] |
 
 **Alur utama pelanggan (P1/P2):** cari/filter produk → pilih varian → keranjang (+ voucher) → isi/pilih alamat → pilih kurir (ongkir real-time) → pilih metode bayar → order dibuat UNPAID + tagihan WA/email → bayar → webhook PAID + notifikasi → dikirim + resi → Selesai.
 
 **Alur utama admin (P3):** lihat order Sudah Bayar → ubah ke Diproses/Packing → cetak label thermal → input/terima resi, ubah ke Dikirim (notifikasi resi terkirim) → Selesai. Harian: cek dashboard omzet, low stock alert, ekspor laporan.
 
-### 2.1 Diagram status transaksi end-to-end (draft PM)
+### 2.1 Diagram status transaksi end-to-end (DRAFT PM — bukan diagram asli CEO, divalidasi di meeting 2026-09-28)
 [ASUMSI] Diagram disusun PM dari FR-17, FR-18, FR-21, dan BRD bagian 4, karena diagram asli CEO belum diterima. Status "Kedaluwarsa/Batal" ditambahkan PM karena VA/QRIS punya batas waktu; perilaku detailnya diputuskan Analyst di FD.
 
 ```mermaid
@@ -49,7 +51,7 @@ stateDiagram-v2
 
 Pemetaan istilah: UNPAID = "Pending", PAID = "Sudah Bayar" di FR-21.
 
-### 2.2 Diagram alur data tingkat tinggi (draft PM, bukan arsitektur final)
+### 2.2 Diagram alur data tingkat tinggi (DRAFT PM — bukan diagram asli CEO dan bukan arsitektur final, divalidasi di meeting 2026-09-28)
 [ASUMSI] Hanya gambaran aliran data untuk diskusi meeting. Komponen, vendor final, dan batas sistem diputuskan Analyst di FD/TDD.
 
 ```mermaid
@@ -124,9 +126,9 @@ Ringkasan: Must 13, Should 7, Could 2 (FR-09 fuzzy, FR-11) plus sub-bagian Could
 | Google Login | Google OAuth | FR-01 | Butuh domain dan akun Google Cloud milik pemilik toko. |
 | Hosting | Vercel + VPS/AWS (rekomendasi CEO) | Semua | Final di TDD. Repo kode dan lingkungan masih [BLOKIR] di konteks perusahaan. |
 
-Pemegang semua akun di atas bergantung pada siapa pemilik toko: [BUTUH KONFIRMASI CEO].
+[ASUMSI] Karena pemilik toko adalah klien, akun PG, ongkir, WA, domain, dan Google Cloud didaftarkan atas nama badan usaha klien (KYC PG butuh dokumen klien); tim hanya memegang akses teknis. Siapa klien dan kapan dokumen KYC tersedia: [BUTUH KONFIRMASI CEO].
 
-Urutan pengerjaan mengikuti roadmap 8 minggu BRD bagian 7; TIMELINE.md rinci ditulis setelah meeting 2026-09-27 (butuh keputusan pemilik toko dan platform custom vs headless dari Analyst).
+Urutan pengerjaan mengikuti roadmap 8 minggu BRD bagian 7; TIMELINE.md rinci ditulis setelah meeting 2026-09-28 (butuh identitas klien, budget, dan keputusan platform custom vs headless).
 
 ## 6. Di luar scope versi ini
 - Ekspansi B2B grosir (harga grosir, akun reseller) — fase berikutnya. [ASUMSI dari BRD]
@@ -134,18 +136,36 @@ Urutan pengerjaan mengikuti roadmap 8 minggu BRD bagian 7; TIMELINE.md rinci dit
 - COD (bayar di tempat) — tidak disebut di FR-16. [ASUMSI dari BRD]
 - [ASUMSI PM] Retur/refund otomatis dan multi-gudang tidak ada di FR; ditangani manual di luar sistem pada MVP.
 
-## 7. Pertanyaan terbuka (agenda meeting 2026-09-27)
-1. **Toko ini untuk siapa?** [BUTUH KONFIRMASI CEO] — status: belum terjawab.
-   A: brand milik CEO sendiri. B: klien Xavortree (perlu kontrak, kontak, budget klien).
-   Rekomendasi: jawab di meeting, karena menentukan pemegang akun PG/ongkir/WA/Google dan siapa yang menyetujui rilis.
-2. **Budget pengembangan dan biaya operasional bulanan?** [BUTUH KONFIRMASI CEO] — status: belum terjawab.
-   A: CEO memberi pagu. B: tim menyusun estimasi biaya vendor bulanan (fee PG, ongkir, WA, hosting) sebagai [ASUMSI] berupa rentang.
-   Rekomendasi: B bila pagu belum ada, karena harga vendor publik dan bisa dihitung cepat.
-3. **Diagram alur dan persona.** Status diperbarui: diagram status transaksi dan alur data sudah diisi draft PM (bagian 2.1 dan 2.2); persona minimal (P1–P3) sudah diturunkan dari FR. Yang masih kosong: persona detail (jenis produk, demografi, pain point, volume order).
-   A: CEO setujui draft PM dan beri detail persona di meeting. B: CEO kirim file BRD asli utuh (PDF/DOCX) berisi diagram dan persona asli.
-   Rekomendasi: A, karena draft sudah cukup untuk FD; B hanya bila diagram asli CEO berbeda.
+## 7. Agenda meeting CEO 2026-09-28
 
-Tambahan untuk dibahas (tidak memblokir PRD):
-- [ASUMSI] Prioritas MoSCoW di bagian 3 (terutama FR-09 fuzzy dan FR-11 wishlist sebagai Could) — minta persetujuan CEO.
-- Platform custom vs headless (mis. Medusa) — rekomendasi Analyst di BRD; diputuskan lewat /riset sebelum TDD, berpengaruh besar ke kelayakan 8 minggu.
-- Siapa mengisi konten katalog (produk, foto, video) — [ASUMSI] pemilik brand, tim menyediakan import CSV.
+### 7.1 Sudah terjawab
+| No | Pertanyaan | Jawaban CEO | Sumber |
+|---|---|---|---|
+| 1 | Toko ini untuk siapa? | **TERJAWAB: klien Xavortree** (opsi B), bukan brand internal. Sub-catatan: identitas klien spesifik (nama perusahaan, kontak, kontrak) masih [BUTUH KONFIRMASI CEO], lihat 7.2 no. 1. | Feedback dashboard 2026-09-27, KEPUTUSAN.md Q13 |
+| - | Isi dokumen CEO lengkap? | Ya. Paste pertama terpotong, lanjutan sudah masuk BRD v0.2; FR-01 s/d FR-22, NFR, stack, roadmap, AC lengkap. | Feedback dashboard 2026-09-27 |
+| - | Tunggu file/diagram asli atau lanjut? | Lanjut pakai materi yang ada ("buatkan aja pake yang ada"). Diagram 2.1 dan 2.2 tetap draft PM sampai divalidasi di meeting. | Feedback dashboard 2026-09-27 |
+
+### 7.2 Perlu diputuskan CEO di meeting
+1. **Identitas klien.** Nama perusahaan klien, PIC, status kontrak, dan siapa yang menyetujui rilis di sisi klien. [BUTUH KONFIRMASI CEO]
+   A: CEO sebut sekarang di meeting. B: tim lanjut FD dengan nama placeholder "Klien D2C", identitas menyusul sebelum pendaftaran akun PG.
+   Rekomendasi: A, karena KYC payment gateway (risiko R2, 1–3 minggu) butuh dokumen badan usaha klien di minggu 1.
+2. **Budget pengembangan dan biaya operasional bulanan.** [BUTUH KONFIRMASI CEO]
+   A: CEO/klien memberi pagu. B: tim menyusun estimasi biaya vendor bulanan (fee PG, ongkir, WA, hosting) sebagai [ASUMSI] berupa rentang.
+   Rekomendasi: B bila pagu belum ada, karena harga vendor publik dan bisa dihitung cepat.
+3. **Persona detail.** Persona minimal P1–P3 sudah diturunkan dari FR; yang kosong: jenis produk klien, demografi, pain point, volume order. [BUTUH KONFIRMASI CEO]
+   A: CEO beri detail di meeting. B: persona minimal dipakai untuk FD, detail menyusul dari klien.
+   Rekomendasi: A untuk jenis produk dan volume order (berpengaruh ke varian FR-06 dan kapasitas), sisanya boleh B.
+4. **Validasi diagram draft PM (bagian 2.1 dan 2.2).**
+   A: CEO setujui sebagai acuan FD. B: CEO koreksi di meeting (misal status Kedaluwarsa/Batal, alur resi).
+   Rekomendasi: A dengan koreksi kecil, karena diagram hanya merangkum FR-17, FR-18, FR-21.
+5. **Persetujuan MoSCoW (bagian 3).** Must 13, Should 7, Could 2 (FR-09 fuzzy, FR-11 wishlist) plus sub-Could (video FR-07, PayLater FR-16).
+   A: setujui apa adanya. B: CEO geser item tertentu.
+   Rekomendasi: A, karena semua FR tetap di MVP; Could hanya yang pertama digeser bila minggu 7 molor (lewat /revisi).
+6. **Platform custom vs headless (mis. Medusa).**
+   A: tugaskan /riset perbandingan sebelum TDD. B: CEO putuskan langsung di meeting.
+   Rekomendasi: A, karena ini penentu terbesar kelayakan 8 minggu (catatan Analyst di BRD).
+
+### 7.3 Catatan lain (tidak memblokir PRD)
+- Siapa mengisi konten katalog (produk, foto, video): [ASUMSI] klien sebagai pemilik brand, tim menyediakan import CSV.
+- Pemegang akun pihak ketiga: [ASUMSI] atas nama klien (lihat bagian 5).
+- Setelah meeting: PM menulis TIMELINE.md, Analyst mulai FD.
