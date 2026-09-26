@@ -613,13 +613,18 @@ body {
 .o3d-compact .theme3d button{font-size:11px;padding:3px 6px}
 
 /* Kotak perintah */
-.cmd-card{background:var(--surface,#fff);border:1px solid var(--border,#e8e2d6);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm,none)}
+.cmd-card{background:var(--surface,#fff);border:1px solid var(--border,#e8e2d6);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm,none);display:flex;flex-direction:column;min-height:0}
 .cmd-row{display:flex;gap:8px}
 .cmd-row select,.cmd-row input{border:1px solid var(--border-2,#d6cfc0);border-radius:10px;padding:10px 12px;font:inherit;background:#fff;color:var(--ink,#1a1814)}
 .cmd-row input{flex:1;min-width:0}
 .cmd-row button{border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:700;background:var(--accent,#6b4f3a);color:#fff;cursor:pointer}
 .cmd-hint{font-size:11px;color:var(--muted,#78726a);margin:6px 2px 4px}
-.cmd-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.cmd-list{display:flex;flex-direction:column;gap:6px;margin-top:6px;overflow-y:auto;max-height:260px}
+@media (min-width: 900px) {
+  #pageOverview { display: grid; grid-template-columns: 320px 1fr; align-items: start; gap: 20px; }
+  #pageOverview .cmd-card { max-height: calc(100vh - 140px); }
+  #pageOverview .cmd-list { flex: 1; max-height: none; }
+}
 .cmd-item{border:1px solid var(--border,#e8e2d6);border-radius:10px;background:var(--surface-2,#faf8f4)}
 .cmd-item summary{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;list-style:none;font-size:13px}
 .cmd-item summary::-webkit-details-marker{display:none}
