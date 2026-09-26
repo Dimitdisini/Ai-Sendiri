@@ -85,13 +85,11 @@
         <div class="flex items-center gap-1 text-emerald-600 font-bold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span id="tsSesi">—</span> aktif</div>
       </div>
 
-      <!-- Kanan: toggle panel + fullscreen -->
+      <!-- Kanan: satu tombol buat semua panel + fullscreen -->
       <div class="flex items-center gap-1.5">
-        <div class="glass-pill px-1 py-0.5 rounded-2xl shadow-md hidden sm:flex items-center gap-1 text-[10px]">
-          <button class="px-2 py-0.5 rounded-xl font-semibold bg-blue-50 text-blue-700 border border-blue-200" id="toggle-feed-btn" title="Toggle Aktivitas">Feed</button>
-          <button class="px-2 py-0.5 rounded-xl font-semibold bg-rose-50 text-rose-700 border border-rose-200" id="toggle-backlog-btn" title="Toggle Keputusan">Keputusan</button>
-          <button class="px-2 py-0.5 rounded-xl font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" id="toggle-team-btn" title="Toggle Tim">Tim</button>
-        </div>
+        <button class="glass-pill px-2.5 py-1 rounded-2xl shadow-md flex items-center gap-1 text-[11px] font-semibold text-slate-700" id="toggle-hud-btn" title="Sembunyikan/tampilkan semua panel">
+          <span id="toggle-hud-icon">🎮</span><span id="toggle-hud-text">Sembunyikan HUD</span>
+        </button>
         <button class="glass-pill w-7 h-7 rounded-2xl flex items-center justify-center text-slate-600 shadow-md" id="btn-fullscreen-native" title="Layar penuh">⛶</button>
       </div>
     </div>
@@ -232,28 +230,23 @@
       const restoreLeft = document.getElementById('restore-left-btn');
       const restoreRight = document.getElementById('restore-right-btn');
 
-      const toggleLeft = () => {
-        const collapsed = hudLeft.classList.toggle('hud-side-left-collapsed');
-        restoreLeft.classList.toggle('hidden', !collapsed);
-        restoreLeft.classList.toggle('flex', collapsed);
+      // Satu tombol untuk semua panel: kiri, kanan, bawah nyala/mati bareng.
+      let hudHidden = false;
+      const toggleHud = () => {
+        hudHidden = !hudHidden;
+        hudLeft.classList.toggle('hud-side-left-collapsed', hudHidden);
+        hudRight.classList.toggle('hud-side-right-collapsed', hudHidden);
+        hudBottom.classList.toggle('hud-collapsed', hudHidden);
+        restoreLeft.classList.toggle('hidden', true); // tombol restore lama tidak dipakai lagi
+        restoreRight.classList.toggle('hidden', true);
+        document.getElementById('toggle-hud-icon').textContent = hudHidden ? '👁️' : '🎮';
+        document.getElementById('toggle-hud-text').textContent = hudHidden ? 'Tampilkan HUD' : 'Sembunyikan HUD';
       };
-      const toggleRight = () => {
-        const collapsed = hudRight.classList.toggle('hud-side-right-collapsed');
-        restoreRight.classList.toggle('hidden', !collapsed);
-        restoreRight.classList.toggle('flex', collapsed);
-      };
-      const toggleBottom = () => hudBottom.classList.toggle('hud-collapsed');
-
-      document.getElementById('dock-left-btn')?.addEventListener('click', toggleLeft);
-      document.getElementById('toggle-feed-btn')?.addEventListener('click', toggleLeft);
-      restoreLeft?.addEventListener('click', toggleLeft);
-
-      document.getElementById('dock-right-btn')?.addEventListener('click', toggleRight);
-      document.getElementById('toggle-backlog-btn')?.addEventListener('click', toggleRight);
-      restoreRight?.addEventListener('click', toggleRight);
-
-      document.getElementById('dock-bottom-btn')?.addEventListener('click', toggleBottom);
-      document.getElementById('toggle-team-btn')?.addEventListener('click', toggleBottom);
+      document.getElementById('toggle-hud-btn')?.addEventListener('click', toggleHud);
+      // Tombol kecil di tiap panel juga menyembunyikan SEMUA panel sekaligus (sesuai keinginan CEO)
+      document.getElementById('dock-left-btn')?.addEventListener('click', toggleHud);
+      document.getElementById('dock-right-btn')?.addEventListener('click', toggleHud);
+      document.getElementById('dock-bottom-btn')?.addEventListener('click', toggleHud);
 
       document.getElementById('btn-fullscreen-native')?.addEventListener('click', () => {
         if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
