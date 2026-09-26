@@ -51,9 +51,31 @@ async function send(text) {
   }
 }
 
+// Perintah yang butuh detail (perusahaan + isi). Ketuk dari menu Telegram langsung terkirim TANPA
+// detail, jadi kalau bare (tanpa apa-apa setelahnya) kita balik tanya dulu, bukan langsung diproses.
+const CMD_PROMPTS = {
+  kickoff: "Project baru. Sebutkan perusahaannya (xavortree / fleek-project) dan deskripsi projectnya.\nContoh: xavortree: sistem absensi karyawan",
+  ide: "Eksplorasi ide. Sebutkan perusahaannya dan topik/ide yang mau dipikirkan.\nContoh: fleek-project: SaaS billing otomatis",
+  event: "Insiden/permintaan mendadak. Sebutkan perusahaannya dan apa yang terjadi.\nContoh: xavortree: klien komplain dashboard lambat",
+  revisi: "Ubah scope/desain/timeline. Sebutkan perusahaannya dan apa yang mau diubah.\nContoh: xavortree: geser target rilis ke Desember",
+  review: "Review mingguan. Sebutkan perusahaan mana yang mau direview.\nContoh: xavortree",
+  rilis: "Cek kesiapan rilis. Sebutkan perusahaan dan versi/milestone-nya.\nContoh: xavortree: MS0",
+  riset: "Riset singkat. Sebutkan perusahaannya dan pertanyaan risetnya.\nContoh: xavortree: bandingkan broker MQTT gratisan",
+};
+const PENDING_TTL_MS = 5 * 60 * 1000;
+let pending = null; // { command, askedAt }
+
 async function handleMessage(text) {
+  // Lanjutan dari command bare yang tadi ditanya detailnya
+  if (pending && Date.now() - pending.askedAt < PENDING_TTL_MS && !text.startsWith("/")) {
+    const cmd = pending.command;
+    pending = null;
+    return handleMessage(`/${cmd} ${text}`);
+  }
+  if (pending && Date.now() - pending.askedAt >= PENDING_TTL_MS) pending = null;
+
   if (text === "/start" || text === "/help") {
-    return send("Team Dimitri siap. Kirim perintah biasa (misal: /kickoff xavortree: ...), atau /status untuk ringkasan.");
+    return send("Team Dimitri siap. Ketuk perintah dari menu / atau ketik manual (misal: /kickoff xavortree: ...). /status untuk ringkasan.");
   }
   if (text === "/status") {
     try {
@@ -65,6 +87,14 @@ async function handleMessage(text) {
       return send("Dashboard tidak bisa dihubungi. Pastikan `node office/server.mjs` jalan.");
     }
   }
+  // Command bare dari menu (misal cuma "/kickoff", tanpa detail) -> tanya dulu, jangan langsung kirim
+  const bare = text.match(/^\/([a-z-]+)\s*$/i);
+  if (bare && CMD_PROMPTS[bare[1].toLowerCase()]) {
+    pending = { command: bare[1].toLowerCase(), askedAt: Date.now() };
+    return send(CMD_PROMPTS[bare[1].toLowerCase()] + "\n\n(Balas pesan ini dengan detailnya, atau ketik /batal untuk membatalkan.)");
+  }
+  if (text === "/batal" && pending) { pending = null; return send("Dibatalkan."); }
+
   await send("Diterima, masuk antrean (satu antrean dengan dashboard)...");
   try {
     const subRes = await fetch(`${OFFICE_URL}/api/command`, {
