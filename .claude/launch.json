@@ -5,7 +5,8 @@
       "name": "kantor-ai",
       "runtimeExecutable": "node",
       "runtimeArgs": ["office/server.mjs"],
-      "port": 4545
+      "port": 4545,
+      "url": "http://localhost:4545/hq.html"
     }
   ]
 }
