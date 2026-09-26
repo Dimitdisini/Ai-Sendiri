@@ -19,8 +19,15 @@ Tujuan: sistem tidak mati sendiri, dan CEO bisa lihat biayanya.
 | 0.2 | Docker/OrbStack terpasang | **CEO** | `docker compose config` jalan tanpa error |
 | 0.3 | Widget biaya di dashboard: total aksi & sesi per hari/minggu per perusahaan | AI | Angka kelihatan di Overview, bukan cuma di file event mentah |
 | 0.4 | Google Drive tersambung ulang (atau resmi dicoret dari rencana) | **CEO** lalu AI | Satu dokumen berhasil disalin ke Drive, atau CEO putuskan tidak perlu |
+| 0.5 | Perpustakaan SOP + PELAJARAN.md, semua peran wajib cek SOP sebelum kerja | AI | SOP pertama lahir dari kejadian nyata |
+| 0.6 | Laporan pagi dan rekap malam di jurnal harian, dikirim otomatis ke Telegram | AI | Pesan pagi dan malam benar-benar sampai di HP CEO |
+| 0.7 | Folder proyek bisa dibuka sebagai vault Obsidian (HOME.md) | AI, lalu **CEO** membuka | CEO bisa baca jurnal dan keputusan dari Obsidian |
 
-Status hari ini: 0.1, 0.3 belum dikerjakan. 0.2, 0.4 menunggu CEO.
+Status 2026-09-26: 0.1 dan 0.3 selesai dan teruji. 0.5, 0.6, 0.7 selesai dibangun (0.6 menunggu kiriman pertama terverifikasi). 0.2 dan 0.4 menunggu CEO.
+
+Terinspirasi dari cara kerja @teguhgunaw: fondasi file teks + jadwal, satu manajer (HQ = Kai), SOP yang tumbuh
+dari kerja nyata, ingatan di file bukan di sesi, laporan 2x sehari ke chat. Yang TIDAK ditiru: sesi per klien yang
+nyala terus (belum ada aliran kerja yang membutuhkannya) dan VPS (baru masuk akal setelah Fase 1).
 
 ---
 
@@ -77,6 +84,7 @@ Tujuan: hanya dikerjakan **setelah** Fase 1 dan 2 terbukti, dan **hanya untuk ke
 bukan dipasang di muka "siapa tahu perlu".
 
 Kandidat, urutan tergantung kebutuhan nyata yang muncul duluan:
+- VPS kecil supaya tim tetap jalan walau laptop ditutup (paling awal di antara semua ini, begitu Fase 1 punya pekerjaan harian)
 - Integrasi akuntansi (QuickBooks/Xero) — kalau ada transaksi nyata yang perlu dicatat
 - Deployment produksi sungguhan (bukan staging) untuk hasil Fase 1 yang mau dijual/dipakai orang lain
 - Kanal komunikasi klien eksternal (email masuk otomatis, form) — kalau ada klien yang butuh akses langsung, bukan lewat CEO terus

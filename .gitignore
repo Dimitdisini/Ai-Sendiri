@@ -4,3 +4,6 @@ node_modules/
 office/.env
 companies/*/code/
 office/public/assets/_downloads/
+.obsidian/workspace*.json
+.obsidian/cache
+.trash/

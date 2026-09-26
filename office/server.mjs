@@ -148,7 +148,7 @@ function inferRoleFromFile(file) {
   if (/\/(FD|TDD|ANALISIS[^/]*)\.md$/i.test(f) || /\/planning\/plans\//.test(f) || /\/docs\/riset\//.test(f)) return "analyst";
   if (/\/(AI-SPEC|EVAL-REPORT)\.md$/i.test(f)) return "ai-engineer";
   if (/\/planning\/qa\//.test(f)) return "qa";
-  if (/\/hq\/briefings\//.test(f)) return "chief-of-staff";
+  if (/\/hq\/(jurnal|briefings)\//.test(f)) return "chief-of-staff";
   return null;
 }
 
@@ -528,7 +528,7 @@ const server = createServer(async (req, res) => {
     });
     // Perusahaan yang paling aktif tampil pertama, supaya tab default bukan sekadar urutan abjad
     companies.sort((a, b) => (b.agents.length + b.roadmapRows) - (a.agents.length + a.roadmapRows) || a.name.localeCompare(b.name));
-    sendJSON(res, 200, { now: Date.now(), hq: { briefingsDir: "hq/briefings" }, quota: computeQuota(), companies });
+    sendJSON(res, 200, { now: Date.now(), hq: { jurnalDir: "hq/jurnal" }, quota: computeQuota(), companies });
     return;
   }
 

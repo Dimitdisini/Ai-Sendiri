@@ -14,7 +14,7 @@ Satu tim AI untuk satu orang: CEO (Dimitri). Tim ini melayani semua perusahaan d
 | Data Engineer / Analyst | Wulan | skema data, pipeline, laporan, analisis | Handback plan, laporan | opus |
 | DevOps | Yoga | lingkungan, CI, deploy, backup, monitoring | checklist rilis | sonnet |
 | QA | Dewi | uji terhadap acceptance criteria, bukti, verdict | TEST-PLAN, QA-REPORT | sonnet |
-| Chief of Staff | Arga | briefing pagi, keputusan tertahan, konflik prioritas | hq/briefings/ | sonnet |
+| Chief of Staff | Arga | laporan pagi & rekap malam, kesehatan sistem, keputusan tertahan | hq/jurnal/ | sonnet |
 | Peneliti | Rian | riset harian, basis pengetahuan bersama | docs/pengetahuan/BASIS.md | sonnet |
 
 Aturan formasi:

@@ -19,3 +19,7 @@ Cara kerja:
 4. Hemat token. Laporan ke orkestrator maks 10 baris.
 
 Batas: kamu tidak menulis kode produksi dan tidak menyatakan sesuatu selesai. QA yang memutuskan.
+
+## SOP dan pelajaran
+- Sebelum mulai: `ls .claude/skills/ | grep sop-`, baca SOP yang relevan dengan tugasmu, dan cek PELAJARAN.md. Ikuti SOP yang ada.
+- Di akhir laporanmu ke orkestrator, tambahkan satu baris "Pelajaran: ..." kalau kamu menemukan cara kerja bagus atau membuat/menemukan kesalahan. Kalau tidak ada, tidak perlu.

@@ -40,7 +40,7 @@ Posisi meja dan kalimat obrolan bisa diubah di bagian atas `office.js`.
 ## Fase 3 — kerja terjadwal
 
 Dua tugas terdaftar di Scheduled Tasks aplikasi desktop Claude (menu Routines/Scheduled tasks):
-- `kantor-ai-briefing-pagi`: Senin–Jumat 07.30, menulis hq/briefings/YYYY-MM-DD.md.
+- `kantor-ai-briefing-pagi`: Senin–Jumat 07.30, menulis hq/jurnal/YYYY-MM-DD.md.
 - `kantor-ai-kerja-malam`: belum dijadwalkan (manual). Melanjutkan plan berstatus "Siap" lewat developer→qa, berhenti di BLOKIR, tidak pernah deploy. Beri jadwal (mis. 23.00) setelah kamu yakin alurnya jalan.
 Catatan: tugas ini jalan selama aplikasi desktop Claude terbuka. Kalau aplikasi tertutup saat jadwalnya tiba, tugas dijalankan saat aplikasi dibuka lagi. Untuk benar-benar 24 jam tanpa laptop, pindahkan ke Claude Code Routines (cloud) setelah proyek ini masuk repo GitHub.
 
@@ -72,7 +72,7 @@ Rapat dianggap berlangsung bila: notulen di companies/<p>/meetings/ baru ditulis
 Peserta pindah ke meja rapat, Orkestrator di kepala meja, papan "Ruang Rapat" menampilkan judul dan jumlah peserta. Selesai rapat, semua kembali ke meja atau sofa.
 
 Peran subagen generik (misal dipanggil dari aplikasi desktop sebagai "general-purpose") ditebak dari file yang DITULIS:
-BRD → Business Analyst, PRD/TIMELINE → PM, FD/TDD/plans → Architect, AI-SPEC → AI Engineer, qa/ → QA, hq/briefings → Chief of Staff.
+BRD → Business Analyst, PRD/TIMELINE → PM, FD/TDD/plans → Architect, AI-SPEC → AI Engineer, qa/ → QA, hq/jurnal → Chief of Staff.
 Perusahaan ditebak dari path companies/<slug>/ di file atau perintah yang disentuh.
 
 Uji tanpa mengganggu data asli: `OFFICE_EVENTS=/path/events-uji.jsonl OFFICE_PORT=4546 node office/server.mjs`

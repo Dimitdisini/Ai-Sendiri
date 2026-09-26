@@ -27,7 +27,7 @@ CLAUDE.md                  aturan kantor untuk Orkestrator (sesi utama Claude Co
 templates/                 template semua dokumen
 companies/perusahaan-a/    satu perusahaan = satu folder (CLAUDE.md, docs/, planning/, meetings/)
 companies/perusahaan-b/
-hq/briefings/              briefing pagi lintas perusahaan
+hq/jurnal/              briefing pagi lintas perusahaan
 ```
 
 ## Siapa mengerjakan apa
@@ -41,14 +41,14 @@ hq/briefings/              briefing pagi lintas perusahaan
 | AI Engineer | fitur berbasis LLM: model, prompt, eval, biaya | AI-SPEC, EVAL-REPORT |
 | Developer | implementasi satu plan sampai siap QA | Handback di plan |
 | QA | uji terhadap acceptance criteria, bukti, verdict | TEST-PLAN, QA-REPORT |
-| Chief of Staff | briefing pagi, keputusan tertahan, konflik prioritas | hq/briefings/ |
+| Chief of Staff | briefing pagi, keputusan tertahan, konflik prioritas | hq/jurnal/ |
 
 ## Alur kerja
 
 1. CEO memberi project / event / revisi lewat protokol (/kickoff, /event, /revisi).
 2. Orkestrator memanggil peran yang wajib hadir, menulis notulen, mengembalikan maks 3 pertanyaan.
 3. Dokumen → roadmap → plan per modul → Developer → QA sampai PASS.
-4. Chief of Staff membaca semua planning/ dan menulis briefing pagi di hq/briefings/.
+4. Chief of Staff membaca semua planning/ dan menulis briefing pagi di hq/jurnal/.
 
 ## Cara mulai (10 menit)
 

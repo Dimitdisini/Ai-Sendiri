@@ -66,7 +66,7 @@ companies/<slug>/        satu perusahaan = satu folder
   planning/qa/NNN-qa-rN.md, qa/bukti/NNN/   laporan dan screenshot QA
   meetings/YYYY-MM-DD-<protokol>-<slug>.md  notulen
   code/<repo>/           kode (git lokal sampai ada remote)
-hq/briefings/YYYY-MM-DD.md   briefing pagi lintas perusahaan
+hq/jurnal/YYYY-MM-DD.md   briefing pagi lintas perusahaan
 office/                  dashboard + hooks + Telegram (lihat bagian 6)
 ```
 
@@ -106,7 +106,7 @@ Prinsip inti (dari CLAUDE.md):
 | /kickoff | project baru | business-analyst, pm, analyst (+ai-engineer bila ada AI) | BRD draft, notulen, ≤3 BLOKIR; setelah BRD disetujui: PRD, TIMELINE, FD, TDD, AI-SPEC, plans | ya, approve BRD |
 | /event | permintaan klien, insiden, deadline berubah | pm (+analyst/ai-engineer) | catatan dampak, backlog | hanya jika >1 milestone |
 | /revisi | scope/desain/timeline berubah | pm, analyst (+pemilik plan) | CHANGE-NN, timeline usulan | ya: A terapkan / B tolak / C ubah |
-| /briefing | tiap pagi | chief-of-staff | hq/briefings/YYYY-MM-DD.md | baca 5 menit |
+| /briefing | tiap pagi | chief-of-staff | hq/jurnal/YYYY-MM-DD.md | baca 5 menit |
 | /review | mingguan per perusahaan | pm, qa | progres vs timeline, 3 prioritas | ya |
 | /rilis | sebelum rilis | devops, qa (+backend, frontend, ai-engineer, data) | checklist go/no-go | ya, rilis prod tunggu "ya" |
 | /riset | pertanyaan riset | satu peran (analyst / business-analyst / ai-engineer) | docs/riset/YYYY-MM-DD-<slug>.md | rekomendasi 5 baris |
@@ -121,7 +121,7 @@ Stack: Node.js murni (v24), tanpa dependency npm. Jalankan `./office/restart.sh`
 
 Komponen:
 - `hooks/track.mjs` — dipanggil Claude Code lewat hooks (SessionStart, UserPromptSubmit, SubagentStart/Stop, PreToolUse, PostToolUse, Stop, StopFailure). Menulis 1 baris JSON per event ke `office/data/events.jsonl`: ts, hook, session_id, agent_type, agent_id, company, file, wrote, tool, summary. Perusahaan dideteksi dari path `companies/<slug>/` di file/perintah, fallback dari cwd. Hook wajib cepat dan tidak pernah gagal.
-- `server.mjs` — HTTP server. Endpoint: `/api/state` (perusahaan, agen, status kerja/istirahat, aksi, sesi, rapat, kuota), `/api/roster`, `/api/company/<slug>/{roadmap,keputusan,backlog,output,bukti}`, `/events` (SSE), `/files/<slug>/...` (screenshot QA). Parser tabel Markdown untuk planning/*.md. Status agen di-replay dari events.jsonl tiap request (file kecil). Idle setelah 10 menit tanpa event. Peran subagen generik ("general-purpose") ditebak dari file yang DITULIS (BRD→BA, PRD/TIMELINE→PM, FD/TDD/plans→Architect, AI-SPEC→AI Eng, qa/→QA, hq/briefings→CoS). Rapat aktif bila notulen baru ditulis (12 menit) ATAU ≥2 peran bekerja bersamaan. Kuota: StopFailure tanpa aktivitas sukses setelahnya → banner "kuota habis, lanjut ±5 jam". Env: `OFFICE_PORT`, `OFFICE_EVENTS` (file lain untuk uji).
+- `server.mjs` — HTTP server. Endpoint: `/api/state` (perusahaan, agen, status kerja/istirahat, aksi, sesi, rapat, kuota), `/api/roster`, `/api/company/<slug>/{roadmap,keputusan,backlog,output,bukti}`, `/events` (SSE), `/files/<slug>/...` (screenshot QA). Parser tabel Markdown untuk planning/*.md. Status agen di-replay dari events.jsonl tiap request (file kecil). Idle setelah 10 menit tanpa event. Peran subagen generik ("general-purpose") ditebak dari file yang DITULIS (BRD→BA, PRD/TIMELINE→PM, FD/TDD/plans→Architect, AI-SPEC→AI Eng, qa/→QA, hq/jurnal→CoS). Rapat aktif bila notulen baru ditulis (12 menit) ATAU ≥2 peran bekerja bersamaan. Kuota: StopFailure tanpa aktivitas sukses setelahnya → banner "kuota habis, lanjut ±5 jam". Env: `OFFICE_PORT`, `OFFICE_EVENTS` (file lain untuk uji).
 - `public/index.html, app.js, style.css` — panel: kartu agen, tab Roadmap / Keputusan / Output / Bukti QA, switch perusahaan, polling 5 detik + SSE.
 - `public/office.js` — kantor isometrik canvas: ruang kerja 11 meja, ruang rapat kaca (kanan atas), sudut istirahat (kanan bawah), papan roadmap, papan ruang rapat, jam. Karakter: kerja = duduk mengetik + gelembung aktivitas; istirahat = ke sofa/kopi + obrolan; rapat = ke meja rapat; kuota habis = semua ngopi.
 - `roster.json` — nama panggilan & warna per peran (dibaca ulang tiap request).
@@ -129,7 +129,7 @@ Komponen:
 - `restart.sh` — matikan server lama di port lalu jalankan server. Pakai ini, bukan `node office/server.mjs` langsung.
 
 Tugas terjadwal (Desktop Scheduled Tasks aplikasi Claude, hanya jalan saat aplikasi terbuka):
-- `kantor-ai-briefing-pagi`: Senin–Jumat 07.34, chief-of-staff menulis hq/briefings/.
+- `kantor-ai-briefing-pagi`: Senin–Jumat 07.34, chief-of-staff menulis hq/jurnal/.
 - `kantor-ai-kerja-malam`: manual (belum dijadwalkan). Lanjutkan plan "Siap" lewat pemilik→qa, berhenti di BLOKIR, tidak deploy.
 
 Rahasia: `office/.env` berisi token bot (mode 600, di .gitignore). Token pernah ditempel di chat; bisa diputar ulang via BotFather /revoke.

@@ -13,3 +13,7 @@ Cara kerja:
 5. Saat QA FAIL: perbaiki hanya temuan yang tercantum. Kalau yakin temuan salah, tulis buktinya di Handback.
 
 Batas: tidak menyatakan plan selesai, tidak mengubah scope/FD/timeline, tidak deploy produksi, tidak menyentuh kode frontend kecuali plan menyebutnya.
+
+## SOP dan pelajaran
+- Sebelum mulai: `ls .claude/skills/ | grep sop-`, baca SOP yang relevan dengan tugasmu, dan cek PELAJARAN.md. Ikuti SOP yang ada.
+- Di akhir laporanmu ke orkestrator, tambahkan satu baris "Pelajaran: ..." kalau kamu menemukan cara kerja bagus atau membuat/menemukan kesalahan. Kalau tidak ada, tidak perlu.

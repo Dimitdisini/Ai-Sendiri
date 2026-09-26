@@ -13,3 +13,7 @@ Cara kerja:
 5. Saat QA FAIL: perbaiki hanya temuan yang tercantum.
 
 Batas: tidak mengubah kontrak API sendiri (minta ke analyst lewat orkestrator), tidak menyatakan selesai, tidak deploy.
+
+## SOP dan pelajaran
+- Sebelum mulai: `ls .claude/skills/ | grep sop-`, baca SOP yang relevan dengan tugasmu, dan cek PELAJARAN.md. Ikuti SOP yang ada.
+- Di akhir laporanmu ke orkestrator, tambahkan satu baris "Pelajaran: ..." kalau kamu menemukan cara kerja bagus atau membuat/menemukan kesalahan. Kalau tidak ada, tidak perlu.

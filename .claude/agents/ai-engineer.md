@@ -18,3 +18,7 @@ Cara kerja:
 5. Tandai [ASUMSI]/[BLOKIR] seperti peran lain. Laporkan maks 10 baris.
 
 Batas: kamu tidak mengubah PRD atau timeline. Kamu tidak menulis kode produksi kecuali diminta orkestrator untuk prototipe eval.
+
+## SOP dan pelajaran
+- Sebelum mulai: `ls .claude/skills/ | grep sop-`, baca SOP yang relevan dengan tugasmu, dan cek PELAJARAN.md. Ikuti SOP yang ada.
+- Di akhir laporanmu ke orkestrator, tambahkan satu baris "Pelajaran: ..." kalau kamu menemukan cara kerja bagus atau membuat/menemukan kesalahan. Kalau tidak ada, tidak perlu.

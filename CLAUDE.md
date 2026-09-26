@@ -27,14 +27,35 @@ Tim ini bernama Team Dimitri: satu tim AI untuk satu orang. Formasi lengkap ada 
 6. QA yang memutuskan PASS/FAIL. Developer tidak boleh menyatakan selesai sendiri.
 7. Bahasa Indonesia untuk semua dokumen dan notulen. Istilah teknis boleh Inggris.
 8. Tindakan keluar (kirim email, pesan, deploy produksi, bayar) selalu menunggu "ya" eksplisit dari CEO.
+9. Mulai kecil. Satu project nyata, satu peran yang benar-benar dibutuhkan, satu file catatan. Jangan memanggil banyak peran atau menulis rantai dokumen panjang kalau pekerjaannya kecil.
+10. Tim tidak mengusulkan project sendiri. Project hanya dari permintaan CEO (lihat sop-validasi-kebutuhan).
+11. Semua permintaan dan follow-up hanya ke satu orang: CEO. Tidak ada tim manusia lain.
+
+## SOP dan pelajaran (tim makin pintar tiap hari)
+- Sebelum mengerjakan tugas apa pun, cek `ls .claude/skills/ | grep sop-` dan baca SOP yang relevan, plus PELAJARAN.md. Ikuti SOP, jangan improvisasi dari nol.
+- Setelah tugas selesai, kalau ada cara kerja bagus atau kesalahan, laporkan satu baris "Pelajaran: ..." ke orkestrator.
+- Orkestrator mengubah pelajaran jadi SOP atau baris PELAJARAN.md lewat /catat-pelajaran. SOP hanya lahir dari kejadian nyata.
+
+## Ingatan (jangan andalkan ingatan sesi)
+Sesi bisa restart dan lupa. Sebelum bekerja, baca file, bukan ingatan: companies/<p>/CLAUDE.md, planning/, PELAJARAN.md, dan jurnal terbaru di hq/jurnal/. Semua keputusan dan konteks wajib ditulis ke file.
+
+## Laporan harian (dikirim otomatis ke Telegram)
+- Pagi: /briefing menulis bagian "## Pagi" di hq/jurnal/YYYY-MM-DD.md: prioritas, deadline, keputusan, kesehatan sistem.
+- Malam: /rekap-malam menulis bagian "## Malam": rekap dengan bukti, usulan prioritas besok, pelajaran hari ini.
+- Format per perusahaan selalu 3 bagian: Selesai | Jalan | Butuh keputusan.
 
 ## Protokol (jalankan lewat skill)
-- /kickoff  project baru
-- /event    permintaan klien, insiden, deadline berubah, hal tak terduga
-- /revisi   perubahan scope, desain, prioritas, atau timeline
-- /briefing briefing pagi lintas perusahaan
-- /review   review mingguan per perusahaan
-- /rilis    go/no-go sebelum rilis
+- /kickoff          project baru (setelah sop-validasi-kebutuhan)
+- /ide              eksplorasi ringan, belum tentu jadi project
+- /event            permintaan klien, insiden, deadline berubah, hal tak terduga
+- /revisi           perubahan scope, desain, prioritas, atau timeline
+- /briefing         laporan pagi
+- /rekap-malam      rekap malam
+- /catat-pelajaran  ubah pelajaran jadi SOP
+- /review           review mingguan per perusahaan
+- /rilis            go/no-go sebelum rilis
+- /riset            riset singkat
+- /perusahaan-baru  tambah folder perusahaan baru
 
 ## Konvensi file
 - companies/<p>/CLAUDE.md                          konteks perusahaan, wajib dibaca semua agen
@@ -44,7 +65,8 @@ Tim ini bernama Team Dimitri: satu tim AI untuk satu orang. Formasi lengkap ada 
 - companies/<p>/planning/qa/NNN-qa-rN.md            rN = ronde
 - companies/<p>/planning/qa/bukti/NNN/              screenshot dan log
 - companies/<p>/meetings/YYYY-MM-DD-<protokol>-<slug>.md
-- hq/briefings/YYYY-MM-DD.md
+- hq/jurnal/YYYY-MM-DD.md                           jurnal harian: laporan pagi + rekap malam
+- PELAJARAN.md                                      log pelajaran; .claude/skills/sop-*/ untuk SOP
 - Template ada di templates/. Selalu mulai dari template.
 
 ## Estafet modul

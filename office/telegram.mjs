@@ -61,6 +61,7 @@ const CMD_PROMPTS = {
   review: "Review mingguan. Sebutkan perusahaan mana yang mau direview.\nContoh: xavortree",
   rilis: "Cek kesiapan rilis. Sebutkan perusahaan dan versi/milestone-nya.\nContoh: xavortree: MS0",
   riset: "Riset singkat. Sebutkan perusahaannya dan pertanyaan risetnya.\nContoh: xavortree: bandingkan broker MQTT gratisan",
+  catat: "Catat pelajaran jadi SOP. Tulis pelajarannya dalam satu-dua kalimat.\nContoh: jangan deploy hari Jumat sore, rollback susah kalau ada masalah",
 };
 const PENDING_TTL_MS = 5 * 60 * 1000;
 let pending = null; // { command, askedAt }
@@ -143,6 +144,39 @@ async function notifyBlokir() {
   saveSeen(seen);
 }
 
+// ---- Kirim laporan pagi / rekap malam dari jurnal ----
+// Chief of Staff menulis hq/jurnal/YYYY-MM-DD.md. Bot ini mengirim blok "### Untuk CEO" dari tiap bagian
+// "## Pagi" / "## Malam" yang baru, sekali saja. Agent tidak perlu memegang token Telegram.
+const JURNAL_DIR = join(ROOT, "hq", "jurnal");
+function jurnalSections(file) {
+  const text = readFileSync(file, "utf8");
+  const out = [];
+  for (const [name, label] of [["Pagi", "☀️ Laporan pagi"], ["Malam", "🌙 Rekap malam"]]) {
+    const m = text.match(new RegExp(`^## ${name}[^\\n]*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, "m"));
+    if (!m) continue;
+    const u = m[1].match(/^### Untuk CEO[^\n]*\n([\s\S]*?)(?=^### |(?![\s\S]))/m);
+    const body = (u ? u[1] : "").trim();
+    if (!body || /<[^>]+>/.test(body)) continue; // belum diisi (masih placeholder template)
+    out.push({ name, label, body });
+  }
+  return out;
+}
+async function notifyJurnal() {
+  if (!existsSync(JURNAL_DIR)) return;
+  const seen = loadSeen();
+  const files = readdirSync(JURNAL_DIR).filter((f) => /^\d{4}-\d{2}-\d{2}\.md$/.test(f)).sort().slice(-2);
+  for (const f of files) {
+    const date = f.replace(".md", "");
+    for (const s of jurnalSections(join(JURNAL_DIR, f))) {
+      const key = `jurnal:${date}:${s.name}`;
+      if (seen[key]) continue;
+      await send(`${s.label} — ${date}\n\n${s.body}\n\n(detail: hq/jurnal/${f})`);
+      seen[key] = Date.now();
+      saveSeen(seen);
+    }
+  }
+}
+
 // ---- Loop utama ----
 let offset = 0;
 async function poll() {
@@ -167,3 +201,5 @@ send("Team Dimitri online. Kirim /status untuk ringkasan, atau perintah langsung
 poll();
 setInterval(() => notifyBlokir().catch(() => {}), 60 * 1000);
 notifyBlokir().catch(() => {});
+setInterval(() => notifyJurnal().catch((e) => console.error("jurnal:", String(e).slice(0, 200))), 60 * 1000);
+notifyJurnal().catch(() => {});
