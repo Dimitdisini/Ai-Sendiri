@@ -387,3 +387,40 @@ document.getElementById("cfgForm")?.addEventListener("submit", async (e) => {
 });
 // Pindah perusahaan di sidebar saat halaman pengaturan terbuka -> muat ulang
 setInterval(() => { if (document.getElementById("pagePengaturan")?.classList.contains("active") && cfgLoadedFor !== activeCompany) loadConfig(); }, 800);
+
+// -------------------------------------------------------------------
+// MODEL PER PERAN (global, semua perusahaan) -> /api/model-peran
+// -------------------------------------------------------------------
+let modelPeranLoaded = false;
+async function loadModelPeran() {
+  if (modelPeranLoaded) return;
+  modelPeranLoaded = true;
+  const [data, roster] = await Promise.all([
+    fetch("/api/model-peran").then((r) => r.json()),
+    fetch("/api/roster").then((r) => r.json()),
+  ]);
+  const opsiModel = (dipilih) => `<option value="">(bawaan)</option>` + data.pilihanModel.map((m) => `<option value="${m}" ${m === dipilih ? "selected" : ""}>${m}</option>`).join("");
+  const opsiEffort = (dipilih) => `<option value="">(bawaan)</option>` + data.pilihanEffort.map((e) => `<option value="${e}" ${e === dipilih ? "selected" : ""}>${e}</option>`).join("");
+  const peranList = Object.keys(roster).filter((id) => id !== "orchestrator" && id !== "peneliti-nonaktif");
+  document.getElementById("modelPeranList").innerHTML = peranList.map((id) => {
+    const r = roster[id], cur = data.peran[id] || {};
+    return `<div class="cfg-field" data-peran="${id}"><span><b>${escapeHtml(r.nickname)}</b> · ${escapeHtml(r.role)}</span>
+      <select data-model>${opsiModel(cur.model)}</select>
+      <select data-effort style="margin-top:4px">${opsiEffort(cur.effort)}</select></div>`;
+  }).join("");
+}
+document.getElementById("modelPeranSave")?.addEventListener("click", async () => {
+  const body = {};
+  document.querySelectorAll("#modelPeranList [data-peran]").forEach((el) => {
+    const peran = el.dataset.peran;
+    const model = el.querySelector("[data-model]").value;
+    const effort = el.querySelector("[data-effort]").value;
+    if (model || effort) body[peran] = { model: model || null, effort: effort || null };
+  });
+  const send = (token) => fetch("/api/model-peran", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(body) });
+  let res = await send(getToken(false));
+  if (res.status === 401) res = await send(getToken(true));
+  const msg = document.getElementById("modelPeranMsg");
+  msg.textContent = res.ok ? "Tersimpan. Berlaku mulai tugas berikutnya." : "Gagal menyimpan (" + res.status + ")";
+});
+setInterval(() => { if (document.getElementById("pagePengaturan")?.classList.contains("active")) loadModelPeran(); }, 800);

@@ -434,6 +434,22 @@ function bacaAgen(peranSlug) {
   if (!existsSync(p)) return null;
   return readFileSync(p, "utf8").replace(/^---[\s\S]*?---\n/, "").trim();
 }
+
+// Pengaturan model per peran (dipilih CEO lewat dashboard). Cuma dipakai kalau eksekutor tugas
+// itu "agy" — CLI/API punya model bawaan sendiri. { "<peran>": { "model": "...", "effort": "..." } }
+const MODEL_PERAN_FILE = join(DATA_DIR, "model-peran.json");
+const DAFTAR_MODEL_AGY = [
+  "gemini-3.8-flash-low", "gemini-3.8-flash-medium", "gemini-3.8-flash-high",
+  "gemini-3.7-flash-low", "gemini-3.7-flash-medium", "gemini-3.7-flash-high",
+  "gemini-3.6-flash-low", "gemini-3.6-flash-medium", "gemini-3.6-flash-high",
+  "gemini-3.1-pro-low", "gemini-3.1-pro-high",
+  "claude-sonnet-4-6", "claude-opus-4-6-thinking", "gpt-oss-120b-medium",
+];
+function bacaModelPeran() { try { return JSON.parse(readFileSync(MODEL_PERAN_FILE, "utf8")); } catch { return {}; } }
+function modelUntukPeran(peranSlug) {
+  const m = bacaModelPeran()[peranSlug];
+  return m && typeof m === "object" ? { model: m.model || null, effort: m.effort || null } : { model: null, effort: null };
+}
 function jalankanAgy(promptText, { timeoutMs = 20 * 60 * 1000, onChild = null, effort = null, model = null } = {}) {
   return new Promise((resolve) => {
     const args = ["-p", promptText, "--output-format", "text", "--dangerously-skip-permissions"];
@@ -492,10 +508,10 @@ async function jalankanKerjaMalamAgy(j) {
     while (ronde < 3 && verdict !== "PASS") {
       ronde++;
       if (j.status !== "jalan") break; // dihentikan dari dashboard
-      const rDev = await jalankanAgy(`${peranMd}\n\n---\nKerja malam tanpa CEO, ronde ${ronde}. Perusahaan: ${p.company}. Kerjakan plan companies/${p.company}/planning/plans/${p.file} sampai tuntas sesuai acceptance criteria-nya. Tulis progress/handback di file plan itu sendiri. Jangan menyentuh folder perusahaan lain, jangan deploy produksi, jangan kirim email/pesan. Jawab akhir maksimal 5 baris.`, { onChild: (c) => { j._child = c; j.pid = c.pid; } });
+      const rDev = await jalankanAgy(`${peranMd}\n\n---\nKerja malam tanpa CEO, ronde ${ronde}. Perusahaan: ${p.company}. Kerjakan plan companies/${p.company}/planning/plans/${p.file} sampai tuntas sesuai acceptance criteria-nya. Tulis progress/handback di file plan itu sendiri. Jangan menyentuh folder perusahaan lain, jangan deploy produksi, jangan kirim email/pesan. Jawab akhir maksimal 5 baris.`, { onChild: (c) => { j._child = c; j.pid = c.pid; }, ...modelUntukPeran(p.pemilik) });
       if (j.status !== "jalan") break;
       const qaMd = bacaAgen("qa");
-      const rQa = await jalankanAgy(`${qaMd}\n\n---\nKerja malam tanpa CEO, ronde ${ronde}. Perusahaan: ${p.company}. Uji plan companies/${p.company}/planning/plans/${p.file} terhadap acceptance criteria. Tulis planning/qa/${p.file.replace(".md", "")}-qa-r${ronde}.md dari templates/QA-REPORT.md. WAJIB akhiri jawabanmu persis dengan salah satu: "VERDICT: PASS" atau "VERDICT: FAIL".`, { onChild: (c) => { j._child = c; j.pid = c.pid; } });
+      const rQa = await jalankanAgy(`${qaMd}\n\n---\nKerja malam tanpa CEO, ronde ${ronde}. Perusahaan: ${p.company}. Uji plan companies/${p.company}/planning/plans/${p.file} terhadap acceptance criteria. Tulis planning/qa/${p.file.replace(".md", "")}-qa-r${ronde}.md dari templates/QA-REPORT.md. WAJIB akhiri jawabanmu persis dengan salah satu: "VERDICT: PASS" atau "VERDICT: FAIL".`, { onChild: (c) => { j._child = c; j.pid = c.pid; }, ...modelUntukPeran("qa") });
       verdict = /VERDICT:\s*PASS/i.test(rQa.out) ? "PASS" : "FAIL";
       if (!rDev.ok || !rQa.ok) { ringkasan.push(`${p.company}/${p.file}: error teknis ronde ${ronde} (dev ok=${rDev.ok}, qa ok=${rQa.ok}).`); break; }
     }
@@ -685,6 +701,23 @@ const server = createServer(async (req, res) => {
       if (Array.isArray(b.profile)) writeProfile(slug, b.profile, b.name);
       broadcast(); sendJSON(res, 200, { ok: true, team: readTeam(slug), profile: readProfile(slug) }); return;
     }
+  }
+
+  if (path === "/api/model-peran" && req.method === "GET") {
+    sendJSON(res, 200, { peran: bacaModelPeran(), pilihanModel: DAFTAR_MODEL_AGY, pilihanEffort: ["low", "medium", "high", "max"] }); return;
+  }
+  if (path === "/api/model-peran" && req.method === "POST") {
+    if (!masukAman(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
+    let body; try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
+    const bersih = {};
+    for (const [peran, v] of Object.entries(body || {})) {
+      if (!/^[a-z-]+$/.test(peran) || typeof v !== "object" || !v) continue;
+      const model = DAFTAR_MODEL_AGY.includes(v.model) ? v.model : null;
+      const effort = ["low", "medium", "high", "max"].includes(v.effort) ? v.effort : null;
+      if (model || effort) bersih[peran] = { model, effort };
+    }
+    writeFileSync(MODEL_PERAN_FILE, JSON.stringify(bersih, null, 2) + "\n");
+    sendJSON(res, 200, { ok: true, peran: bersih }); return;
   }
 
   if (path === "/api/roster") {

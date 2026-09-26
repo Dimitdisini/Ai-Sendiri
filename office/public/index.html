@@ -164,6 +164,13 @@
         </div>
         <div class="cfg-actions"><span id="cfgMsg" class="cfg-msg"></span><button type="submit" class="cfg-save">Simpan</button></div>
       </form>
+
+      <div class="cfg-card" style="margin-top:20px">
+        <h3>Model per peran (berlaku untuk semua perusahaan)</h3>
+        <p class="cfg-hint">Cuma berlaku kalau tugas peran itu dijalankan lewat Antigravity (langganan Google Pro). Kosongkan = pakai bawaan (Gemini Flash, mode High). Peran yang butuh akurasi tinggi (coding, QA) sebaiknya tetap model kuat; peran ringan (riset, laporan) boleh dipercepat.</p>
+        <div id="modelPeranList" class="cfg-grid"></div>
+        <div class="cfg-actions"><span id="modelPeranMsg" class="cfg-msg"></span><button type="button" id="modelPeranSave" class="cfg-save">Simpan model per peran</button></div>
+      </div>
     </section>
 
   </div>
