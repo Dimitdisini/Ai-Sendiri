@@ -30,6 +30,12 @@ if (existsSync(ENV_FILE)) {
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "");
 const OFFICE_URL = process.env.OFFICE_URL || "http://localhost:4545";
+// Dashboard sekarang minta login (Basic Auth) di semua request, termasuk dari Mac ini sendiri
+// (biar aman kalau dibuka lewat link publik juga). Bot ini ikut kirim login itu tiap kali.
+const OFFICE_AUTH = "Basic " + Buffer.from(`kantor:${process.env.OFFICE_TOKEN || ""}`).toString("base64");
+function officeFetch(path, opts = {}) {
+  return fetch(`${OFFICE_URL}${path}`, { ...opts, headers: { ...(opts.headers || {}), Authorization: opts.headers?.Authorization || OFFICE_AUTH } });
+}
 
 if (!process.env.OFFICE_TOKEN) console.error("Peringatan: OFFICE_TOKEN kosong di office/.env — perintah dari Telegram akan ditolak server.");
 if (!TOKEN || !CHAT_ID) {
@@ -80,7 +86,7 @@ async function handleMessage(text) {
   }
   if (text === "/status" || text === "/antrean") {
     try {
-      const s = await (await fetch(`${OFFICE_URL}/api/state`)).json();
+      const s = await (await officeFetch(`/api/state`)).json();
       const lines = s.companies.map((c) => `${c.name}: roadmap ${c.roadmapProgress}%, ${c.planCount} plan, ${c.qaReports} QA, ${c.keputusanTertahan} BLOKIR, ${c.agents.filter((a) => a.status === "kerja").length} agen kerja`);
       const q = s.quota && s.quota.status !== "ok" ? `\nKuota: ${s.quota.status} sejak ${new Date(s.quota.since).toLocaleTimeString("id-ID")}` : "";
       const antrean = await ringkasanAntrean();
@@ -109,7 +115,7 @@ async function handleMessage(text) {
     // Poll status; hasil akhirnya tetap dikirim server via notifyTelegram, ini hanya jaga-jaga kalau server gagal kirim
     for (let i = 0; i < 300; i++) {
       await new Promise((r) => setTimeout(r, 2000));
-      const cur = await (await fetch(`${OFFICE_URL}/api/command/${job.id}`)).json().catch(() => null);
+      const cur = await (await officeFetch(`/api/command/${job.id}`)).json().catch(() => null);
       if (cur && cur.status !== "antre" && cur.status !== "jalan") return; // server sudah mengirim hasil
     }
   } catch (e) {
@@ -120,7 +126,7 @@ async function handleMessage(text) {
 // Ringkasan antrean: tugas yang sedang jalan (sudah berapa lama) + berapa yang masih menunggu
 async function ringkasanAntrean() {
   try {
-    const list = await (await fetch(`${OFFICE_URL}/api/commands`)).json();
+    const list = await (await officeFetch(`/api/commands`)).json();
     const jalan = list.find((j) => j.status === "jalan");
     const antre = list.filter((j) => j.status === "antre").length;
     if (!jalan) return antre > 0 ? `Ada ${antre} tugas menunggu, tidak ada yang sedang jalan (aneh, biasanya jalan sendiri).` : "Tidak ada tugas yang sedang jalan.";

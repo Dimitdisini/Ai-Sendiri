@@ -254,3 +254,14 @@ ada langkah `git commit && git push` yang belum diuji lewat agy.
 Keterbatasan yang belum tertutup: tombol "hentikan" di dashboard baru bisa memutus proses agy yang
 sedang jalan saat itu (satu panggilan), belum bisa membatalkan seluruh sisa estafet kerja-malam
 secara instan kalau sedang di antara dua panggilan.
+
+## Login dashboard (Basic Auth di seluruh server)
+
+Sejak dashboard bisa dibuka lewat link tunnel publik (Cloudflare dll), SELURUH server (termasuk
+tampilan baca-baca, bukan cuma kotak perintah) wajib login HTTP Basic Auth: username bebas,
+password = `OFFICE_TOKEN` di `office/.env`. Berlaku juga untuk akses dari Mac ini sendiri, karena
+lewat tunnel tidak bisa dibedakan mana request yang datang dari luar.
+
+Browser mengingat login ini sendiri sekali per sesi, jadi tidak akan minta berkali-kali. Bot
+Telegram dan permintaan dari dashboard yang sudah pakai token (format `Bearer ...`) tetap diterima
+tanpa perlu login Basic terpisah.

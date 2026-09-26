@@ -365,6 +365,18 @@ function authorized(req) {
   const got = Buffer.from(h.replace(/^Bearer\s+/i, "")), want = Buffer.from(TOKEN);
   return got.length === want.length && timingSafeEqual(got, want);
 }
+// Basic Auth di depan SELURUH server (halaman, gambar, API baca) — bukan cuma perintah tulis.
+// Perlu ini karena dashboard bisa diakses lewat tunnel publik (Cloudflare dll), jadi tampilan
+// baca-baca (riwayat perintah, roster tim) tidak boleh terbuka tanpa kunci sama sekali.
+// Username bebas (browser tetap minta diisi), password = OFFICE_TOKEN.
+function basicAuthOk(req) {
+  const h = req.headers.authorization || "";
+  if (!h.startsWith("Basic ")) return false;
+  let user = "", pass = "";
+  try { [user, pass] = Buffer.from(h.slice(6), "base64").toString("utf8").split(":"); } catch { return false; }
+  const got = Buffer.from(pass || ""), want = Buffer.from(TOKEN);
+  return got.length === want.length && timingSafeEqual(got, want);
+}
 function readBody(req, limit = 64 * 1024) {
   return new Promise((resolve, reject) => {
     let buf = ""; req.setEncoding("utf8");
@@ -591,6 +603,16 @@ function publicJob(j) { const { _child, ...rest } = j; return rest; }
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const path = url.pathname;
+
+  // Gerbang login di depan semuanya. Selalu wajib, dari mana pun — termasuk dari Mac ini sendiri —
+  // karena kalau dibuka lewat link tunnel publik, semua koneksi kelihatan datang dari Mac ini juga
+  // (tunnelnya nyambung ke server ini secara lokal), jadi tidak bisa dibedakan mana yang aman.
+  // Browser akan mengingat login ini sendiri setelah pertama kali diisi, jadi tidak akan ditanya terus.
+  if (!basicAuthOk(req) && !authorized(req)) {
+    res.writeHead(401, { "WWW-Authenticate": 'Basic realm="Kantor AI"', "Content-Type": "text/plain" });
+    res.end("Butuh login. Password = OFFICE_TOKEN di office/.env, username bebas.");
+    return;
+  }
 
   if (path === "/api/auth" && req.method === "GET") { sendJSON(res, authorized(req) ? 200 : 401, { ok: authorized(req) }); return; }
 
