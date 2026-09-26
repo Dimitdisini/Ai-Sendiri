@@ -5,6 +5,7 @@ Cara kerja yang bisa diulang dipindah jadi SOP di `.claude/skills/sop-*/`. Ditam
 
 | Tanggal | Apa yang terjadi | Pelajaran | SOP |
 |---|---|---|---|
+| 2026-09-26 | BRD gocean-b2b dan ecommerce-d2c dua-duanya terpotong di tengah saat CEO paste teks panjang di chat, draft harus direvisi ulang saat lanjutan datang | Minta dokumen panjang sebagai file utuh (upload/Drive), bukan paste; kalau paste, tandai eksplisit bagian yang mungkin terpotong dan konfirmasi ke CEO | sop-dokumen-ceo |
 | 2026-09-26 | QA plan 010 hanya bisa PASS bersyarat karena Docker tidak terpasang | Tandai AC yang butuh alat sebagai "TIDAK DAPAT DIUJI", jangan ditebak; pakai pemeriksaan pengganti | sop-qa-tanpa-alat |
 | 2026-09-26 | Token GitHub dua kali ditempel di chat, harus di-revoke | Kredensial tidak pernah lewat chat; masuk lewat prompt terminal (Keychain) atau file .env | sop-kredensial |
 | 2026-09-25 | Server dashboard gagal nyala karena port 4545 masih dipakai proses lama | Layanan dikelola launchd; restart pakai launchctl kickstart, bukan node manual | sop-layanan-kantor |
