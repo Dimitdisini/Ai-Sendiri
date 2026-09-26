@@ -244,6 +244,29 @@ function computeAgentState() {
   });
 }
 
+// Feed aktivitas kronologis per orang (dipakai kolom "Aktivitas langsung" di dashboard).
+// Pakai pelacakan peran "sticky" yang sama dengan computeAgentState, supaya nama yang muncul
+// di feed konsisten dengan kartu Tim Aktif (bukan cuma label generik "general-purpose").
+function computeActivityFeed(limit = 60) {
+  const events = loadEvents();
+  const sticky = new Map();
+  const feed = [];
+  for (const e of events) {
+    const id = e.agent_id || `s:${e.session_id}`;
+    const known = sticky.get(id) || {};
+    const company = e.company || known.company || null;
+    let type = e.agent_type || (e.hook === "SubagentStart" ? "subagent" : null);
+    if (!type) continue;
+    const wrote = e.wrote === true || e.tool === "Write" || e.tool === "Edit" || e.tool === "MultiEdit";
+    if (GENERIC_TYPES.has(type)) type = (wrote && inferRoleFromFile(e.file)) || known.role || type;
+    sticky.set(id, { company, role: GENERIC_TYPES.has(type) ? known.role : type });
+    if (e.hook !== "PostToolUse" || !e.summary) continue;
+    const meta = roster[type] || { role: type, nickname: type, color: "#64748b" };
+    feed.push({ ts: e.ts, company, type, role: meta.role, nickname: meta.nickname, color: meta.color, tool: e.tool, summary: e.summary.slice(0, 140) });
+  }
+  return feed.slice(-limit).reverse();
+}
+
 // Rapat: aktif kalau ada notulen di meetings/ yang baru ditulis, atau minimal 2 peran subagen aktif dalam jendela pendek.
 const MEETING_WINDOW_MS = 12 * 60 * 1000;
 function computeMeeting(slug, agents) {
@@ -718,6 +741,10 @@ const server = createServer(async (req, res) => {
     }
     writeFileSync(MODEL_PERAN_FILE, JSON.stringify(bersih, null, 2) + "\n");
     sendJSON(res, 200, { ok: true, peran: bersih }); return;
+  }
+
+  if (path === "/api/activity" && req.method === "GET") {
+    sendJSON(res, 200, computeActivityFeed(80)); return;
   }
 
   if (path === "/api/roster") {

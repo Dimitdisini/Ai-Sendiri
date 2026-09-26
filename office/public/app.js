@@ -257,11 +257,67 @@ function render() {
   updateOffice();
   renderAgents();
 
+  if (activeTab === "overview")  renderBacklogPanel();
   if (activeTab === "roadmap")   renderTabRoadmap();
   if (activeTab === "keputusan") renderTabKeputusan();
   if (activeTab === "output")    renderTabOutput();
   if (activeTab === "bukti")     renderTabBukti();
 }
+
+// -------------------------------------------------------------------
+// AKTIVITAS LANGSUNG (kolom kiri Overview) -> /api/activity
+// -------------------------------------------------------------------
+let activityData = [], activityFilter = "semua", backlogLoadedFor = null;
+async function loadActivity() {
+  try { activityData = await (await fetch("/api/activity")).json(); } catch { activityData = []; }
+  renderActivity();
+}
+function renderActivity() {
+  const feedEl = document.getElementById("activityFeed"), filterEl = document.getElementById("activityFilters");
+  if (!feedEl) return;
+  const orang = [...new Map(activityData.map((a) => [a.nickname, a])).values()];
+  filterEl.innerHTML = `<span class="activity-filter${activityFilter === "semua" ? " on" : ""}" data-f="semua">Semua</span>` +
+    orang.map((o) => `<span class="activity-filter${activityFilter === o.nickname ? " on" : ""}" data-f="${escapeHtml(o.nickname)}" style="--c:${o.color}">${escapeHtml(o.nickname)}</span>`).join("");
+  const list = activityFilter === "semua" ? activityData : activityData.filter((a) => a.nickname === activityFilter);
+  feedEl.innerHTML = list.length ? list.slice(0, 40).map((a) => `
+    <div class="activity-item">
+      <div class="activity-avatar" style="background:${a.color}">${escapeHtml((a.nickname || "?").slice(0, 2).toUpperCase())}</div>
+      <div class="activity-body">
+        <div class="activity-row-top"><span><b>${escapeHtml(a.nickname)}</b> <span class="activity-tool">· ${escapeHtml(a.tool)}</span></span><span class="activity-time">${fmtTime(a.ts)}</span></div>
+        <div>${escapeHtml(a.summary)}</div>
+      </div>
+    </div>`).join("") : `<div class="backlog-empty">Belum ada aktivitas tercatat.</div>`;
+}
+document.getElementById("activityFilters")?.addEventListener("click", (e) => {
+  const f = e.target.closest("[data-f]"); if (!f) return;
+  activityFilter = f.dataset.f; renderActivity();
+});
+loadActivity();
+setInterval(loadActivity, 4000);
+
+// -------------------------------------------------------------------
+// BACKLOG & KEPUTUSAN (kolom kanan Overview)
+// -------------------------------------------------------------------
+async function renderBacklogPanel() {
+  const elK = document.getElementById("panelKeputusan"), elB = document.getElementById("panelBacklog");
+  if (!elK || !elB || !activeCompany) return;
+  if (backlogLoadedFor === activeCompany) return;
+  backlogLoadedFor = activeCompany;
+  try {
+    const [kep, bl] = await Promise.all([
+      fetch(`/api/company/${activeCompany}/keputusan`).then((r) => r.json()),
+      fetch(`/api/company/${activeCompany}/backlog`).then((r) => r.json()),
+    ]);
+    const kepOpen = kep.rows.filter((r) => /blokir/i.test(Object.values(r).join(" ")) && !/dijawab|disetujui/i.test(r.Status || ""));
+    const blOpen = bl.rows.filter((r) => !/dihentikan|ditolak|selesai/i.test(r.Status || ""));
+    elK.innerHTML = kepOpen.length ? kepOpen.map((r) => `<div class="backlog-item"><b>${escapeHtml(r.ID || "")}</b> — ${escapeHtml(r.Pertanyaan || Object.values(r).join(" · "))}</div>`).join("") : `<div class="backlog-empty">Tidak ada yang menunggu.</div>`;
+    elB.innerHTML = blOpen.length ? blOpen.map((r) => `<div class="backlog-item">${escapeHtml(r.Item || Object.values(r).join(" · "))} <span class="activity-tool">· ${escapeHtml(r.Status || "")}</span></div>`).join("") : `<div class="backlog-empty">Backlog kosong.</div>`;
+  } catch {
+    elK.innerHTML = elB.innerHTML = `<div class="backlog-empty">Gagal memuat.</div>`;
+  }
+}
+// Pindah perusahaan -> muat ulang panel
+setInterval(() => { if (activeTab === "overview") renderBacklogPanel(); }, 800);
 
 // -------------------------------------------------------------------
 // EVENT LISTENERS
