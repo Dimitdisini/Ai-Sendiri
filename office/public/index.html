@@ -14,232 +14,181 @@
 <link rel="stylesheet" href="/style.css" />
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <style>
-  body { font-family: 'Inter', sans-serif; background:#eef2f6; color:#334155; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: 'Inter', sans-serif; background:#0f172a; color:#334155; position:relative; }
   .cscroll::-webkit-scrollbar{width:4px;height:4px}
   .cscroll::-webkit-scrollbar-track{background:transparent}
-  .cscroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-  .cscroll::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+  .cscroll::-webkit-scrollbar-thumb{background:rgba(148,163,184,.45);border-radius:9999px}
+  .cscroll::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.7)}
   .badge-pulse{box-shadow:0 0 0 0 rgba(239,68,68,.7);animation:pulseAlert 1.8s infinite cubic-bezier(.66,0,0,1)}
   @keyframes pulseAlert{to{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-  body.sidebar-hidden #main-sidebar{width:0;min-width:0;border:0;overflow:hidden}
-  #sidebarShowBtn{display:none;position:fixed;top:10px;left:10px;z-index:50}
-  body.sidebar-hidden #sidebarShowBtn{display:flex}
-  .nav-item.active{background:#eff6ff;color:#2563eb;border-color:#dbeafe}
-  .of3d-wrap{position:relative;width:100%;background:#cbd5e1;border-radius:12px;overflow:hidden}
+  .glass-card{background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.95);box-shadow:0 16px 36px -10px rgba(15,23,42,.25),0 4px 12px -2px rgba(15,23,42,.12)}
+  .glass-pill{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.9)}
+  .hud-transition{transition:all .3s cubic-bezier(.4,0,.2,1)}
+  .hud-side-left-collapsed{transform:translateX(-115%);opacity:0;pointer-events:none}
+  .hud-side-right-collapsed{transform:translateX(115%);opacity:0;pointer-events:none}
+  .hud-collapsed{transform:translateY(120%);opacity:0;pointer-events:none}
+  #world-canvas{position:fixed;inset:0;z-index:0;background:#cbd5e1}
   #office3d, #officeCanvas{width:100%;height:100%}
+  .nav-icon.active{background:#eff6ff;color:#2563eb}
 </style>
 </head>
-<body class="antialiased min-h-screen flex text-slate-800">
+<body class="antialiased font-sans text-slate-800">
 
-  <button id="sidebarShowBtn" class="w-8 h-8 rounded-lg bg-white border border-slate-200 shadow-sm items-center justify-center text-slate-600 hover:bg-slate-50" title="Tampilkan menu">
-    <span class="text-base leading-none">›</span>
-  </button>
+  <!-- LATAR BELAKANG PENUH: KANTOR 3D -->
+  <div id="world-canvas">
+    <div id="office3d" style="display:none;position:relative;width:100%;height:100%"></div>
+    <canvas id="officeCanvas" width="1200" height="640"></canvas>
+  </div>
 
-  <!-- SIDEBAR -->
-  <aside class="w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between shrink-0 transition-all duration-200 z-30" id="main-sidebar">
-    <div class="p-3.5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20">KAI</div>
+  <!-- TOP HUD: brand + nav + telemetri + command dispatcher -->
+  <header class="fixed top-3 inset-x-3 z-40 flex flex-col gap-2 hud-transition" id="top-hud">
+    <div class="flex items-center justify-between gap-2 w-full flex-wrap">
+      <!-- Kiri: brand + nav halaman + pilih perusahaan -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="glass-pill px-3 py-1 rounded-2xl flex items-center gap-2 shadow-md">
+          <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">KAI</div>
           <div>
             <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold text-slate-900 tracking-tight leading-none">Kantor AI</span>
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">LIVE</span>
+              <span class="text-xs font-bold text-slate-900 leading-none">Kantor AI</span>
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">LIVE</span>
             </div>
-            <p class="text-[11px] text-slate-400 font-medium leading-tight mt-0.5">Team Dimitri</p>
+            <p class="text-[10px] text-slate-500 font-medium leading-none mt-0.5">Team Dimitri</p>
           </div>
         </div>
-        <button class="w-6 h-6 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center" id="sidebarToggle" title="Sembunyikan/tampilkan menu">
-          <span class="text-base leading-none">‹</span>
-        </button>
+        <!-- Menu halaman -->
+        <nav class="glass-pill px-1 py-1 rounded-2xl shadow-md flex items-center gap-0.5" id="sidebarNav">
+          <button class="nav-icon active w-7 h-7 rounded-xl flex items-center justify-center text-sm" data-tab="overview" title="Overview">🧭</button>
+          <button class="nav-icon w-7 h-7 rounded-xl flex items-center justify-center text-sm text-slate-500" data-tab="roadmap" title="Roadmap">🛣️</button>
+          <button class="nav-icon w-7 h-7 rounded-xl flex items-center justify-center text-sm text-slate-500" data-tab="keputusan" title="Keputusan">⚖️</button>
+          <button class="nav-icon w-7 h-7 rounded-xl flex items-center justify-center text-sm text-slate-500" data-tab="output" title="Output">📁</button>
+          <button class="nav-icon w-7 h-7 rounded-xl flex items-center justify-center text-sm text-slate-500" data-tab="bukti" title="Bukti QA">✅</button>
+          <button class="nav-icon w-7 h-7 rounded-xl flex items-center justify-center text-sm text-slate-500" data-tab="pengaturan" title="Pengaturan">⚙️</button>
+        </nav>
+        <div class="glass-pill px-2.5 py-1 rounded-2xl shadow-sm hidden md:flex items-center gap-1.5">
+          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Klien:</span>
+          <select id="cmdCompany" class="bg-transparent text-xs font-bold text-slate-800 border-none py-0.5 pl-0.5 pr-6 focus:ring-0 cursor-pointer"></select>
+        </div>
       </div>
 
-      <div class="mt-3">
-        <label class="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Perusahaan</label>
-        <div id="companyList" class="flex flex-col gap-1"></div>
+      <!-- Tengah: telemetri ringkas -->
+      <div class="hidden lg:flex items-center gap-2 glass-pill px-3 py-1 rounded-2xl shadow-md text-[11px]">
+        <div class="flex items-center gap-1 border-r border-slate-200/80 pr-2">
+          <span class="text-slate-400">🕐</span>
+          <span class="font-mono font-bold text-slate-800" id="tsJam">--:--:--</span>
+        </div>
+        <button class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-bold text-[10px]" id="tsBlokirCard">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span><span id="tsBlokir">0</span> Blokir
+        </button>
+        <div class="border-r border-slate-200/80 pr-2"><span class="text-slate-400">Aksi:</span> <span class="font-bold text-slate-800" id="tsAksi">—</span></div>
+        <div class="border-r border-slate-200/80 pr-2 text-slate-500" id="tsJadwal">—</div>
+        <div class="flex items-center gap-1 text-emerald-600 font-bold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span id="tsSesi">—</span> aktif</div>
       </div>
 
-      <nav class="mt-4 space-y-1" id="sidebarNav">
-        <button class="nav-item active w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-transparent" data-tab="overview">
-          <span class="text-base leading-none">🧭</span><span>Overview</span>
-        </button>
-        <button class="nav-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 border border-transparent" data-tab="roadmap">
-          <span class="text-base leading-none text-slate-400">🛣️</span><span>Roadmap</span>
-        </button>
-        <button class="nav-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 border border-transparent" data-tab="keputusan">
-          <span class="text-base leading-none text-slate-400">⚖️</span><span>Keputusan</span>
-        </button>
-        <button class="nav-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 border border-transparent" data-tab="output">
-          <span class="text-base leading-none text-slate-400">📁</span><span>Output</span>
-        </button>
-        <button class="nav-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 border border-transparent" data-tab="bukti">
-          <span class="text-base leading-none text-slate-400">✅</span><span>Bukti QA</span>
-        </button>
-        <button class="nav-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 border border-transparent" data-tab="pengaturan">
-          <span class="text-base leading-none text-slate-400">⚙️</span><span>Pengaturan</span>
-        </button>
-      </nav>
+      <!-- Kanan: toggle panel + fullscreen -->
+      <div class="flex items-center gap-1.5">
+        <div class="glass-pill px-1 py-0.5 rounded-2xl shadow-md hidden sm:flex items-center gap-1 text-[10px]">
+          <button class="px-2 py-0.5 rounded-xl font-semibold bg-blue-50 text-blue-700 border border-blue-200" id="toggle-feed-btn" title="Toggle Aktivitas">Feed</button>
+          <button class="px-2 py-0.5 rounded-xl font-semibold bg-rose-50 text-rose-700 border border-rose-200" id="toggle-backlog-btn" title="Toggle Keputusan">Keputusan</button>
+          <button class="px-2 py-0.5 rounded-xl font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" id="toggle-team-btn" title="Toggle Tim">Tim</button>
+        </div>
+        <button class="glass-pill w-7 h-7 rounded-2xl flex items-center justify-center text-slate-600 shadow-md" id="btn-fullscreen-native" title="Layar penuh">⛶</button>
+      </div>
     </div>
 
-    <div class="p-3 border-t border-slate-100 bg-slate-50/70 space-y-2">
-      <div class="bg-white p-2 rounded-xl border border-slate-200/90">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Bot Telegram</span>
+    <!-- Kotak perintah, tengah -->
+    <div class="w-full max-w-2xl mx-auto mt-0.5" id="command-hud">
+      <form class="glass-card rounded-2xl py-1 px-2.5 flex items-center gap-2 shadow-lg" id="cmdForm" autocomplete="off">
+        <span class="text-slate-400 text-sm shrink-0">⌨️</span>
+        <input id="cmdText" type="text" class="flex-1 bg-white/70 border border-slate-200/90 rounded-lg text-[11px] py-1 px-2.5 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-800" placeholder="Perintah ke tim, misal: /briefing  atau  /kickoff xavortree: aplikasi absensi" />
+        <button type="submit" id="cmdSend" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm shrink-0">
+          <span class="text-xs">➤</span><span>Kirim</span>
+        </button>
+      </form>
+      <div class="text-[10px] text-white/70 text-center mt-1" id="cmdSummary">—</div>
+    </div>
+  </header>
+
+  <!-- Banner quota -->
+  <div class="quota-banner fixed top-24 inset-x-3 z-40" id="quotaBanner" style="display:none"></div>
+
+  <!-- FLOATING KIRI: Aktivitas langsung -->
+  <aside class="fixed left-3 glass-card rounded-3xl p-3 z-30 flex flex-col hud-transition w-80 max-w-[calc(100vw-24px)]" id="hud-left-feed" style="top:88px;bottom:118px;">
+    <div class="flex items-center justify-between pb-1.5 border-b border-slate-100/80 mb-1.5 shrink-0">
+      <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><span class="text-blue-600">📡</span>Aktivitas langsung</h2>
+      <button class="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 flex items-center justify-center" id="dock-left-btn" title="Kecilkan">‹</button>
+    </div>
+    <div id="activityFilters" class="flex flex-wrap gap-1 mb-1.5 text-[10px] shrink-0"></div>
+    <div id="activityFeed" class="flex-1 overflow-y-auto cscroll pr-1 space-y-1.5 text-[11px] min-h-0"></div>
+    <div class="pt-1.5 border-t border-slate-100/80 shrink-0 mt-1.5">
+      <div class="flex items-center gap-1 text-[10.5px] font-bold text-slate-700 mb-1"><span class="text-slate-400">🕘</span>Riwayat Perintah</div>
+      <div id="cmdList" class="space-y-1 text-[10.5px] max-h-[160px] overflow-y-auto cscroll"></div>
+    </div>
+  </aside>
+
+  <!-- FLOATING KANAN: Keputusan & Backlog/Cron -->
+  <aside class="fixed right-3 glass-card rounded-3xl p-3 z-30 flex flex-col hud-transition w-80 max-w-[calc(100vw-24px)]" id="hud-right-decisions" style="top:88px;bottom:118px;">
+    <div class="flex items-center justify-between pb-1.5 border-b border-slate-100/80 mb-1.5 shrink-0">
+      <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><span class="text-rose-600">⚖️</span>Keputusan &amp; Antrean</h2>
+      <button class="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 flex items-center justify-center" id="dock-right-btn" title="Kecilkan">›</button>
+    </div>
+    <div class="flex-1 overflow-y-auto cscroll pr-0.5 space-y-2 min-h-0">
+      <div class="bg-rose-50/80 border border-rose-200 rounded-2xl p-2">
+        <div class="flex items-center justify-between mb-1.5">
+          <h3 class="text-[10.5px] font-bold text-rose-700 flex items-center gap-1"><span class="text-rose-600">🚨</span>Butuh Keputusan</h3>
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white" id="panelKeputusanCount">0</span>
         </div>
-        <div class="text-[11px] text-slate-500 leading-tight">Perintah cepat: <span class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">/status</span> <span class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">/antrean</span></div>
+        <div id="panelKeputusan" class="space-y-1.5"></div>
       </div>
-      <div class="flex items-center justify-between text-[11px] px-1 text-slate-500 font-medium">
-        <span class="flex items-center gap-1"><span class="text-xs text-slate-400">🕐</span><span class="font-bold text-slate-700" id="liveTime">--:--:--</span></span>
-        <span class="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Online</span>
-      </div>
-      <div class="grid grid-cols-2 gap-1.5 text-[11px] pt-1">
-        <div class="bg-white rounded-lg border border-slate-200 px-2 py-1"><div class="text-slate-400 text-[11px]">Roadmap</div><div class="font-bold text-slate-800" id="sideRoadmap">—</div></div>
-        <div class="bg-white rounded-lg border border-slate-200 px-2 py-1"><div class="text-slate-400 text-[11px]">Plan / QA</div><div class="font-bold text-slate-800" id="sidePlan">—</div></div>
+      <div class="bg-white/60 rounded-2xl p-2 border border-slate-200/70">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-1 mb-1.5">
+          <div class="flex items-center gap-2 text-[11px]">
+            <button class="font-bold text-slate-900 border-b-2 border-slate-900 pb-0.5" id="tabBacklogBtn">Backlog <span class="bg-slate-100 text-slate-700 px-1 rounded-full text-[9px]" id="panelBacklogCount">0</span></button>
+            <button class="font-medium text-slate-400 pb-0.5" id="tabCronBtn">Cron <span class="bg-slate-100 text-slate-500 px-1 rounded-full text-[9px]" id="cronCount">0</span></button>
+          </div>
+        </div>
+        <div id="panelBacklog" class="space-y-1 text-[10.5px]"></div>
+        <div id="panelCron" class="space-y-1 text-[10.5px] hidden"></div>
       </div>
     </div>
   </aside>
 
-  <!-- KONTEN UTAMA -->
-  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto cscroll p-3">
-
-    <!-- TOP BAR STATISTIK -->
-    <header class="w-full flex flex-wrap items-center gap-2.5 mb-2.5">
-      <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col shrink-0">
-        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">WIB</span>
-        <span class="font-bold text-slate-800 font-mono" id="tsJam">--:--:--</span>
+  <!-- FLOATING BAWAH: Tim aktif -->
+  <div class="fixed bottom-3 inset-x-3 z-30 hud-transition flex justify-center" id="hud-bottom-team">
+    <div class="glass-card rounded-2xl p-2 shadow-2xl max-w-6xl w-full">
+      <div class="flex items-center justify-between mb-1 px-1.5">
+        <span class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Tim Aktif</span>
+        <span class="text-[10px] text-slate-400" id="agentSubtitle">—</span>
+        <button class="text-slate-400 hover:text-slate-700 p-0.5" id="dock-bottom-btn" title="Kecilkan">⌄</button>
       </div>
-      <div class="bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl flex flex-col shrink-0" id="tsBlokirCard">
-        <span class="text-[11px] uppercase tracking-wider text-rose-700 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> BUTUH KEPUTUSAN</span>
-        <span class="font-bold text-rose-700 text-xs"><span id="tsBlokir">0</span> BLOKIR menunggu</span>
-      </div>
-      <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col shrink-0">
-        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">JADWAL BERIKUTNYA</span>
-        <span class="font-bold text-slate-800 text-[11px]" id="tsJadwal">—</span>
-      </div>
-      <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col items-center min-w-[75px] shrink-0">
-        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">AKSI HARI INI</span>
-        <span class="font-bold text-slate-800" id="tsAksi">—</span>
-      </div>
-      <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 flex flex-col items-center min-w-[75px] shrink-0">
-        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">SESI AKTIF</span>
-        <span class="font-bold text-emerald-600" id="tsSesi">—</span>
-      </div>
-    </header>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5" id="agentGrid"></div>
+    </div>
+  </div>
 
-    <!-- Banner quota -->
-    <div class="quota-banner mb-2.5" id="quotaBanner" style="display:none"></div>
+  <!-- Tombol buka lagi panel yang dikecilkan -->
+  <button class="hidden fixed left-3 bottom-3 z-40 glass-pill px-3 py-1.5 rounded-full shadow-lg text-slate-700 text-xs font-bold items-center gap-1.5" id="restore-left-btn">📡 Buka Aktivitas</button>
+  <button class="hidden fixed right-3 bottom-3 z-40 glass-pill px-3 py-1.5 rounded-full shadow-lg text-rose-700 text-xs font-bold items-center gap-1.5" id="restore-right-btn">⚖️ Buka Keputusan</button>
 
-    <!-- OVERVIEW -->
-    <section class="page active" id="pageOverview">
-
-      <!-- KOTAK KIRIM PERINTAH -->
-      <section class="bg-white rounded-xl p-2.5 border border-slate-200/80">
-        <form class="flex flex-col lg:flex-row items-stretch lg:items-center gap-2" id="cmdForm" autocomplete="off">
-          <div class="flex items-center gap-1.5 shrink-0">
-            <span class="text-slate-400 text-base">⌨️</span>
-            <select id="cmdCompany" class="bg-slate-100 hover:bg-slate-200/70 text-slate-800 text-xs font-semibold py-1.5 px-2 rounded-lg border-0 focus:ring-1 focus:ring-blue-500 cursor-pointer"></select>
-          </div>
-          <div class="flex-1">
-            <input id="cmdText" type="text" class="w-full bg-slate-50 border border-slate-200/90 rounded-lg text-xs py-1.5 px-3 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-800" placeholder="Perintah ke tim, misal: /briefing  atau  /kickoff xavortree: aplikasi absensi" />
-          </div>
-          <div class="flex items-center justify-between lg:justify-end gap-2 shrink-0">
-            <div class="text-[11px] text-slate-400 font-medium" id="cmdSummary">—</div>
-            <button type="submit" id="cmdSend" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition">
-              <span class="text-sm leading-none">➤</span><span>Kirim</span>
-            </button>
-          </div>
-        </form>
-        <div class="text-[11px] text-slate-400 mt-1.5">Dijalankan Orkestrator (Kai) sesuai CLAUDE.md. Satu perintah jalan dalam satu waktu, sisanya antre.</div>
-      </section>
-
-      <!-- 3 KOLOM -->
-      <main class="grid grid-cols-12 gap-2.5 items-start">
-
-        <!-- KIRI: aktivitas -->
-        <aside class="col-span-12 lg:col-span-3 bg-white rounded-xl p-3 border border-slate-200/80 flex flex-col">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><span class="text-blue-600 text-sm">📡</span>Aktivitas langsung</h2>
-          </div>
-          <div id="activityFilters" class="flex flex-wrap gap-1 mb-2.5 text-[11.5px]"></div>
-          <div id="activityFeed" class="space-y-2 overflow-y-auto max-h-[380px] cscroll pr-1 text-[11px] flex-1"></div>
-
-          <div class="mt-2.5 pt-2 border-t border-slate-100">
-            <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-1.5">
-              <span class="flex items-center gap-1"><span class="text-xs text-slate-400">🕘</span>Riwayat Perintah</span>
-            </div>
-            <div id="cmdList" class="space-y-1 text-[11px] overflow-y-auto max-h-[220px] cscroll"></div>
-          </div>
-        </aside>
-
-        <!-- TENGAH: kantor 3D -->
-        <section class="col-span-12 lg:col-span-6 bg-slate-200/90 rounded-xl relative overflow-hidden border border-slate-300">
-          <div class="of3d-wrap">
-            <div id="office3d" style="display:none;position:relative"></div>
-            <canvas id="officeCanvas" width="1200" height="640"></canvas>
-          </div>
-        </section>
-
-        <!-- KANAN: keputusan + backlog/cron -->
-        <aside class="col-span-12 lg:col-span-3 bg-white rounded-xl p-3 border border-slate-200/80 flex flex-col">
-          <div class="space-y-3 overflow-y-auto max-h-[510px] cscroll pr-0.5">
-            <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-2.5">
-              <div class="flex items-center justify-between mb-2">
-                <h2 class="text-xs font-bold text-rose-700 flex items-center gap-1.5"><span class="text-sm text-rose-600">🚨</span>Butuh Keputusan</h2>
-                <span class="px-1.5 py-0.5 rounded text-[11px] font-extrabold bg-rose-600 text-white" id="panelKeputusanCount">0</span>
-              </div>
-              <div id="panelKeputusan" class="space-y-2"></div>
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-2.5">
-                <div class="flex items-center gap-2 text-xs">
-                  <button class="font-bold text-slate-900 border-b-2 border-slate-900 pb-1" id="tabBacklogBtn">Backlog <span class="bg-slate-100 text-slate-700 px-1 rounded text-[11.5px]" id="panelBacklogCount">0</span></button>
-                  <button class="font-medium text-slate-400 hover:text-slate-700 pb-1" id="tabCronBtn">Cron <span class="bg-slate-100 text-slate-500 px-1 rounded text-[11.5px]" id="cronCount">0</span></button>
-                </div>
-              </div>
-              <div id="panelBacklog" class="space-y-1.5 text-[11.5px]"></div>
-              <div id="panelCron" class="space-y-1.5 text-[11.5px] hidden"></div>
-            </div>
-          </div>
-        </aside>
-
-      </main>
-
-      <!-- TIM AKTIF -->
-      <div class="flex items-center justify-between mt-1">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tim Aktif</span>
-        <span class="text-[11px] text-slate-400" id="agentSubtitle">—</span>
-      </div>
-      <footer class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2" id="agentGrid"></footer>
-    </section>
-
-    <!-- ROADMAP -->
-    <section class="page hidden" id="pageRoadmap">
+  <!-- HALAMAN LAIN (menimpa layar penuh, bukan HUD) -->
+  <div class="hidden fixed inset-0 z-50 bg-slate-50 overflow-y-auto cscroll p-4 pt-16" id="pageWrap">
+    <section class="page hidden max-w-5xl mx-auto" id="pageRoadmap">
       <div class="page-header mb-2"><h2 class="text-lg font-bold">Roadmap</h2><span class="page-sub text-sm text-slate-500" id="roadmapCompanyLabel"></span></div>
       <div id="tabRoadmap" class="table-wrap bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
-
-    <!-- KEPUTUSAN -->
-    <section class="page hidden" id="pageKeputusan">
+    <section class="page hidden max-w-5xl mx-auto" id="pageKeputusan">
       <div class="page-header mb-2"><h2 class="text-lg font-bold">Keputusan</h2><span class="page-sub text-sm text-slate-500" id="keputusanCompanyLabel"></span></div>
       <div id="tabKeputusan" class="table-wrap bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
-
-    <!-- OUTPUT -->
-    <section class="page hidden" id="pageOutput">
+    <section class="page hidden max-w-5xl mx-auto" id="pageOutput">
       <div class="page-header mb-2"><h2 class="text-lg font-bold">Output Dokumen</h2><span class="page-sub text-sm text-slate-500">File yang paling baru diubah</span></div>
       <div id="tabOutput" class="bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
-
-    <!-- BUKTI QA -->
-    <section class="page hidden" id="pageBukti">
+    <section class="page hidden max-w-5xl mx-auto" id="pageBukti">
       <div class="page-header mb-2"><h2 class="text-lg font-bold">Bukti QA</h2><span class="page-sub text-sm text-slate-500">Screenshot hasil pengujian</span></div>
       <div id="tabBukti" class="bg-white rounded-xl border border-slate-200/80 p-3"></div>
     </section>
-
-    <!-- PENGATURAN -->
-    <section class="page hidden" id="pagePengaturan">
-      <div class="page-header mb-2"><h2 class="text-lg font-bold">Pengaturan Perusahaan</h2><span class="page-sub text-sm text-slate-500" id="cfgCompanyLabel">Profil dan formasi tim untuk perusahaan yang dipilih di sidebar</span></div>
+    <section class="page hidden max-w-3xl mx-auto" id="pagePengaturan">
+      <div class="page-header mb-2"><h2 class="text-lg font-bold">Pengaturan Perusahaan</h2><span class="page-sub text-sm text-slate-500" id="cfgCompanyLabel">Profil dan formasi tim untuk perusahaan yang dipilih</span></div>
       <form id="cfgForm" class="cfg-form space-y-3" autocomplete="off">
         <div class="cfg-card bg-white rounded-xl border border-slate-200/80 p-3">
           <h3 class="font-bold text-sm mb-1">Profil</h3>
@@ -250,23 +199,77 @@
           <h3 class="font-bold text-sm mb-1">Formasi tim</h3>
           <p class="cfg-hint text-xs text-slate-500 mb-2">Centang peran yang bekerja di perusahaan ini. Kai (Orkestrator) selalu aktif.</p>
           <div id="cfgRoles" class="cfg-roles"></div>
-          <label class="cfg-field cfg-wide block mt-2"><span class="text-xs font-semibold">Catatan kebutuhan tim</span><textarea id="cfgNotes" rows="3" class="w-full border border-slate-200 rounded-lg text-xs p-2 mt-1" placeholder="Misal: fokus IoT, butuh review keamanan tiap rilis, laporan mingguan ke klien"></textarea></label>
+          <label class="cfg-field cfg-wide block mt-2"><span class="text-xs font-semibold">Catatan kebutuhan tim</span><textarea id="cfgNotes" rows="3" class="w-full border border-slate-200 rounded-lg text-xs p-2 mt-1" placeholder="Misal: fokus IoT, butuh review keamanan tiap rilis"></textarea></label>
         </div>
         <div class="cfg-actions flex items-center gap-2"><span id="cfgMsg" class="cfg-msg text-xs"></span><button type="submit" class="cfg-save bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Simpan</button></div>
       </form>
-
       <div class="cfg-card bg-white rounded-xl border border-slate-200/80 p-3 mt-3">
-        <h3 class="font-bold text-sm mb-1">Model per peran (berlaku untuk semua perusahaan)</h3>
-        <p class="cfg-hint text-xs text-slate-500 mb-2">Cuma berlaku kalau tugas peran itu dijalankan lewat Antigravity (langganan Google Pro). Kosongkan = pakai bawaan.</p>
+        <h3 class="font-bold text-sm mb-1">Model per peran (semua perusahaan)</h3>
+        <p class="cfg-hint text-xs text-slate-500 mb-2">Cuma berlaku kalau tugas peran itu dijalankan lewat Antigravity. Kosongkan = pakai bawaan.</p>
         <div id="modelPeranList" class="cfg-grid"></div>
         <div class="cfg-actions flex items-center gap-2 mt-2"><span id="modelPeranMsg" class="cfg-msg text-xs"></span><button type="button" id="modelPeranSave" class="cfg-save bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Simpan model per peran</button></div>
       </div>
     </section>
+  </div>
 
+  <!-- Overview "halaman" semu, cuma penanda aktif -->
+  <div class="page active hidden" id="pageOverview"></div>
+
+  <!-- Sidebar lama (dipertahankan, disembunyikan) untuk kompatibilitas id -->
+  <div style="display:none">
+    <span id="liveTime"></span><span id="sideRoadmap"></span><span id="sidePlan"></span>
   </div>
 
   <script src="/office.js"></script>
   <script src="/app.js"></script>
   <script type="module" src="/office3d.js"></script>
+  <script>
+    // HUD: toggle panel kiri/kanan/bawah + fokus 3D
+    document.addEventListener('DOMContentLoaded', () => {
+      const hudLeft = document.getElementById('hud-left-feed');
+      const hudRight = document.getElementById('hud-right-decisions');
+      const hudBottom = document.getElementById('hud-bottom-team');
+      const restoreLeft = document.getElementById('restore-left-btn');
+      const restoreRight = document.getElementById('restore-right-btn');
+
+      const toggleLeft = () => {
+        const collapsed = hudLeft.classList.toggle('hud-side-left-collapsed');
+        restoreLeft.classList.toggle('hidden', !collapsed);
+        restoreLeft.classList.toggle('flex', collapsed);
+      };
+      const toggleRight = () => {
+        const collapsed = hudRight.classList.toggle('hud-side-right-collapsed');
+        restoreRight.classList.toggle('hidden', !collapsed);
+        restoreRight.classList.toggle('flex', collapsed);
+      };
+      const toggleBottom = () => hudBottom.classList.toggle('hud-collapsed');
+
+      document.getElementById('dock-left-btn')?.addEventListener('click', toggleLeft);
+      document.getElementById('toggle-feed-btn')?.addEventListener('click', toggleLeft);
+      restoreLeft?.addEventListener('click', toggleLeft);
+
+      document.getElementById('dock-right-btn')?.addEventListener('click', toggleRight);
+      document.getElementById('toggle-backlog-btn')?.addEventListener('click', toggleRight);
+      restoreRight?.addEventListener('click', toggleRight);
+
+      document.getElementById('dock-bottom-btn')?.addEventListener('click', toggleBottom);
+      document.getElementById('toggle-team-btn')?.addEventListener('click', toggleBottom);
+
+      document.getElementById('btn-fullscreen-native')?.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+        else document.exitFullscreen().catch(() => {});
+      });
+
+      // Panel kiri/kanan mulai persis di bawah top HUD, berapa pun tingginya (bisa melipat di layar sempit)
+      const topHud = document.getElementById('top-hud');
+      const sidePanels = [document.getElementById('hud-left-feed'), document.getElementById('hud-right-decisions')];
+      function fitPanelsBelowHud() {
+        const top = topHud.getBoundingClientRect().height + 22;
+        sidePanels.forEach((p) => { p.style.top = top + 'px'; });
+      }
+      new ResizeObserver(fitPanelsBelowHud).observe(topHud);
+      fitPanelsBelowHud();
+    });
+  </script>
 </body>
 </html>

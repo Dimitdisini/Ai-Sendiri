@@ -1,20 +1,4 @@
-// Sidebar bisa disembunyikan biar area kerja (kolom aktivitas/kantor/backlog) lebih lega.
-(() => {
-  const btn = document.getElementById("sidebarToggle");
-  const showBtn = document.getElementById("sidebarShowBtn");
-  let hidden = false;
-  try { hidden = localStorage.getItem("sidebar-hidden") === "1"; } catch { /* abaikan */ }
-  const apply = () => { document.body.classList.toggle("sidebar-hidden", hidden); };
-  apply();
-  const toggle = () => {
-    hidden = !hidden;
-    try { localStorage.setItem("sidebar-hidden", hidden ? "1" : "0"); } catch { /* abaikan */ }
-    apply();
-    window.dispatchEvent(new Event("resize")); // kantor 3D ikut menyesuaikan
-  };
-  btn?.addEventListener("click", toggle);
-  showBtn?.addEventListener("click", toggle);
-})();
+// (Sidebar lama sudah diganti menu ikon di top HUD, tidak perlu toggle show/hide lagi.)
 
 let state = null;
 let roster = {};
@@ -51,42 +35,15 @@ function currentCompany() {
 // SIDEBAR: jam, company list, stats bawah
 // -------------------------------------------------------------------
 function renderSidebar() {
-  // Jam
+  // Jam (dipakai di top HUD dan elemen tersembunyi lama)
   const now = new Date();
-  document.getElementById("liveTime").textContent =
-    now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const t = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const lt = document.getElementById("liveTime"); if (lt) lt.textContent = t;
 
-  // Company list
-  const el = document.getElementById("companyList");
-  if (state && state.companies) {
-    const sig = state.companies.map((c) => c.slug).join("|");
-    if (el.dataset.sig !== sig) {
-      el.innerHTML = "";
-      const colors = ["#6b4f3a", "#3d6b52", "#2563eb", "#9333ea", "#dc2626"];
-      const baseCls = "flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition";
-      const onCls = "bg-blue-50 text-blue-700 border-blue-100";
-      const offCls = "bg-white text-slate-600 border-slate-200 hover:bg-slate-50";
-      state.companies.forEach((c, i) => {
-        const btn = document.createElement("button");
-        btn.className = `${baseCls} ${c.slug === activeCompany ? onCls : offCls}`;
-        btn.dataset.slug = c.slug;
-        btn.innerHTML = `<span class="w-2 h-2 rounded-full shrink-0" style="background:${colors[i % colors.length]}"></span><span class="truncate">${escapeHtml(c.name)}</span>`;
-        btn.onclick = () => { activeCompany = c.slug; render(); };
-        el.appendChild(btn);
-      });
-      el.dataset.sig = sig;
-    } else {
-      [...el.children].forEach((b) => {
-        const on = b.dataset.slug === activeCompany;
-        b.className = `${"flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition"} ${on ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`;
-      });
-    }
-  }
-
-  // Stats bawah sidebar (BLOKIR & Aksi sekarang di bar atas)
+  // Stats ringkas (dipakai halaman lain kalau perlu; BLOKIR & Aksi utama sudah di top HUD)
   const c = currentCompany();
-  document.getElementById("sideRoadmap").textContent = c ? `${c.roadmapProgress}%` : "—";
-  document.getElementById("sidePlan").textContent    = c ? `${c.planCount} / ${c.qaReports}` : "—";
+  const sr = document.getElementById("sideRoadmap"); if (sr) sr.textContent = c ? `${c.roadmapProgress}%` : "—";
+  const sp = document.getElementById("sidePlan"); if (sp) sp.textContent = c ? `${c.planCount} / ${c.qaReports}` : "—";
 }
 
 // -------------------------------------------------------------------
@@ -204,12 +161,14 @@ function updateOffice() {
 function showPage(tab) {
   const pages = { overview: "pageOverview", roadmap: "pageRoadmap", keputusan: "pageKeputusan", output: "pageOutput", bukti: "pageBukti", pengaturan: "pagePengaturan" };
   if (tab === "pengaturan") loadConfig();
-  Object.entries(pages).forEach(([t, id]) => { const el = document.getElementById(id); if (el) { el.classList.toggle("active", t === tab); el.classList.remove("hidden"); } });
-  document.querySelectorAll(".nav-item").forEach((b) => {
+  Object.entries(pages).forEach(([t, id]) => { const el = document.getElementById(id); if (el) el.classList.toggle("active", t === tab); });
+  // Overview = HUD atas kantor 3D. Halaman lain menimpa layar penuh lewat #pageWrap.
+  const wrap = document.getElementById("pageWrap");
+  if (wrap) wrap.classList.toggle("hidden", tab === "overview");
+  document.querySelectorAll(".nav-icon").forEach((b) => {
     const on = b.dataset.tab === tab;
     b.classList.toggle("active", on);
-    b.classList.toggle("bg-blue-50", on); b.classList.toggle("text-blue-600", on); b.classList.toggle("border-blue-100", on);
-    b.classList.toggle("text-slate-600", !on);
+    b.classList.toggle("text-slate-500", !on);
   });
   window.dispatchEvent(new Event("resize")); // kantor 3D perlu tahu kalau container berubah
 }
@@ -458,7 +417,7 @@ setInterval(() => { if (activeTab === "overview") { renderBacklogPanel(); if (!d
 // -------------------------------------------------------------------
 // EVENT LISTENERS
 // -------------------------------------------------------------------
-document.querySelectorAll(".nav-item[data-tab]").forEach((btn) => {
+document.querySelectorAll(".nav-icon[data-tab]").forEach((btn) => {
   btn.addEventListener("click", () => {
     activeTab = btn.dataset.tab;
     showPage(activeTab);
@@ -537,7 +496,10 @@ document.getElementById("cmdForm")?.addEventListener("submit", (e) => {
   const text = document.getElementById("cmdText").value.trim(); if (!text) return;
   sendCommand(text, document.getElementById("cmdCompany").value || null);
 });
-document.getElementById("cmdCompany")?.addEventListener("change", (e) => { e.target.dataset.touched = "1"; });
+document.getElementById("cmdCompany")?.addEventListener("change", (e) => {
+  e.target.dataset.touched = "1";
+  if (e.target.value) { activeCompany = e.target.value; backlogLoadedFor = null; render(); }
+});
 document.getElementById("cmdList")?.addEventListener("click", async (e) => {
   const b = e.target.closest(".cmd-stop"); if (!b) return;
   e.preventDefault();
