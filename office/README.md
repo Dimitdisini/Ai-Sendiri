@@ -177,3 +177,28 @@ Tiga tempat, beda kegunaan:
 **Aturan emas: jangan pernah tempel token/password di percakapan chat dengan Claude.** Kalau sebuah kredensial pernah muncul di chat, anggap bocor dan revoke, walau Claude tidak menyimpannya. Ketik atau tempel langsung ke terminal/file, bukan ke chat.
 
 Untuk mengingat kredensial jangka panjang (bukan yang dipakai sistem), pakai password manager (1Password/Bitwarden), bukan catatan teks biasa.
+
+## Auto-restart (launchd) — Fase 0.1 GO-LIVE.md
+
+Dashboard dan bot Telegram sekarang dikelola `launchd`, bukan dijalankan manual. Kalau Mac restart
+atau prosesnya crash, keduanya hidup sendiri dalam hitungan detik. Sudah diuji nyata: proses dibunuh
+paksa (`kill -9`), launchd menghidupkan ulang dalam 3 detik.
+
+File: `~/Library/LaunchAgents/com.kantorai.dashboard.plist` dan `com.kantorai.telegram.plist` (di luar repo, khusus Mac ini).
+Log: `office/data/dashboard.log` dan `office/data/telegram-bridge.log`.
+
+Perintah berguna:
+```bash
+launchctl list | grep kantorai              # cek status, PID
+launchctl kickstart -k gui/$(id -u)/com.kantorai.dashboard   # restart paksa (setelah ubah server.mjs)
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.kantorai.dashboard.plist   # matikan total
+```
+
+**Karena sekarang dikelola launchd, JANGAN pakai `./office/restart.sh` atau `node office/server.mjs` manual lagi** —
+itu akan bentrok port dengan proses launchd. Kalau perlu restart setelah ubah kode server, pakai `launchctl kickstart -k` di atas.
+
+## Widget pemakaian (Fase 0.3 GO-LIVE.md)
+
+Sidebar dashboard menampilkan "Aksi hari ini / minggu" per perusahaan — dihitung dari jumlah event
+PreToolUse/PostToolUse di `office/data/events.jsonl`. Ini BUKAN biaya token asli (kita tidak menghitung
+token), cuma indikator kasar seberapa sibuk tim di perusahaan itu. Endpoint: `/api/state` field `usage`.

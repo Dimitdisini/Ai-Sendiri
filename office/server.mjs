@@ -152,6 +152,27 @@ function inferRoleFromFile(file) {
   return null;
 }
 
+// Pemakaian kasar per perusahaan: jumlah aksi (Pre/PostToolUse) dan sesi unik, hari ini & 7 hari.
+// Ini BUKAN biaya token asli (kita tidak menghitung token), tapi cukup untuk lihat perusahaan mana
+// yang paling sibuk dan kapan lonjakan aktivitas terjadi.
+function computeUsage() {
+  const events = loadEvents();
+  const now = Date.now(), dayMs = 24 * 60 * 60 * 1000;
+  const byCompany = new Map(); // slug -> { todayActions, weekActions, todaySessions:Set, weekSessions:Set }
+  for (const e of events) {
+    if (e.hook !== "PreToolUse" && e.hook !== "PostToolUse") continue;
+    const slug = e.company || "hq";
+    if (!byCompany.has(slug)) byCompany.set(slug, { todayActions: 0, weekActions: 0, todaySessions: new Set(), weekSessions: new Set() });
+    const b = byCompany.get(slug);
+    const age = now - (e.ts || 0);
+    if (age <= 7 * dayMs) { b.weekActions++; if (e.session_id) b.weekSessions.add(e.session_id); }
+    if (age <= dayMs) { b.todayActions++; if (e.session_id) b.todaySessions.add(e.session_id); }
+  }
+  const out = {};
+  for (const [slug, b] of byCompany) out[slug] = { todayActions: b.todayActions, weekActions: b.weekActions, todaySessions: b.todaySessions.size, weekSessions: b.weekSessions.size };
+  return out;
+}
+
 function computeAgentState() {
   const events = loadEvents();
   const agents = new Map(); // key: company|agent_type
@@ -480,6 +501,7 @@ const server = createServer(async (req, res) => {
   }
 
   if (path === "/api/state") {
+    const usageBySlug = computeUsage();
     const companies = listCompanies().map((slug) => {
       const meta = companyMeta(slug);
       const planningDir = join(COMPANIES_DIR, slug, "planning");
@@ -500,6 +522,7 @@ const server = createServer(async (req, res) => {
         planCount: plans.length,
         qaReports: qaFiles.length,
         team: readTeam(slug).roles,
+        usage: usageBySlug[slug] || { todayActions: 0, weekActions: 0, todaySessions: 0, weekSessions: 0 },
         agents,
       };
     });

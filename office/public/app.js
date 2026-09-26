@@ -64,6 +64,8 @@ function renderSidebar() {
   document.getElementById("sideRoadmap").textContent = c ? `${c.roadmapProgress}%` : "—";
   document.getElementById("sidePlan").textContent    = c ? `${c.planCount} / ${c.qaReports}` : "—";
   document.getElementById("sideBlokir").textContent  = c ? (c.keputusanTertahan || 0) : "—";
+  const u = c && c.usage;
+  document.getElementById("sideUsage").textContent = u ? `${u.todayActions} / ${u.weekActions}` : "—";
 }
 
 // -------------------------------------------------------------------
