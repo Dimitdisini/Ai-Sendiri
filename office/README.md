@@ -202,3 +202,14 @@ itu akan bentrok port dengan proses launchd. Kalau perlu restart setelah ubah ko
 Sidebar dashboard menampilkan "Aksi hari ini / minggu" per perusahaan — dihitung dari jumlah event
 PreToolUse/PostToolUse di `office/data/events.jsonl`. Ini BUKAN biaya token asli (kita tidak menghitung
 token), cuma indikator kasar seberapa sibuk tim di perusahaan itu. Endpoint: `/api/state` field `usage`.
+
+## Penjadwal lokal (pengganti Scheduled Tasks Claude)
+
+Rutinitas berjalan di server.mjs sendiri, gratis dan lokal. Daftarnya di `office/jadwal.json`
+(id, jam, hari 0=Minggu, diam, perintah). Status per hari di `office/data/jadwal-state.json`.
+
+- Dicek tiap 30 detik. Kalau Mac tidur saat jamnya, tugas dikejar sampai 3 jam setelahnya; lewat dari itu ditandai "terlewat".
+- `diam: true` berarti tidak ada notifikasi selesai ke Telegram (laporan pagi/malam sudah dikirim bot lewat jurnal).
+- Lihat status: `GET /api/jadwal`. Ubah jadwal: edit jadwal.json lalu `launchctl kickstart -k gui/$(id -u)/com.kantorai.dashboard`.
+- Empat Scheduled Tasks di aplikasi Claude sudah dinonaktifkan (tidak dihapus).
+- Syarat: Mac menyala dan tidak tidur pada jam tugas (atau bangun dalam 3 jam).

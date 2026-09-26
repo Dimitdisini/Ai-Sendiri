@@ -381,21 +381,7 @@ function loadJobs() {
   for (const j of last.values()) { if (j.status === "jalan" || j.status === "antre") j.status = "terhenti"; jobs.push(j); }
 }
 loadJobs();
-function saveJob(j) { appendFileSync(COMMANDS_FILE, JSON.stringify(j) + "\n"); }
-function nextJob() {
-  if (running) return;
-  const j = jobs.find((x) => x.status === "antre"); if (!j) return;
-  running = j; j.status = "jalan"; j.started = Date.now(); saveJob(j); broadcast();
-  const where = j.company ? `Perusahaan: ${j.company} (folder companies/${j.company}/). ` : "";
-  const prompt = `Perintah dari CEO lewat dashboard Kantor AI. ${where}Jalankan sesuai CLAUDE.md. Jawab ringkas maksimal 15 baris, tanpa tabel markdown.\n\n${j.text}`;
-  const args = ["-p", prompt, "--output-format", "text"];
-  if (process.env.CLAUDE_SAFE !== "1") args.push("--dangerously-skip-permissions");
-  const child = spawn(CLAUDE_BIN, args, { cwd: ROOT, env: process.env });
-  j.pid = child.pid;
-  let out = "", err = "";
-  child.stdout.on("data", (d) => { out += d; j.output = out.slice(-6000); });
-  child.stderr.on("data", (d) => { err += d; });
-  async function notifyTelegram(text) {
+async function notifyTelegram(text) {
   const tok = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
   if (!tok || !chat) return;
   try {
@@ -408,12 +394,28 @@ function nextJob() {
   } catch { /* Telegram opsional, jangan sampai gagal di sini menghentikan job */ }
 }
 
+function saveJob(j) { appendFileSync(COMMANDS_FILE, JSON.stringify(j) + "\n"); }
+function nextJob() {
+  if (running) return;
+  const j = jobs.find((x) => x.status === "antre"); if (!j) return;
+  running = j; j.status = "jalan"; j.started = Date.now(); saveJob(j); broadcast();
+  const where = j.company ? `Perusahaan: ${j.company} (folder companies/${j.company}/). ` : "";
+  const prompt = j.origin === "jadwal"
+    ? `Tugas terjadwal Kantor AI (${j.jadwalId}), dijalankan otomatis tanpa CEO. ${where}Jalankan sesuai CLAUDE.md.\n\n${j.text}`
+    : `Perintah dari CEO lewat dashboard Kantor AI. ${where}Jalankan sesuai CLAUDE.md. Jawab ringkas maksimal 15 baris, tanpa tabel markdown.\n\n${j.text}`;
+  const args = ["-p", prompt, "--output-format", "text"];
+  if (process.env.CLAUDE_SAFE !== "1") args.push("--dangerously-skip-permissions");
+  const child = spawn(CLAUDE_BIN, args, { cwd: ROOT, env: process.env });
+  j.pid = child.pid;
+  let out = "", err = "";
+  child.stdout.on("data", (d) => { out += d; j.output = out.slice(-6000); });
+  child.stderr.on("data", (d) => { err += d; });
   const done = (code) => {
     if (j.status === "jalan") j.status = code === 0 ? "selesai" : "gagal";
     j.ended = Date.now(); j.output = (out.trim() || err.trim() || "(tidak ada keluaran)").slice(-6000); delete j.pid;
     saveJob(j); running = null; broadcast(); nextJob();
     const label = j.status === "selesai" ? "✅" : j.status === "dihentikan" ? "⏹" : "❌";
-    notifyTelegram(`${label} Perintah${j.company ? " (" + j.company + ")" : ""}: ${j.text}
+    if (!j.diam) notifyTelegram(`${label} ${j.origin === "jadwal" ? "Jadwal " + j.jadwalId : "Perintah"}${j.company ? " (" + j.company + ")" : ""}: ${j.origin === "jadwal" ? "" : j.text}
 
 ${j.output}`);
   };
@@ -421,6 +423,44 @@ ${j.output}`);
   child.on("error", (e) => { err += String(e); done(-1); });
   j._child = child;
 }
+function enqueueJob({ text, company = null, origin = "manual", jadwalId = null, diam = false }) {
+  const j = { id: randomBytes(6).toString("hex"), text, company, origin, jadwalId, diam, status: "antre", created: Date.now(), output: "" };
+  jobs.push(j); saveJob(j); nextJob(); broadcast();
+  return j;
+}
+
+// ---------- Penjadwal lokal (menggantikan Scheduled Tasks aplikasi Claude) ----------
+// Jalan di dalam server ini (dikelola launchd), jadi tidak butuh aplikasi Claude terbuka.
+// Tugas masuk ke antrean yang SAMA dengan Telegram dan dashboard, jadi tidak pernah bentrok.
+// Kalau Mac tidur saat jadwal, tugas dikejar begitu bangun, asal telatnya kurang dari 3 jam.
+const JADWAL_FILE = join(OFFICE_DIR, "jadwal.json");
+const JADWAL_STATE = join(DATA_DIR, "jadwal-state.json");
+const JADWAL_TELAT_MAKS_MS = 3 * 60 * 60 * 1000;
+function bacaJadwal() { try { return JSON.parse(readFileSync(JADWAL_FILE, "utf8")); } catch { return []; } }
+function bacaState() { try { return JSON.parse(readFileSync(JADWAL_STATE, "utf8")); } catch { return {}; } }
+function tanggalLokal(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function cekJadwal() {
+  const now = new Date(), hari = tanggalLokal(now), state = bacaState();
+  let ubah = false;
+  for (const t of bacaJadwal()) {
+    if (!t.aktif || !Array.isArray(t.hari) || !t.hari.includes(now.getDay())) continue;
+    if (state[t.id] && state[t.id].tanggal === hari) continue;
+    const [hh, mm] = String(t.jam || "").split(":").map(Number);
+    if (Number.isNaN(hh)) continue;
+    const target = new Date(now); target.setHours(hh, mm || 0, 0, 0);
+    const telat = now - target;
+    if (telat < 0) continue;
+    if (telat > JADWAL_TELAT_MAKS_MS) { state[t.id] = { tanggal: hari, status: "terlewat", ts: Date.now() }; ubah = true; continue; }
+    if (jobs.some((x) => x.jadwalId === t.id && (x.status === "antre" || x.status === "jalan"))) continue;
+    const j = enqueueJob({ text: t.perintah, company: t.perusahaan || null, origin: "jadwal", jadwalId: t.id, diam: !!t.diam });
+    state[t.id] = { tanggal: hari, status: telat > 5 * 60 * 1000 ? "dikejar (telat " + Math.round(telat / 60000) + " menit)" : "tepat waktu", job: j.id, ts: Date.now() };
+    ubah = true;
+  }
+  if (ubah) writeFileSync(JADWAL_STATE, JSON.stringify(state, null, 2));
+}
+setInterval(cekJadwal, 30 * 1000);
+setTimeout(cekJadwal, 5000);
+
 function publicJob(j) { const { _child, ...rest } = j; return rest; }
 
 const server = createServer(async (req, res) => {
@@ -428,6 +468,8 @@ const server = createServer(async (req, res) => {
   const path = url.pathname;
 
   if (path === "/api/auth" && req.method === "GET") { sendJSON(res, authorized(req) ? 200 : 401, { ok: authorized(req) }); return; }
+
+  if (path === "/api/jadwal" && req.method === "GET") { sendJSON(res, 200, { jadwal: bacaJadwal().map(({ perintah, ...r }) => r), status: bacaState() }); return; }
 
   if (path === "/api/commands" && req.method === "GET") { sendJSON(res, 200, jobs.slice(-20).reverse().map(publicJob)); return; }
 
@@ -444,8 +486,7 @@ const server = createServer(async (req, res) => {
     const text = String(body.text || "").trim().slice(0, 4000);
     if (!text) { sendJSON(res, 400, { error: "Perintah kosong" }); return; }
     const company = body.company && /^[a-z0-9._-]+$/i.test(body.company) && existsSync(join(COMPANIES_DIR, body.company)) ? body.company : null;
-    const j = { id: randomBytes(6).toString("hex"), text, company, status: "antre", created: Date.now(), output: "" };
-    jobs.push(j); saveJob(j); nextJob(); broadcast();
+    const j = enqueueJob({ text, company, origin: "manual" });
     sendJSON(res, 200, publicJob(j)); return;
   }
 
