@@ -213,3 +213,17 @@ Rutinitas berjalan di server.mjs sendiri, gratis dan lokal. Daftarnya di `office
 - Lihat status: `GET /api/jadwal`. Ubah jadwal: edit jadwal.json lalu `launchctl kickstart -k gui/$(id -u)/com.kantorai.dashboard`.
 - Empat Scheduled Tasks di aplikasi Claude sudah dinonaktifkan (tidak dihapus).
 - Syarat: Mac menyala dan tidak tidur pada jam tugas (atau bangun dalam 3 jam).
+
+## Eksekutor tugas: API langsung vs CLI Claude Code
+
+Server bisa menjalankan tugas dengan dua cara:
+
+- **api** (target akhir, tanpa aplikasi Claude Code sama sekali): pakai `@anthropic-ai/claude-agent-sdk`
+  langsung ke Claude API. Butuh `ANTHROPIC_API_KEY` diisi di `office/.env`. Tools bawaan (baca/tulis file,
+  jalankan perintah) tetap jalan karena SDK ini pakai harness yang sama dengan Claude Code, cuma lewat API key,
+  bukan login aplikasi.
+- **cli** (cara lama, fallback): pakai binary `claude` di terminal, butuh app Claude Code login.
+
+Otomatis pilih **api** begitu `ANTHROPIC_API_KEY` terisi di `.env`. Paksa salah satu dengan `CLAUDE_EXECUTOR=api`
+atau `CLAUDE_EXECUTOR=cli` di `.env`. Dependency `@anthropic-ai/claude-agent-sdk` ada di `office/package.json`,
+pasang dengan `npm install` di folder `office/`.

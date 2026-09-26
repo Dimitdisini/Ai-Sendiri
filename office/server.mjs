@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Server dashboard Kantor AI. Tanpa dependency eksternal — cukup `node office/server.mjs`.
+// Server dashboard Kantor AI. Hampir tanpa dependency eksternal — cukup `node office/server.mjs`.
 // Baca office/data/events.jsonl (ditulis oleh hooks) + folder companies/*/planning/ untuk menyusun state,
 // lalu sajikan lewat REST API + Server-Sent Events ke office/public/index.html.
+// Eksekutor tugas: pakai Claude Agent SDK (API langsung, ANTHROPIC_API_KEY) kalau tersedia,
+// fallback ke CLI Claude Code kalau belum. Lihat EXECUTOR di bawah.
 
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
@@ -395,14 +397,60 @@ async function notifyTelegram(text) {
 }
 
 function saveJob(j) { appendFileSync(COMMANDS_FILE, JSON.stringify(j) + "\n"); }
-function nextJob() {
-  if (running) return;
-  const j = jobs.find((x) => x.status === "antre"); if (!j) return;
-  running = j; j.status = "jalan"; j.started = Date.now(); saveJob(j); broadcast();
+
+// EXECUTOR: "api" pakai Claude Agent SDK langsung (butuh ANTHROPIC_API_KEY di office/.env,
+// tidak butuh aplikasi Claude Code sama sekali). "cli" pakai binary `claude` (perlu app/login).
+// Pilih otomatis: ada ANTHROPIC_API_KEY -> "api", kalau tidak -> "cli" (lama, tetap didukung).
+const EXECUTOR = process.env.CLAUDE_EXECUTOR || (process.env.ANTHROPIC_API_KEY ? "api" : "cli");
+let sdkQuery = null;
+if (EXECUTOR === "api") {
+  try { ({ query: sdkQuery } = await import("@anthropic-ai/claude-agent-sdk")); }
+  catch (e) { console.error("Gagal memuat @anthropic-ai/claude-agent-sdk, fallback ke CLI:", e.message); }
+}
+
+function buatPrompt(j) {
   const where = j.company ? `Perusahaan: ${j.company} (folder companies/${j.company}/). ` : "";
-  const prompt = j.origin === "jadwal"
+  return j.origin === "jadwal"
     ? `Tugas terjadwal Kantor AI (${j.jadwalId}), dijalankan otomatis tanpa CEO. ${where}Jalankan sesuai CLAUDE.md.\n\n${j.text}`
     : `Perintah dari CEO lewat dashboard Kantor AI. ${where}Jalankan sesuai CLAUDE.md. Jawab ringkas maksimal 15 baris, tanpa tabel markdown.\n\n${j.text}`;
+}
+
+function selesaikanJob(j, out, err, code) {
+  if (j.status === "jalan") j.status = code === 0 ? "selesai" : "gagal";
+  j.ended = Date.now(); j.output = (out.trim() || err.trim() || "(tidak ada keluaran)").slice(-6000); delete j.pid;
+  saveJob(j); running = null; broadcast(); nextJob();
+  const label = j.status === "selesai" ? "✅" : j.status === "dihentikan" ? "⏹" : "❌";
+  if (!j.diam) notifyTelegram(`${label} ${j.origin === "jadwal" ? "Jadwal " + j.jadwalId : "Perintah"}${j.company ? " (" + j.company + ")" : ""}: ${j.origin === "jadwal" ? "" : j.text}
+
+${j.output}`);
+}
+
+async function jalankanViaApi(j) {
+  let out = "", err = "";
+  try {
+    const q = sdkQuery({
+      prompt: buatPrompt(j),
+      options: { cwd: ROOT, permissionMode: "bypassPermissions" },
+    });
+    j._child = { kill: () => q.interrupt?.() };
+    for await (const msg of q) {
+      if (msg.type === "assistant") {
+        for (const block of msg.message?.content || []) {
+          if (block.type === "text") { out += block.text; j.output = out.slice(-6000); }
+        }
+      } else if (msg.type === "result") {
+        if (msg.subtype !== "success") err += msg.subtype + (msg.error ? `: ${msg.error}` : "");
+        if (msg.result && !out) out = msg.result;
+      }
+    }
+    selesaikanJob(j, out, err, err ? 1 : 0);
+  } catch (e) {
+    selesaikanJob(j, out, String(e?.message || e), 1);
+  }
+}
+
+function jalankanViaCli(j) {
+  const prompt = buatPrompt(j);
   const args = ["-p", prompt, "--output-format", "text"];
   if (process.env.CLAUDE_SAFE !== "1") args.push("--dangerously-skip-permissions");
   const child = spawn(CLAUDE_BIN, args, { cwd: ROOT, env: process.env });
@@ -410,18 +458,16 @@ function nextJob() {
   let out = "", err = "";
   child.stdout.on("data", (d) => { out += d; j.output = out.slice(-6000); });
   child.stderr.on("data", (d) => { err += d; });
-  const done = (code) => {
-    if (j.status === "jalan") j.status = code === 0 ? "selesai" : "gagal";
-    j.ended = Date.now(); j.output = (out.trim() || err.trim() || "(tidak ada keluaran)").slice(-6000); delete j.pid;
-    saveJob(j); running = null; broadcast(); nextJob();
-    const label = j.status === "selesai" ? "✅" : j.status === "dihentikan" ? "⏹" : "❌";
-    if (!j.diam) notifyTelegram(`${label} ${j.origin === "jadwal" ? "Jadwal " + j.jadwalId : "Perintah"}${j.company ? " (" + j.company + ")" : ""}: ${j.origin === "jadwal" ? "" : j.text}
-
-${j.output}`);
-  };
-  child.on("close", done);
-  child.on("error", (e) => { err += String(e); done(-1); });
+  child.on("close", (code) => selesaikanJob(j, out, err, code));
+  child.on("error", (e) => selesaikanJob(j, out, String(e), -1));
   j._child = child;
+}
+
+function nextJob() {
+  if (running) return;
+  const j = jobs.find((x) => x.status === "antre"); if (!j) return;
+  running = j; j.status = "jalan"; j.started = Date.now(); saveJob(j); broadcast();
+  if (EXECUTOR === "api" && sdkQuery) jalankanViaApi(j); else jalankanViaCli(j);
 }
 function enqueueJob({ text, company = null, origin = "manual", jadwalId = null, diam = false }) {
   const j = { id: randomBytes(6).toString("hex"), text, company, origin, jadwalId, diam, status: "antre", created: Date.now(), output: "" };
