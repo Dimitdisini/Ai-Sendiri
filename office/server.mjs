@@ -362,6 +362,7 @@ function writeProfile(slug, fields, name) {
 
 function authorized(req) {
   const h = req.headers.authorization || "";
+  if (!/^Bearer\s+/i.test(h)) return false;
   const got = Buffer.from(h.replace(/^Bearer\s+/i, "")), want = Buffer.from(TOKEN);
   return got.length === want.length && timingSafeEqual(got, want);
 }
@@ -369,6 +370,8 @@ function authorized(req) {
 // Perlu ini karena dashboard bisa diakses lewat tunnel publik (Cloudflare dll), jadi tampilan
 // baca-baca (riwayat perintah, roster tim) tidak boleh terbuka tanpa kunci sama sekali.
 // Username bebas (browser tetap minta diisi), password = OFFICE_TOKEN.
+// authorized() (Bearer, dipakai dashboard/Telegram) DAN basicAuthOk() (Basic, dipakai browser
+// biasa) dua-duanya sah untuk endpoint yang tadinya hanya cek authorized() — lihat masukAman().
 function basicAuthOk(req) {
   const h = req.headers.authorization || "";
   if (!h.startsWith("Basic ")) return false;
@@ -377,6 +380,7 @@ function basicAuthOk(req) {
   const got = Buffer.from(pass || ""), want = Buffer.from(TOKEN);
   return got.length === want.length && timingSafeEqual(got, want);
 }
+function masukAman(req) { return authorized(req) || basicAuthOk(req); }
 function readBody(req, limit = 64 * 1024) {
   return new Promise((resolve, reject) => {
     let buf = ""; req.setEncoding("utf8");
@@ -430,9 +434,12 @@ function bacaAgen(peranSlug) {
   if (!existsSync(p)) return null;
   return readFileSync(p, "utf8").replace(/^---[\s\S]*?---\n/, "").trim();
 }
-function jalankanAgy(promptText, { timeoutMs = 20 * 60 * 1000, onChild = null } = {}) {
+function jalankanAgy(promptText, { timeoutMs = 20 * 60 * 1000, onChild = null, effort = null, model = null } = {}) {
   return new Promise((resolve) => {
-    const child = spawn(AGY_BIN, ["-p", promptText, "--output-format", "text", "--dangerously-skip-permissions"], { cwd: ROOT, env: process.env });
+    const args = ["-p", promptText, "--output-format", "text", "--dangerously-skip-permissions"];
+    if (effort) args.push("--effort", effort);
+    if (model) args.push("--model", model);
+    const child = spawn(AGY_BIN, args, { cwd: ROOT, env: process.env });
     if (onChild) onChild(child);
     let out = "", err = "";
     const t = setTimeout(() => { try { child.kill("SIGTERM"); } catch { /* abaikan */ } }, timeoutMs);
@@ -444,7 +451,7 @@ function jalankanAgy(promptText, { timeoutMs = 20 * 60 * 1000, onChild = null } 
 }
 function jalankanViaAgy(j) {
   running = j;
-  jalankanAgy(buatPrompt(j), { onChild: (c) => { j._child = c; j.pid = c.pid; } })
+  jalankanAgy(buatPrompt(j), { onChild: (c) => { j._child = c; j.pid = c.pid; }, effort: j.effort, model: j.model })
     .then((r) => selesaikanJob(j, r.out, r.err, r.ok ? 0 : 1));
 }
 
@@ -560,8 +567,8 @@ function nextJob() {
   if (j.executor === "agy") { jalankanViaAgy(j); return; }
   if (EXECUTOR === "api" && sdkQuery) jalankanViaApi(j); else jalankanViaCli(j);
 }
-function enqueueJob({ text, company = null, origin = "manual", jadwalId = null, diam = false, executor = null }) {
-  const j = { id: randomBytes(6).toString("hex"), text, company, origin, jadwalId, diam, executor, status: "antre", created: Date.now(), output: "" };
+function enqueueJob({ text, company = null, origin = "manual", jadwalId = null, diam = false, executor = null, effort = null, model = null }) {
+  const j = { id: randomBytes(6).toString("hex"), text, company, origin, jadwalId, diam, executor, effort, model, status: "antre", created: Date.now(), output: "" };
   jobs.push(j); saveJob(j); nextJob(); broadcast();
   return j;
 }
@@ -589,7 +596,7 @@ function cekJadwal() {
     if (telat < 0) continue;
     if (telat > JADWAL_TELAT_MAKS_MS) { state[t.id] = { tanggal: hari, status: "terlewat", ts: Date.now() }; ubah = true; continue; }
     if (jobs.some((x) => x.jadwalId === t.id && (x.status === "antre" || x.status === "jalan"))) continue;
-    const j = enqueueJob({ text: t.perintah, company: t.perusahaan || null, origin: "jadwal", jadwalId: t.id, diam: !!t.diam, executor: t.executor || null });
+    const j = enqueueJob({ text: t.perintah, company: t.perusahaan || null, origin: "jadwal", jadwalId: t.id, diam: !!t.diam, executor: t.executor || null, effort: t.effort || null, model: t.model || null });
     state[t.id] = { tanggal: hari, status: telat > 5 * 60 * 1000 ? "dikejar (telat " + Math.round(telat / 60000) + " menit)" : "tepat waktu", job: j.id, ts: Date.now() };
     ubah = true;
   }
@@ -608,7 +615,7 @@ const server = createServer(async (req, res) => {
   // karena kalau dibuka lewat link tunnel publik, semua koneksi kelihatan datang dari Mac ini juga
   // (tunnelnya nyambung ke server ini secara lokal), jadi tidak bisa dibedakan mana yang aman.
   // Browser akan mengingat login ini sendiri setelah pertama kali diisi, jadi tidak akan ditanya terus.
-  if (!basicAuthOk(req) && !authorized(req)) {
+  if (!masukAman(req)) {
     res.writeHead(401, { "WWW-Authenticate": 'Basic realm="Kantor AI"', "Content-Type": "text/plain" });
     res.end("Butuh login. Password = OFFICE_TOKEN di office/.env, username bebas.");
     return;
@@ -628,19 +635,21 @@ const server = createServer(async (req, res) => {
   }
 
   if (path === "/api/command" && req.method === "POST") {
-    if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }
+    if (!masukAman(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }
     let body; try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
     const text = String(body.text || "").trim().slice(0, 4000);
     if (!text) { sendJSON(res, 400, { error: "Perintah kosong" }); return; }
     const company = body.company && /^[a-z0-9._-]+$/i.test(body.company) && existsSync(join(COMPANIES_DIR, body.company)) ? body.company : null;
     const executor = body.executor === "agy" ? "agy" : null;
-    const j = enqueueJob({ text, company, origin: "manual", executor });
+    const effort = ["low", "medium", "high", "max"].includes(body.effort) ? body.effort : null;
+    const model = typeof body.model === "string" && /^[a-z0-9.-]{1,40}$/i.test(body.model) ? body.model : null;
+    const j = enqueueJob({ text, company, origin: "manual", executor, effort, model });
     sendJSON(res, 200, publicJob(j)); return;
   }
 
   const mStop = path.match(/^\/api\/command\/([a-f0-9]+)\/stop$/);
   if (mStop && req.method === "POST") {
-    if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
+    if (!masukAman(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
     const j = jobs.find((x) => x.id === mStop[1]);
     if (!j) { sendJSON(res, 404, { error: "tidak ada" }); return; }
     if (j.status === "antre") { j.status = "dibatalkan"; saveJob(j); }
@@ -650,7 +659,7 @@ const server = createServer(async (req, res) => {
 
   // Event dari tool lain (Antigravity, Codex, skrip). Format sama dengan hooks.
   if (path === "/api/event" && req.method === "POST") {
-    if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
+    if (!masukAman(req)) { sendJSON(res, 401, { error: "Kunci akses salah" }); return; }
     let b; try { b = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
     const type = String(b.agent_type || b.role || "").trim();
     if (!/^[a-z0-9-]{2,40}$/.test(type)) { sendJSON(res, 400, { error: "agent_type wajib, huruf kecil dan tanda minus, misal backend" }); return; }
@@ -669,7 +678,7 @@ const server = createServer(async (req, res) => {
     if (!existsSync(join(COMPANIES_DIR, slug))) { sendJSON(res, 404, { error: "perusahaan tidak ada" }); return; }
     if (req.method === "GET") { sendJSON(res, 200, { slug, name: companyMeta(slug).name, team: readTeam(slug), profile: readProfile(slug), roster }); return; }
     if (req.method === "POST") {
-      if (!authorized(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }
+      if (!masukAman(req)) { sendJSON(res, 401, { error: "Kunci akses salah atau belum diisi" }); return; }
       let b; try { b = await readBody(req); } catch (e) { sendJSON(res, 400, { error: String(e.message) }); return; }
       const roles = [...new Set(["orchestrator", ...(Array.isArray(b.roles) ? b.roles : [])])].filter((r) => roster[r]);
       writeFileSync(join(COMPANIES_DIR, slug, "team.json"), JSON.stringify({ roles, notes: String(b.notes || "").slice(0, 2000), updated: new Date().toISOString() }, null, 2) + "\n");

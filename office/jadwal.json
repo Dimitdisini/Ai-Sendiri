@@ -6,6 +6,7 @@
     "hari": [0, 1, 2, 3, 4, 5, 6],
     "diam": true,
     "executor": "agy",
+    "effort": "medium",
     "perintah": "Jalankan protokol .claude/skills/briefing/SKILL.md (laporan pagi). Ikuti CLAUDE.md root persis, termasuk bagian SOP, Ingatan, dan Laporan harian. Panggil hanya peran chief-of-staff. Output: bagian \"## Pagi\" di hq/jurnal/<tanggal hari ini>.md dari templates/JURNAL.md. Bagian \"### Untuk CEO\" dikirim otomatis ke Telegram oleh bot, jadi jangan mengirim pesan sendiri dan jangan membaca office/.env. Jangan menambah pekerjaan baru dan jangan mengusulkan project baru. Di akhir cukup satu baris: path file jurnal."
   },
   {
@@ -15,6 +16,7 @@
     "hari": [1, 2, 3, 4, 5],
     "diam": true,
     "executor": "agy",
+    "effort": "medium",
     "perintah": "Jalankan protokol .claude/skills/diskusi-pagi/SKILL.md untuk semua perusahaan di companies/. Ikuti CLAUDE.md root, SCOPE.md, dan .claude/agents/peneliti.md persis. Batas biaya: maksimal 1 peneliti + 4 peran per perusahaan, tanpa ronde kedua. Kalau tidak ada tema layak untuk suatu perusahaan, itu hasil yang sah. Di akhir cukup satu baris per perusahaan: ada tema atau tidak."
   },
   {
