@@ -162,7 +162,11 @@ function showPage(tab) {
   const pages = { overview: "pageOverview", roadmap: "pageRoadmap", keputusan: "pageKeputusan", output: "pageOutput", bukti: "pageBukti", pengaturan: "pagePengaturan" };
   if (tab === "pengaturan") loadConfig();
   Object.entries(pages).forEach(([t, id]) => { const el = document.getElementById(id); if (el) el.classList.toggle("active", t === tab); });
-  // Overview = HUD atas kantor 3D. Halaman lain menimpa layar penuh lewat #pageWrap.
+  // Overview = layout 3 kolom biasa (bukan lagi mekanisme .page.active lama). Halaman
+  // lain menimpa layar penuh lewat #pageWrap.
+  // Set lewat inline style (bukan class) supaya tidak pernah bentrok cascade dengan class Tailwind lain.
+  const ov = document.getElementById("pageOverview");
+  if (ov) ov.style.display = tab === "overview" ? "" : "none";
   const wrap = document.getElementById("pageWrap");
   if (wrap) wrap.classList.toggle("hidden", tab === "overview");
   document.querySelectorAll(".nav-icon").forEach((b) => {

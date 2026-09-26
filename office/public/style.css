@@ -297,13 +297,17 @@ body:not(.sidebar-hidden) .sidebar-toggle { left: calc(var(--sidebar-w) - 15px);
   color: var(--err);
 }
 
-.page {
+/* Konvensi lama (sembunyikan kecuali .active) sekarang HANYA untuk halaman di dalam
+   #pageWrap (Roadmap/Keputusan/Output/Bukti/Pengaturan). #pageOverview sudah diatur
+   langsung lewat class Tailwind sendiri, jangan ikut aturan ini -- pernah bentrok
+   berkali-kali (flex-direction/display ketiban aturan sini yang lebih spesifik). */
+#pageWrap .page {
   display: none;
   padding: 24px;
   flex: 1;
   animation: fadeIn 0.18s ease;
 }
-.page.active { display: flex; flex-direction: column; gap: 20px; }
+#pageWrap .page.active { display: flex; flex-direction: column; gap: 20px; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
 .page-header {
