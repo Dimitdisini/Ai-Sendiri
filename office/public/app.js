@@ -600,10 +600,10 @@ document.getElementById("cmdAllModalBody")?.addEventListener("click", async (e) 
   document.getElementById("cmdAllModal").classList.add("hidden");
   openCmdModal(row.dataset.id);
 });
-async function sendCommand(text, company, retried) {
+async function sendCommand(text, company, retried, executor) {
   const token = getToken(false); if (!token) return;
-  const res = await fetch("/api/command", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ text, company }) });
-  if (res.status === 401 && !retried) { getToken(true); return sendCommand(text, company, true); }
+  const res = await fetch("/api/command", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ text, company, executor: executor || undefined }) });
+  if (res.status === 401 && !retried) { getToken(true); return sendCommand(text, company, true, executor); }
   if (!res.ok) { const e = await res.json().catch(() => ({})); alert("Gagal mengirim: " + (e.error || res.status)); return; }
   document.getElementById("cmdText").value = "";
   loadCommands();
@@ -611,7 +611,7 @@ async function sendCommand(text, company, retried) {
 document.getElementById("cmdForm")?.addEventListener("submit", (e) => {
   e.preventDefault();
   const text = document.getElementById("cmdText").value.trim(); if (!text) return;
-  sendCommand(text, document.getElementById("cmdCompany").value || null);
+  sendCommand(text, document.getElementById("cmdCompany").value || null, false, document.getElementById("cmdExecutor")?.value || null);
 });
 document.getElementById("cmdCompany")?.addEventListener("change", (e) => {
   e.target.dataset.touched = "1";
