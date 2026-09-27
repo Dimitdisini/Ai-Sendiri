@@ -33,7 +33,49 @@ AC9. Diberikan compose jalan, ketika `make down && make up`, maka semua healthy 
 Referensi TDD §1, §2, §6.1. Pola plan 010 (sudah PASS bersyarat) boleh ditiru: migrasi 0001 dijalankan superuser, migrasi berikut diawali `SET ROLE app_owner;`. Tag image dikunci (postgres:16.x, minio RELEASE tertentu, node:22-alpine, nginx:1.27-alpine). Struktur folder, nama service, dan port adalah kontrak plan berikutnya; perubahan wajib dicatat di handback. Kalau Docker tidak tersedia saat QA, ikuti sop-qa-tanpa-alat.
 
 ## Handback (diisi Developer)
-Tanggal | File diubah | Cara menjalankan | Belum selesai | Catatan untuk QA
+**Tanggal:** 2026-09-27 | **Oleh:** DevOps (sesi orkestrator, tanpa subagen) | **Commit lokal:** `b0d77bb` di `companies/xavortree/code/gocean-b2b/` (branch `main`, tanpa remote, tidak di-push, A26)
+
+**Mesin ini tidak punya Node/pnpm/Docker** (PATH sandbox tidak menyertakannya) — semua file ditulis langsung dengan editor, **belum pernah dijalankan, di-build, atau ditest sama sekali**. Ikuti sop-qa-tanpa-alat: verifikasi penuh butuh mesin lain.
+
+**File dibuat** (65 file ter-track, `git ls-files`):
+- Root: `package.json` (workspaces via `pnpm-workspace.yaml`), `tsconfig.base.json`, `eslint.config.js`, `.prettierrc`/`.prettierignore`, `vitest.config.ts`, `.env.example`, `.gitignore`, `.dockerignore`, `Makefile`, `README.md`
+- `apps/api`: NestJS 11 + `@nestjs/platform-fastify`, `HealthController` (`/healthz` selalu 200, `/readyz` query `SELECT 1` timeout 2s → 200/503), `MetricsController` (`prom-client` default metrics), `main.ts` (pino JSON per request dengan `request_id` dari `fastify.genReqId`), Dockerfile multi-stage (pnpm install → build → runtime)
+- `apps/worker`: `heartbeat.job.ts` (`pg-boss` schedule `* * * * *` + `work()`), `main.ts` (Fastify tipis untuk `:8082/healthz`, graceful shutdown), Dockerfile
+- `apps/web`: Vite + React 18 + `vite-plugin-pwa` (manifest "Gocean B2B", ikon placeholder 1×1 di `public/icons/`), halaman "Gocean B2B — segera", `nginx.conf`, Dockerfile (stage build Vite → nginx runtime)
+- `packages/shared`: `errors.ts` (kode error FD §7.1: `UNAUTHENTICATED`…`RATE_LIMITED` + `ApiError`), zod terpasang (belum dipakai skema nyata — plan 016+)
+- `packages/db`: `createDb()` (Kysely + `pg` dialect), `types.ts` placeholder (`kysely-codegen` diisi plan 016+ setelah ada tabel)
+- `packages/ui`: komponen `Button`
+- `db/migrations/0001_extensions_schemas_roles.sql`: `pgcrypto`, `citext`; schema `core`/`audit`/`jobs`; role `app_owner`/`app_ops`/`app_fin`/`app_report`; `app_fin` tanpa GRANT. `db/scripts/set_role_passwords.sh` (pola plan 010, password dari env, idempotent)
+- `deploy/docker-compose.yml` (`postgres`, `migrate`, `minio`+`minio-init`, `mailpit`, `api`, `worker`, `web`, healthcheck + `depends_on` `service_healthy`/`service_completed_successfully`), `deploy/migrate/Dockerfile` (dbmate+psql), `deploy/minio/init.sh` (buat bucket `gocean-dev-files`, `mc anonymous set none`), `deploy/scripts/wait-healthy.sh` (disalin dari plan 010, generik)
+
+**Cara menjalankan** (di mesin dengan Node 22, pnpm 9, Docker ≥24 + Compose v2)
+```bash
+cd companies/xavortree/code/gocean-b2b
+corepack enable && corepack prepare pnpm@9.12.0 --activate
+pnpm install                 # BUKAN --frozen-lockfile dulu: pnpm-lock.yaml belum ada (lihat "Belum selesai")
+cp .env.example .env
+make ci                      # lint + typecheck + test (belum pernah dijalankan, mungkin ada typo kecil)
+make up                      # butuh Docker; build + nyalakan semua service
+make ps | make logs | make psql | make db-reset | make down
+```
+
+**Belum selesai / risiko diketahui — WAJIB dibaca sebelum QA:**
+1. **`pnpm-lock.yaml` tidak ada** — pnpm tidak tersedia di mesin ini untuk generate lockfile. AC7 minta `pnpm install --frozen-lockfile`; ini akan GAGAL sampai seseorang menjalankan `pnpm install` sekali (tanpa `--frozen-lockfile`) di mesin ber-pnpm dan commit `pnpm-lock.yaml` yang dihasilkan. Setelah itu `Dockerfile` (`--frozen-lockfile`) dan `make ci` baru bisa jalan apa adanya.
+2. **Tidak ada satu baris kode pun yang pernah dieksekusi** (tidak ada Node di sandbox ini) — typo TypeScript, versi paket yang bentrok (mis. `pg-boss@10` API `work()`/`schedule()`, `@nestjs/platform-fastify@11` dengan Fastify 5, `fastify` opsi `loggerInstance`), atau kesalahan resolusi ESM (`packages/shared`/`packages/db` pakai `"type":"module"` + ekstensi `.js` di import relatif) punya risiko lebih tinggi dari biasanya gagal di percobaan pertama. Cek `pnpm run typecheck` dan `pnpm run test` duluan sebelum `make up`.
+3. **Tag image belum pernah di-pull**: `postgres:16.6-alpine`, `minio/minio:RELEASE.2024-11-07T00-52-20Z`, `minio/mc:RELEASE.2024-11-05T11-08-13Z`, `axllent/mailpit:v1.21.5`, `node:22-alpine`, `nginx:1.27-alpine` — kalau tag tidak tersedia, override lewat `.env` (`POSTGRES_IMAGE`, `MINIO_IMAGE`, dst., semua sudah jadi variabel di compose).
+4. **Healthcheck MinIO** pakai `mc ready local` (image `minio/minio` modern menyertakan `mc` khusus untuk ini, tidak ada shell/wget/curl) — kalau ternyata tidak tersedia di tag yang di-pull, ganti healthcheck (lihat komentar di `deploy/docker-compose.yml`, service `minio`). **Healthcheck Mailpit** pakai `GET /readyz` — belum diverifikasi ada di versi yang di-pull.
+5. `packages/db` (`@gocean/db`) belum dipakai di `apps/api` — `HealthController.readyz` sengaja pakai `pg.Pool` mentah terpisah (tidak butuh skema/tabel apa pun untuk `SELECT 1`); pengkabelan `createDb()` ke Nest DI menyusul plan 016 saat ada tabel nyata untuk kysely-codegen.
+6. `db/seed`, `db/tests` masih README placeholder (sesuai scope 015 — isi tabel/uji baru relevan mulai plan 016).
+
+**Catatan untuk QA**
+1. Jalankan `sop-qa-tanpa-alat` untuk bagian yang butuh Docker/pnpm bila tidak tersedia di mesin QA juga.
+2. Urutan disarankan: `pnpm install` (generate+commit lockfile) → `pnpm run typecheck` → `pnpm run test` → `pnpm run lint` → baru `make up`. Kalau salah satu dari tiga langkah pertama gagal karena bug kode (bukan tooling), itu temuan FAIL yang sah, kembalikan ke devops.
+3. AC2 (`readyz` 503 saat postgres mati): gunakan `docker compose stop postgres` lalu `curl`, bukan `docker compose down`, supaya kontainer `api` tidak ikut mati.
+4. AC5: tunggu ≥2 menit setelah `worker` healthy sebelum query `jobs.job`/arsip pg-boss (jadwal cron per menit, run pertama tidak langsung di detik 0).
+5. AC6: uji dengan `curl` atau S3 client tanpa kredensial ke endpoint MinIO port 9000, path bucket `gocean-dev-files` — harus 403, bukan 200/404.
+6. Kontrak untuk plan 016+: nama service, port, nama schema/role di migrasi 0001 adalah kontrak — perubahan wajib lewat /revisi, bukan diubah diam-diam di plan berikutnya.
+
+**Pelajaran:** kerjakan seluruh scaffold kode langsung dengan Write/Bash saat orkestrator tidak bisa memanggil subagen background — tidak ada proses lain yang melanjutkan setelah giliran ini selesai, jadi "akan dipanggil di background" untuk tugas coding selalu salah dalam mode ini.
 
 ## Riwayat QA
 | Ronde | Verdict | File |
