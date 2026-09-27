@@ -1,5 +1,5 @@
 # BRD — Modern Web E-Commerce Platform (D2C & Retail)
-Perusahaan: Xavortree | Pemilik: PM | Status: Draft — isi dokumen CEO sudah lengkap (FR-01 s/d FR-22, NFR, tech stack, roadmap 8 minggu, acceptance criteria); pemilik toko terjawab: klien Xavortree (2026-09-27); menunggu jawaban CEO soal identitas klien, budget, persona detail, dan diagram alur | Versi: 0.2 (2026-09-26)
+Perusahaan: Xavortree | Pemilik: PM | Status: Draft — isi dokumen CEO sudah lengkap (FR-01 s/d FR-22, NFR, tech stack, roadmap 8 minggu, acceptance criteria); pemilik toko terjawab: klien Xavortree (2026-09-27); nama klien KONKRET dari CEO: **Mata Air** (Q21, 2026-09-27); profil bisnis Mata Air, budget, dan persona tetap [ASUMSI] tim atas delegasi CEO (Q21) | Versi: 0.4 (2026-09-27)
 
 **Referensi dokumen asli CEO:** "Business Requirements Document (BRD) — Platform Web E-Commerce Modern (Direct-to-Consumer & Retail). Dokumen Spesifikasi Kebutuhan Bisnis & Fungsional Pengembangan Website E-Commerce."
 - Nama Proyek: Modern Web E-Commerce Platform
@@ -13,8 +13,8 @@ Catatan: teks CEO diterima dalam dua kiriman (v0.1 terpotong di FR-16; lanjutan 
 
 ## 1. Latar belakang
 (Bagian 1.1 asli) Membangun platform website toko online (web e-commerce) mandiri yang responsif, cepat, dan terintegrasi otomatis dengan gerbang pembayaran lokal (Payment Gateway) dan kurir logistik Indonesia. Tujuannya adalah memiliki kanal penjualan resmi milik sendiri (brand-owned channel) tanpa ketergantungan penuh pada biaya komisi marketplace pihak ketiga (Shopee/Tokopedia).
-- Pemilik brand/toko: **klien Xavortree** (dikonfirmasi CEO 2026-09-27, bukan brand internal); Xavortree sebagai pengembang.
-- Identitas klien spesifik (nama perusahaan, kontak, kontrak), jenis produk, dan kondisi penjualan saat ini (kanal, omzet, biaya komisi marketplace): [BUTUH KONFIRMASI CEO: belum ada di teks].
+- Pemilik brand/toko: **Mata Air**, klien Xavortree (klien eksternal dikonfirmasi CEO 2026-09-27, Q13; nama klien dikonfirmasi CEO 2026-09-27, Q21 — bukan asumsi). Xavortree sebagai pengembang.
+- [ASUMSI] Profil bisnis Mata Air (sektor, skala, kanal, volume belum dikonfirmasi CEO; didelegasikan ke tim, Q21). Nama "Mata Air" sendiri tidak memastikan jenis produk, jadi profil kerja tetap mengikuti contoh di FR-05/FR-06: brand fashion/apparel lokal skala UMKM-menengah (sesuai contoh FR-05 dan varian ukuran/warna FR-06), saat ini jualan lewat Shopee/Tokopedia plus Instagram/WhatsApp dengan konfirmasi transfer manual, volume [ASUMSI] 300–1.500 order/bulan, AOV Rp150–300 ribu. Bila Mata Air ternyata menjual produk berat/cair (mis. air minum/minuman), FR-14 berat volumetrik, pilihan kurir, dan AOV perlu ditinjau ulang. Kontak dan kontrak Mata Air belum ada. CEO bisa membatalkan/merevisi.
 
 ## 2. Tujuan bisnis dan metrik sukses
 (Bagian 1.2 asli, 4 tujuan dari CEO, dipertahankan utuh)
@@ -80,8 +80,11 @@ Metrik terukur dari dokumen CEO: checkout < 3 menit (tujuan 1); status UNPAID �
 (Bagian 4 asli) Diagram mermaid: [BUTUH KONFIRMASI CEO: hanya judul bagian yang diterima, isi diagram belum dikirim]. Urutan status yang sudah pasti dari teks: order dibuat (UNPAID/Pending, FR-18 tagihan) → PAID via webhook (FR-17, notifikasi bayar) → Diproses/Packing → Dikirim (resi, FR-15/FR-18) → Selesai (FR-21).
 
 ## 5. Pengguna dan pemangku kepentingan
-- Diketahui dari FR: pelanggan terdaftar, pelanggan tamu (guest, FR-04), admin/merchant yang mengoperasikan panel (Modul 7), pemilik brand (klien Xavortree).
-- Persona rinci (bagian 2 asli): [BUTUH KONFIRMASI CEO: belum diterima].
+- Diketahui dari FR: pelanggan terdaftar, pelanggan tamu (guest, FR-04), admin/merchant yang mengoperasikan panel (Modul 7), pemilik brand (Mata Air, klien Xavortree).
+- **Nada/kepribadian brand (CEO konfirmasi, Q21 lanjutan, 2026-09-27): ramah, senang, empati, ceria.** Berlaku untuk gaya komunikasi ke pelanggan (notifikasi WA/email FR-17, copy website, penanganan komplain) dan jadi acuan persona di bawah.
+- [ASUMSI, kecuali nada brand di atas yang sudah dikonfirmasi CEO] Persona target (Q21, 2026-09-27; CEO bisa membatalkan/merevisi):
+  - **Pembeli:** usia 18–35, tinggal di kota besar/menengah, belanja hampir selalu dari HP setelah melihat produk di Instagram/TikTok atau link WhatsApp; terbiasa bayar QRIS/e-wallet atau VA, dan pergi kalau checkout lama atau harus daftar akun dulu (FR-04, FR-16, target < 3 menit); merespons baik komunikasi yang ramah, ceria, dan empatik (bukan kaku/formal).
+  - **Admin/pemilik brand:** 1–3 orang yang kini menghabiskan waktu mencocokkan bukti transfer di WA dan menyalin resi manual; butuh status bayar otomatis, cetak label, dan laporan ekspor (FR-17, FR-15, FR-21, FR-22).
 
 ## 6. Kebutuhan non-fungsional (NFR)
 (Bagian 5 asli)
@@ -104,7 +107,11 @@ Metrik terukur dari dokumen CEO: checkout < 3 menit (tujuan 1); status UNPAID �
   - Shipping Aggregator: Biteship API / RajaOngkir Pro — otomasi ongkir seluruh kecamatan Indonesia & cetak label resi.
   - Notifikasi WA: Fonnte / Waha / Whapi API — pengiriman status order otomatis ke WhatsApp pelanggan.
   - Cloud Hosting: Vercel (Frontend) + VPS / AWS (Backend) — hemat biaya di awal, mudah scale up saat trafik promosi melonjak.
-- Budget pengembangan dan biaya operasional bulanan (hosting, fee payment gateway, API ongkir, API WA): [BUTUH KONFIRMASI CEO: belum ada di teks].
+- **Budget [ASUMSI], estimasi tim untuk Mata Air** (Q21: CEO minta budget "disesuaikan dulu dari tim", 2026-09-27; CEO belum memberi atau menyetujui angka; CEO bisa membatalkan/merevisi). Ditinjau ulang di v0.4: angka dipertahankan, karena nama klien tidak menambah data skala, volume, atau jenis produk; direvisi bila profil bisnis Mata Air diketahui. Harga vendor dari tarif publik per 2026, perlu dicek ulang saat memilih vendor di TDD:
+  - Pengembangan MVP (Modul 1–7, FR-01–FR-22, ukuran L, 6–8 minggu): **Rp75–150 juta sekali bayar**, setara harga agensi lokal untuk e-commerce custom setara. Batas bawah bila memakai headless/platform existing, batas atas bila custom dari nol. Biaya internal Xavortree sendiri hanya langganan Claude; angka ini acuan nilai jual ke klien.
+  - Biaya tetap bulanan: hosting frontend + backend + database Rp300 ribu–1,5 juta; API ongkir Rp0–600 ribu; WA API Rp50 ribu (unofficial, risiko R4) s.d. Rp1,5 juta (resmi, per percakapan); email transaksional Rp0–350 ribu; domain ±Rp25 ribu. **Total Rp0,4–4 juta/bulan.**
+  - Biaya variabel payment gateway (per transaksi, ditanggung toko): VA ±Rp4.000–5.000; QRIS ±0,7%; kartu ±2,9% + Rp2.000. Contoh 500 order/bulan, AOV Rp200 ribu: **±Rp1–2,5 juta/bulan**.
+  - Opsional: retainer pemeliharaan Rp2–5 juta/bulan setelah Go-Live.
 - Dari konteks perusahaan: repo kode masih [BLOKIR], belum ada lingkungan, tidak ada tim manusia, biaya dibatasi langganan Claude Pro.
 
 ## 8. Kriteria keberterimaan MVP (Acceptance Criteria)
@@ -127,12 +134,10 @@ Metrik terukur dari dokumen CEO: checkout < 3 menit (tujuan 1); status UNPAID �
 
 ## 11. Pertanyaan untuk CEO
 1. Toko ini untuk siapa? — **TERJAWAB (2026-09-27): B, klien Xavortree** (KEPUTUSAN.md Q13).
-   Masih terbuka: identitas klien spesifik (nama perusahaan, kontak, kontrak, budget klien) [BUTUH KONFIRMASI CEO], dibahas di meeting 2026-09-28.
-2. Budget dan biaya operasional bulanan?
-   A: CEO memberi pagu angka (pengembangan + biaya bulanan). B: tim menyusun estimasi biaya vendor bulanan sebagai [ASUMSI] dengan rentang, CEO menyetujui.
-   Rekomendasi: B bila pagu belum ada, karena biaya vendor (fee PG, ongkir, WA, hosting) bisa dihitung dari harga publik.
+   Identitas klien spesifik — **TERJAWAB (2026-09-27, Q21): Mata Air** (nama dari CEO via dashboard). Profil bisnis Mata Air (sektor, skala, volume) belum dikonfirmasi, tetap [ASUMSI] di bagian 1.
+2. Budget dan biaya operasional bulanan? — **DIDELEGASIKAN (2026-09-27, Q21)**: CEO minta "disesuaikan dulu dari tim"; estimasi [ASUMSI] tim di bagian 7 dipertahankan (dev Rp75–150 juta, tetap Rp0,4–4 juta/bulan, fee PG ±Rp1–2,5 juta/bulan). Belum disetujui CEO sebagai angka final.
 3. Sumber diagram alur transaksi (bagian 4) — **TERJAWAB (2026-09-27): B, pakai draft tim**, bukan file BRD asli. Jawaban CEO via dashboard: "buatkan aja deh pake yang ada". Diagram yang dipakai: Mermaid di PRD.md bagian 2.1/2.2 (berlabel draft PM), CEO review.
-   Masih terbuka (terpisah, tidak ikut terjawab): persona detail — demografi, jenis produk, pain point, volume order [BUTUH KONFIRMASI CEO].
+   Persona detail — **DIDELEGASIKAN (2026-09-27, Q21), belum dikonfirmasi CEO**: hanya nada brand yang dikonfirmasi; persona [ASUMSI] ada di bagian 5, jenis produk dan volume order Mata Air di bagian 1. CEO bisa membatalkan/merevisi.
 
 ## Catatan Analyst (tinjauan awal, ditulis atas BRD v0.1)
 Oleh: Analyst (Bima), 2026-09-26. Bukan isi dokumen CEO; tidak menambah FR.
@@ -153,4 +158,4 @@ Pembaruan BA v0.2: pertanyaan admin/backoffice di poin 2 terjawab oleh Modul 7 (
 - Teknis yang sering meleset: data wilayah FR-02 harus cocok dengan ID area vendor ongkir (beda antar RajaOngkir/Biteship); webhook pembayaran wajib idempoten + verifikasi signature; reservasi stok selama VA/QRIS belum dibayar dan saat kedaluwarsa.
 - Repo kode masih [BLOKIR] dan belum ada lingkungan; dev tidak bisa mulai sebelum itu dibuka.
 
-**4. Konsistensi dengan gocean-b2b.** Berdiri sendiri: target beda (D2C retail generik vs B2B cold-chain seafood), dokumen, timeline, dan budget terpisah. Irisan hanya di pola teknis (payment gateway, rekonsiliasi bayar otomatis). [ASUMSI] Rekomendasi: tidak berbagi kode atau kredensial antar project; pola integrasi boleh dirujuk ulang di TDD bila stack sama. Konfirmasi CEO hanya perlu bila toko ini ternyata milik PT Gocean.
+**4. Konsistensi dengan gocean-b2b.** Berdiri sendiri: target beda (D2C retail klien Mata Air vs B2B cold-chain seafood), dokumen, timeline, dan budget terpisah. Irisan hanya di pola teknis (payment gateway, rekonsiliasi bayar otomatis). [ASUMSI] Rekomendasi: tidak berbagi kode atau kredensial antar project; pola integrasi boleh dirujuk ulang di TDD bila stack sama. Konfirmasi CEO hanya perlu bila toko ini ternyata milik PT Gocean.
