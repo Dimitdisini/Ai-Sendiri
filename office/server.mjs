@@ -555,9 +555,14 @@ function selesaikanJob(j, out, err, code) {
   j.ended = Date.now(); j.output = (out.trim() || err.trim() || "(tidak ada keluaran)").slice(-6000); delete j.pid;
   saveJob(j); running = null; broadcast(); nextJob();
   const label = j.status === "selesai" ? "✅" : j.status === "dihentikan" ? "⏹" : "❌";
-  if (!j.diam) notifyTelegram(`${label} ${j.origin === "jadwal" ? "Jadwal " + j.jadwalId : "Perintah"}${j.company ? " (" + j.company + ")" : ""}: ${j.origin === "jadwal" ? "" : j.text}
+  // Ringkas ke Telegram (maks ~600 karakter output), bukan dump penuh -- biar tidak spam.
+  // Detail lengkap tetap ada di dashboard (Riwayat Perintah / Output), jadi tidak hilang.
+  if (!j.diam) {
+    const ringkas = j.output.length > 600 ? j.output.slice(0, 600) + `\n… (dipotong, lihat lengkap di dashboard: Riwayat Perintah)` : j.output;
+    notifyTelegram(`${label} ${j.origin === "jadwal" ? "Jadwal " + j.jadwalId : "Perintah"}${j.company ? " (" + j.company + ")" : ""}: ${j.origin === "jadwal" ? "" : j.text}
 
-${j.output}`);
+${ringkas}`);
+  }
 }
 
 async function jalankanViaApi(j) {
