@@ -1,0 +1,34 @@
+{
+  "headquarters": "Gedung Kantor Virtual Team Dimitri",
+  "philosophy": "Unified Multi-Disciplinary Studios, Storage-Separated",
+  "rooms": [
+    {
+      "id": "xavortree-wing",
+      "name": "Ruangan Xavortree (3D, IoT & BA)",
+      "category": "xavortree",
+      "description": "Studio manufaktur 3D custom (FDM/PLA Bambu Lab), hardware IoT telemetry, dan analisis bisnis produk fisik Xavortree.",
+      "color": "#10b981",
+      "occupants": ["maker3d", "architect"],
+      "storage_target": "Team Dimitri/Xavortree"
+    },
+    {
+      "id": "fleek-wing",
+      "name": "Ruangan Fleek Project (Software)",
+      "category": "fleek",
+      "description": "Studio rekayasa software digital, platform web/app, automasi sistem, dan solusi teknologi klien Fleek Project.",
+      "color": "#0284c7",
+      "occupants": ["architect"],
+      "storage_target": "Team Dimitri/Fleek Project"
+    },
+    {
+      "id": "boardroom",
+      "name": "Executive Boardroom & Holding HQ",
+      "category": "executive",
+      "description": "Pusat komando strategis CEO (Dimitri) & CoS (Kai), sinkronisasi lintas entitas, dan resolusi keputusan penting (BLOKIR).",
+      "color": "#7c3aed",
+      "occupants": ["orchestrator"],
+      "storage_target": "Team Dimitri/Executive"
+    }
+  ],
+  "expansion_rule": "Tim berwenang menambah ruangan/divisi baru secara mandiri saat beban kerja produk baru memerlukan studio terpisah."
+}

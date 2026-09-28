@@ -5,6 +5,7 @@ Cara kerja yang bisa diulang dipindah jadi SOP di `.claude/skills/sop-*/`. Ditam
 
 | Tanggal | Apa yang terjadi | Pelajaran | SOP |
 |---|---|---|---|
+| 2026-09-28 | Laporan pagi (error: interrupted) dan diskusi pagi (connection reset ke googleapis.com), keduanya executor agy, gagal dan tidak ada retry: hari itu tidak ada laporan pagi. Kerja-malam 27/9 juga tercatat "jalan" >20 jam tanpa penutup. | Kegagalan job terjadwal harus terlihat di Kesehatan sistem rekap malam. Baru satu kejadian, jadi belum dijadikan SOP; kalau terulang, buat sop-job-terjadwal-gagal (retry, tutup job macet). | - |
 | 2026-09-26 | BRD gocean-b2b dan ecommerce-d2c dua-duanya terpotong di tengah saat CEO paste teks panjang di chat, draft harus direvisi ulang saat lanjutan datang | Minta dokumen panjang sebagai file utuh (upload/Drive), bukan paste; kalau paste, tandai eksplisit bagian yang mungkin terpotong dan konfirmasi ke CEO | sop-dokumen-ceo |
 | 2026-09-26 | QA plan 010 hanya bisa PASS bersyarat karena Docker tidak terpasang | Tandai AC yang butuh alat sebagai "TIDAK DAPAT DIUJI", jangan ditebak; pakai pemeriksaan pengganti | sop-qa-tanpa-alat |
 | 2026-09-26 | Token GitHub dua kali ditempel di chat, harus di-revoke | Kredensial tidak pernah lewat chat; masuk lewat prompt terminal (Keychain) atau file .env | sop-kredensial |

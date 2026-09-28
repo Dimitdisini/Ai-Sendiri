@@ -66,8 +66,8 @@
       <span class="text-blue-500 text-[11px] shrink-0">⌨️</span>
       <input id="cmdText" type="text" class="flex-1 bg-transparent border-none text-[11px] py-0.5 px-1 placeholder:text-slate-400 focus:ring-0 text-slate-800 font-medium min-w-0" placeholder="Perintah ke tim, misal: /briefing  atau  /kickoff xavortree: aplikasi absensi" />
       <select id="cmdExecutor" title="Jalankan pakai" class="shrink-0 bg-white border border-slate-200 rounded-lg text-[10px] font-semibold text-slate-700 py-1 px-1.5 focus:ring-0 cursor-pointer">
+        <option value="agy" selected>Antigravity (Gemini)</option>
         <option value="">Claude</option>
-        <option value="agy">Gemini</option>
       </select>
       <button type="submit" id="cmdSend" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-xs shrink-0">
         <span class="text-[11px]">➤</span><span class="hidden md:inline">Kirim</span>
@@ -157,6 +157,14 @@
         </div>
         <div id="office3d" style="display:none;position:absolute;inset:0"></div>
         <canvas id="officeCanvas" width="1200" height="640" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+      </div>
+      <!-- RUANGAN GEDUNG (Dynamic Studios & Labs) -->
+      <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-slate-200/80 shrink-0">
+        <div class="flex items-center justify-between mb-1.5 px-0.5">
+          <span class="text-[11px] font-bold text-slate-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Studio &amp; Ruangan Gedung</span>
+          <span class="text-[10px] text-slate-400 font-medium" id="roomsSubtitle">3 Ruangan Aktif · Terhubung ke Google Drive</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="roomsGrid"></div>
       </div>
       <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-slate-200/80 shrink-0">
         <div class="flex items-center justify-between mb-1.5 px-0.5">

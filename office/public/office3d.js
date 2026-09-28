@@ -285,13 +285,10 @@ function spot(id, x, z, ry, pose, seatH, ax, az) {
   SPOTS[id] = { id, x, z, ry, pose, seatH, ax: ax ?? x - f.x * 0.7, az: az ?? z - f.z * 0.7 };
   return SPOTS[id];
 }
-const ROW_X = [-7.5, -5.15, -2.8, -0.45, 1.9];
-const ROW_A = ["business-analyst", "pm", "analyst", "ai-engineer", "chief-of-staff"]; // menghadap jendela
-const ROW_B = ["backend", "frontend", "data", "devops", "qa"];                        // menghadap kamera
-ROW_A.forEach((t, i) => spot("desk:" + t, ROW_X[i], -4.3, Math.PI, "desk", 0.47));
-ROW_B.forEach((t, i) => spot("desk:" + t, ROW_X[i], -2.3, 0, "desk", 0.47));
-spot("desk:orchestrator", -1.2, 1.75, Math.PI, "desk", 0.47);
-spot("desk:peneliti", 1.4, 1.75, Math.PI, "desk", 0.47);
+// Meja 3 Studio Terpadu Team Dimitri
+spot("desk:architect", -5.8, -3.4, Math.PI, "desk", 0.47);    // Ruangan Fleek Project (Software Studio)
+spot("desk:maker3d", -5.8, 1.8, Math.PI, "desk", 0.47);       // Ruangan Xavortree (3D & IoT Lab)
+spot("desk:orchestrator", 0.5, -0.6, Math.PI, "desk", 0.47);  // Meja Komando Kai (Chief of Staff & Gatekeeper)
 
 const MEET_T = { x: 6.3, z: 3.1 };
 const MEET_IDS = ["meet:0"];
@@ -300,20 +297,16 @@ spot("meet:0", 8.35, 1.3, -Math.PI / 2, "present", 0, 8.35, 0.95);
 [5.2, 6.3, 7.4].forEach((x, i) => { spot(`meet:${4 + i}`, x, 4.15, Math.PI, "meet", 0.47, x, 4.8); MEET_IDS.push(`meet:${4 + i}`); });
 spot("meet:7", 4.25, 3.1, Math.PI / 2, "meet", 0.47, 4.2, 1.45); MEET_IDS.push("meet:7");
 
+// Spot Istirahat Bersih: Terpusat di Executive Lounge Tengah & Coffee Bar Pantry
 const REST_IDS = [];
 const rest = (...a) => { REST_IDS.push(a[0]); return spot(...a); };
-rest("rest:sofa1", -8.1, 3.0, Math.PI / 2, "sofa", 0.44, -7.3, 3.0);
+rest("rest:sofa1", 0.2, 3.2, 0, "sofa", 0.44, 0.2, 4.0);
+rest("rest:sofa2", 0.8, 3.2, 0, "sofa", 0.44, 0.8, 4.0);
+rest("rest:sofa3", 1.4, 3.2, 0, "sofa", 0.44, 1.4, 4.0);
 rest("rest:coffee", 5.8, -4.75, Math.PI, "mug", 0, 5.8, -4.1);
-rest("rest:bean1", 0.4, 3.5, 0.5, "bean", 0.3);
-rest("rest:arm1", -4.95, 3.2, -Math.PI / 2, "sofa", 0.44, -5.65, 3.2);
-rest("rest:stool1", 6.25, -3.3, Math.atan2(0.55, -0.45), "stool", 0.74);
-rest("rest:sofa2", -8.1, 3.8, Math.PI / 2, "sofa", 0.44, -7.3, 3.8);
-rest("rest:arcade", 2.3, 4.9, Math.PI / 2, "arcade", 0, 1.65, 4.9);
-rest("rest:arm2", -4.95, 4.4, -Math.PI / 2, "sofa", 0.44, -5.65, 4.4);
-rest("rest:stool2", 7.35, -3.3, Math.atan2(-0.55, -0.45), "stool", 0.74);
-rest("rest:bean2", 0.6, 4.8, 0.3, "bean", 0.3);
+rest("rest:stool1", 6.35, -3.3, Math.atan2(0.55, -0.45), "stool", 0.74);
+rest("rest:stool2", 7.25, -3.3, Math.atan2(-0.55, -0.45), "stool", 0.74);
 rest("rest:window", 8.3, -4.0, Math.PI / 2, "mug", 0, 7.65, -4.0);
-rest("rest:sofa3", -8.1, 4.6, Math.PI / 2, "sofa", 0.44, -7.3, 4.6);
 
 // =====================================================================
 // LAMPU & TEMA
@@ -369,8 +362,14 @@ function buildRoom() {
   floorPlane(X0, Z0, X1, Z1, new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7 }));
   floorPlane(5.0, Z0, X1, -2.6, new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.35 }), 0.004);
   floorPlane(3.6, 0.2, X1, Z1, mat(0x4d525c, { roughness: 1 }), 0.004);
-  const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.7), new THREE.MeshStandardMaterial({ map: rugTex, roughness: 1 }));
-  rug.rotation.x = -Math.PI / 2; rug.rotation.z = Math.PI / 2; rug.position.set(-6.45, 0.008, 3.8); rug.receiveShadow = true; scene.add(rug);
+
+  // Karpet Studio Fleek Project (Slate Dark)
+  floorPlane(-8.8, -5.8, -2.8, -1.0, mat(0x1e293b, { roughness: 0.85 }), 0.003);
+  // Karpet Workshop Xavortree Lab (Deep Moss Slate)
+  floorPlane(-8.8, -0.6, -2.8, 5.8, mat(0x13271f, { roughness: 0.85 }), 0.003);
+  // Karpet Executive Lounge Tengah
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 2.4), new THREE.MeshStandardMaterial({ map: rugTex, roughness: 1 }));
+  rug.rotation.x = -Math.PI / 2; rug.position.set(0.8, 0.008, 3.4); rug.receiveShadow = true; scene.add(rug);
 
   // dinding belakang + kanan, plint, list atas
   add(scene, bx(X1 - X0 + WALL_T, WALL_H, WALL_T), wallMats[0], 0, WALL_H / 2, Z0 - WALL_T / 2);
@@ -398,7 +397,7 @@ function buildRoom() {
   win(0.6, 1.95, 3.4, 1.35, false);
   win(-3.9, 1.9, 1.9, 1.3, true);
 
-  // dinding kaca ruang meeting (bingkai hitam), pintu di sisi utara
+  // Dinding kaca pembatas ruangan (bingkai hitam modern minimalis)
   const glassWall = (xa, za, xb, zb) => {
     const len = Math.hypot(xb - xa, zb - za), g = grp(scene, (xa + xb) / 2, 0, (za + zb) / 2, -Math.atan2(zb - za, xb - xa));
     const H = 2.55, n = Math.max(1, Math.round(len / 1.3));
@@ -408,9 +407,55 @@ function buildRoom() {
     add(g, bx(len, 0.02, 0.025), mat(0xe5e7eb), 0, 1.1, 0.012, 0, 0, 0, false);
     block(xa, za, xb, zb, 0.2);
   };
+
+  // 1. Partisi Kaca Sayap Kiri (Pemisah Studio dari Lorong Utama)
+  // Segmen Fleek Studio (belakang)
+  glassWall(-2.6, -6.0, -2.6, -2.4);
+  add(scene, bx(0.06, 0.05, 1.2), M.black, -2.6, 2.55, -1.8); // Ambang pintu Fleek Studio
+  // Segmen Tengah pembatas
+  glassWall(-2.6, -1.2, -2.6, 1.2);
+  add(scene, bx(0.06, 0.05, 1.2), M.black, -2.6, 2.55, 1.8); // Ambang pintu Xavortree Lab
+  // Segmen Xavortree Lab (depan)
+  glassWall(-2.6, 2.4, -2.6, 6.0);
+
+  // 1b. Dinding Partisi Pemisah Studio Fleek Project & Xavortree Lab (z = -0.8)
+  glassWall(-9.0, -0.8, -2.6, -0.8);
+
+  // 2. Partisi Murni RUANG RAPAT BERSAMA (Executive Boardroom - Sayap Kanan)
   glassWall(3.6, 0.2, 3.6, Z1);
-  glassWall(4.85, 0.2, X1, 0.2);
-  add(scene, bx(1.25, 0.05, 0.07), M.black, 4.22, 2.55, 0.2);
+  glassWall(4.8, 0.2, X1, 0.2);
+  add(scene, bx(1.2, 0.05, 0.07), M.black, 4.2, 2.55, 0.2); // Ambang pintu geser Ruang Rapat
+
+  // 3. Plang Nama 3D Akrilik Bercahaya untuk Setiap Ruangan
+  function roomSign3D(title, subtitle, x, y, z, ry, accentColor) {
+    const tex = canvasTex(512, 160, (c, w, h) => {
+      c.fillStyle = "#0f172a"; c.fillRect(0, 0, w, h);
+      c.strokeStyle = accentColor; c.lineWidth = 6;
+      c.strokeRect(6, 6, w - 12, h - 12);
+      c.fillStyle = accentColor;
+      c.font = "bold 44px -apple-system, sans-serif";
+      c.textAlign = "center";
+      c.fillText(title, w / 2, 68);
+      c.fillStyle = "#cbd5e1";
+      c.font = "bold 24px -apple-system, sans-serif";
+      c.fillText(subtitle, w / 2, 118);
+    });
+    const g = grp(scene, x, y, z, ry);
+    const matSign = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 0.58), matSign);
+    g.add(mesh);
+    add(g, rbox(1.96, 0.64, 0.06, 0.02), M.black, 0, 0, -0.032);
+    return g;
+  }
+
+  // Plang Studio Fleek Project (Sayap Kiri Belakang)
+  roomSign3D("FLEEK PROJECT", "Software & Digital Studio", -2.6, 2.65, -3.4, Math.PI / 2, "#0284c7");
+
+  // Plang Studio Xavortree (Sayap Kiri Depan)
+  roomSign3D("XAVORTREE LAB", "3D Printing · IoT · Analytics", -2.6, 2.65, 3.0, Math.PI / 2, "#10b981");
+
+  // Plang Ruang Rapat Bersama (Sayap Kanan Kaca)
+  roomSign3D("RUANG RAPAT", "Shared Executive Boardroom", 6.3, 2.7, 0.2, 0, "#c084fc");
 }
 
 // =====================================================================
@@ -456,10 +501,10 @@ function books(parent, x0, x1, y, z, seed) {
   }
 }
 
-// ---------- meja gaming per peran ----------
+// ---------- meja kerja studio per peran ----------
 const DESKS = {};
-const SCREEN_KIND = { backend: "code", frontend: "code", devops: "code", data: "chart", "ai-engineer": "chart", qa: "test", "business-analyst": "doc", pm: "doc", analyst: "doc", "chief-of-staff": "dash", orchestrator: "dash", peneliti: "doc" };
-const MONITORS = { backend: 3, frontend: 3, data: 3, devops: 3, "ai-engineer": 3 };
+const SCREEN_KIND = { orchestrator: "dash", architect: "code", maker3d: "test" };
+const MONITORS = { orchestrator: 2, architect: 2, maker3d: 2 };
 function monitor(parent, x, z, ry, tex, w = 0.56, h = 0.33) {
   const m = grp(parent, x, 0.745, z, ry);
   add(m, rbox(w + 0.03, h + 0.03, 0.03, 0.01), M.black, 0, 0.2 + h / 2, 0);
@@ -469,67 +514,241 @@ function monitor(parent, x, z, ry, tex, w = 0.56, h = 0.33) {
   add(m, rbox(0.22, 0.015, 0.16, 0.006), M.black, 0, 0.008, -0.02);
   return { mat: sm, on: tex };
 }
-function gamingChair(x, z, ry, accent) {
-  const g = grp(scene, x, 0, z, ry), acc = mat(new THREE.Color(accent).getHex(), { roughness: 0.6 });
+function aeronChair(x, z, ry) {
+  // Kursi Ergonomis Mesh Herman Miller Aeron (untuk Software Architect / Bima)
+  const g = grp(scene, x, 0, z, ry);
+  const darkMesh = mat(0x1e2430, { roughness: 0.85 });
+  const graphite = mat(0x333b47, { roughness: 0.5, metalness: 0.4 });
+  // Kaki bintang 5 aluminium graphite
   for (let k = 0; k < 5; k++) {
     const a = (k / 5) * Math.PI * 2;
-    add(g, bx(0.04, 0.03, 0.3), M.black, Math.sin(a) * 0.14, 0.06, Math.cos(a) * 0.14, 0, a, 0);
+    add(g, bx(0.035, 0.025, 0.28), graphite, Math.sin(a) * 0.13, 0.05, Math.cos(a) * 0.13, 0, a, 0);
+    add(g, sph(0.025, 8), M.black, Math.sin(a) * 0.27, 0.025, Math.cos(a) * 0.27);
+  }
+  add(g, cyl(0.025, 0.025, 0.28, 8), M.steel, 0, 0.20, 0); // Tiang hidrolik
+  // Dudukan mesh melengkung ergonomis
+  add(g, rbox(0.48, 0.05, 0.48, 0.04), graphite, 0, 0.41, 0.02);
+  add(g, rbox(0.40, 0.02, 0.42, 0.03), darkMesh, 0, 0.44, 0.02);
+  // Sandaran punggung mesh dengan PostureFit Lumbar Support (bentuk Y di belakang)
+  const back = grp(g, 0, 0.43, -0.21); back.rotation.x = -0.10;
+  add(back, rbox(0.46, 0.56, 0.04, 0.03), graphite, 0, 0.32, 0);
+  add(back, rbox(0.38, 0.50, 0.015, 0.02), darkMesh, 0, 0.32, 0.018);
+  // Lumbar Y support
+  add(back, bx(0.04, 0.32, 0.02), graphite, 0, 0.26, -0.02);
+  add(back, bx(0.24, 0.04, 0.02), graphite, 0, 0.38, -0.02);
+  // 3D Armrest melengkung
+  for (const s of [-1, 1]) {
+    add(g, bx(0.035, 0.18, 0.035), graphite, s * 0.26, 0.52, -0.02);
+    add(g, rbox(0.08, 0.025, 0.24, 0.012), darkMesh, s * 0.26, 0.62, 0.02);
+  }
+  return g;
+}
+
+function executiveLeatherChair(x, z, ry, leatherColor = 0x181a20) {
+  // Kursi Eksekutif Kulit Mewah (untuk Kai & Dimitri CEO)
+  const g = grp(scene, x, 0, z, ry);
+  const leather = mat(leatherColor, { roughness: 0.65 });
+  const chrome = mat(0xd1d5db, { roughness: 0.15, metalness: 0.9 });
+  // Kaki bintang 5 chrome berkilau
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2;
+    add(g, bx(0.04, 0.03, 0.3), chrome, Math.sin(a) * 0.14, 0.06, Math.cos(a) * 0.14, 0, a, 0);
     add(g, sph(0.028, 8), M.black, Math.sin(a) * 0.29, 0.028, Math.cos(a) * 0.29);
   }
-  add(g, cyl(0.03, 0.03, 0.3, 10), M.steel, 0, 0.22, 0);
-  add(g, rbox(0.5, 0.09, 0.5, 0.035), M.black, 0, 0.42, 0.02);
-  add(g, rbox(0.34, 0.02, 0.4, 0.008), acc, 0, 0.47, 0.03, 0, 0, 0, false);
-  const back = grp(g, 0, 0.47, -0.22); back.rotation.x = -0.12;
-  add(back, rbox(0.5, 0.78, 0.09, 0.04), M.black, 0, 0.4, 0);
-  add(back, rbox(0.06, 0.7, 0.012, 0.005), acc, -0.15, 0.4, 0.046, 0, 0, 0, false);
-  add(back, rbox(0.06, 0.7, 0.012, 0.005), acc, 0.15, 0.4, 0.046, 0, 0, 0, false);
-  add(back, rbox(0.26, 0.13, 0.08, 0.04), acc, 0, 0.7, 0.06);
-  for (const s of [-1, 1]) { add(g, bx(0.04, 0.2, 0.04), M.black, s * 0.27, 0.55, -0.02); add(g, rbox(0.07, 0.03, 0.26, 0.012), M.black, s * 0.27, 0.66, 0.0); }
+  add(g, cyl(0.03, 0.03, 0.28, 10), chrome, 0, 0.21, 0);
+  // Bantalan duduk kulit tebal berkontur
+  add(g, rbox(0.52, 0.10, 0.52, 0.04), leather, 0, 0.41, 0.02);
+  add(g, rbox(0.44, 0.03, 0.44, 0.02), leather, 0, 0.47, 0.02);
+  // Sandaran tinggi (High-Back) dengan bantal kepala terintegrasi
+  const back = grp(g, 0, 0.45, -0.22); back.rotation.x = -0.12;
+  add(back, rbox(0.50, 0.82, 0.09, 0.04), leather, 0, 0.43, 0);
+  add(back, rbox(0.38, 0.20, 0.06, 0.03), leather, 0, 0.74, 0.04); // Headrest
+  add(back, bx(0.04, 0.80, 0.02), chrome, -0.23, 0.43, -0.03); // Aksen chrome samping
+  add(back, bx(0.04, 0.80, 0.02), chrome, 0.23, 0.43, -0.03);
+  // Armrest kulit dengan rangka chrome
+  for (const s of [-1, 1]) {
+    add(g, bx(0.03, 0.22, 0.03), chrome, s * 0.28, 0.54, -0.02);
+    add(g, rbox(0.08, 0.03, 0.28, 0.015), leather, s * 0.28, 0.65, 0.01);
+  }
   return g;
+}
+
+function makerWorkshopChair(x, z, ry, accentColor = 0x10b981) {
+  // Kursi Workshop Maker Heavy-Duty (untuk Reno)
+  const g = grp(scene, x, 0, z, ry);
+  const acc = mat(accentColor, { roughness: 0.7 });
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2;
+    add(g, bx(0.04, 0.03, 0.28), M.black, Math.sin(a) * 0.13, 0.06, Math.cos(a) * 0.13, 0, a, 0);
+    add(g, sph(0.028, 8), M.black, Math.sin(a) * 0.27, 0.028, Math.cos(a) * 0.27);
+  }
+  add(g, cyl(0.03, 0.03, 0.28, 8), M.steel, 0, 0.20, 0);
+  add(g, rbox(0.48, 0.08, 0.48, 0.03), M.charcoal, 0, 0.41, 0.02);
+  add(g, rbox(0.36, 0.02, 0.38, 0.01), acc, 0, 0.46, 0.03);
+  const back = grp(g, 0, 0.44, -0.21); back.rotation.x = -0.12;
+  add(back, rbox(0.46, 0.58, 0.06, 0.03), M.charcoal, 0, 0.32, 0);
+  add(back, rbox(0.36, 0.46, 0.02, 0.01), acc, 0, 0.32, 0.03);
+  for (const s of [-1, 1]) {
+    add(g, bx(0.035, 0.19, 0.035), M.black, s * 0.26, 0.53, -0.02);
+    add(g, rbox(0.07, 0.025, 0.24, 0.01), M.black, s * 0.26, 0.63, 0.01);
+  }
+  return g;
+}
+
+function gamingChair(x, z, ry, accent) {
+  return executiveLeatherChair(x, z, ry, new THREE.Color(accent).getHex());
 }
 function officeChair(x, z, ry) {
-  const g = grp(scene, x, 0, z, ry);
-  for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2; add(g, bx(0.035, 0.025, 0.26), M.black, Math.sin(a) * 0.12, 0.05, Math.cos(a) * 0.12, 0, a, 0); }
-  add(g, cyl(0.025, 0.025, 0.3, 8), M.steel, 0, 0.21, 0);
-  add(g, rbox(0.46, 0.07, 0.46, 0.03), M.charcoal, 0, 0.42, 0.02);
-  const back = grp(g, 0, 0.46, -0.2); back.rotation.x = -0.1;
-  add(back, rbox(0.44, 0.48, 0.05, 0.02), M.charcoal, 0, 0.3, 0);
-  return g;
+  return aeronChair(x, z, ry);
 }
 function buildDesk(type, accent) {
-  const s = SPOTS["desk:" + type], big = type === "orchestrator";
-  const f = fwd(s.ry), W = big ? 2.2 : 1.6, D = big ? 0.9 : 0.78;
-  const cx = s.x + f.x * (big ? 0.74 : 0.73), cz = s.z + f.z * (big ? 0.74 : 0.73);
+  const s = SPOTS["desk:" + type];
+  const isArchitect = type === "architect";
+  const isMaker = type === "maker3d";
+  const isKai = type === "orchestrator";
+
+  const W = isKai ? 2.2 : (isMaker ? 1.85 : 1.75);
+  const D = isKai ? 0.95 : (isMaker ? 0.90 : 0.85);
+  const f = fwd(s.ry);
+  const cx = s.x + f.x * (isKai ? 0.78 : 0.75), cz = s.z + f.z * (isKai ? 0.78 : 0.75);
   const g = grp(scene, cx, 0, cz, s.ry + Math.PI); // lokal +z mengarah ke orang
-  add(g, rbox(W, 0.045, D, 0.012), M.walnut, 0, 0.725, 0);
-  for (const sx of [-1, 1]) add(g, bx(0.04, 0.705, D - 0.08), M.black, sx * (W / 2 - 0.06), 0.352, 0);
-  add(g, bx(W - 0.16, 0.34, 0.02), M.black, 0, 0.5, -D / 2 + 0.06);
-  add(g, bx(W * 0.8, 0.014, 0.014), glowMat(new THREE.Color(accent).getHex(), 1.2, 3.0), 0, 0.695, D / 2 - 0.04, 0, 0, 0, false);
-  add(g, rbox(0.46, 0.012, 0.3, 0.005), mat(0x111317), 0.05, 0.753, 0.19, 0, 0, 0, false);
-  add(g, rbox(0.4, 0.02, 0.13, 0.006), M.black, -0.02, 0.765, 0.2);
-  add(g, bx(0.38, 0.003, 0.11), glowMat(new THREE.Color(accent).getHex(), 0.8, 2.0), -0.02, 0.777, 0.2, 0, 0, 0, false);
-  add(g, rbox(0.06, 0.025, 0.1, 0.012), M.black, 0.24, 0.762, 0.2);
+
   const kind = SCREEN_KIND[type] || "doc", screens = [];
   const r = rng(type.length * 97 + type.charCodeAt(0));
   const tex = () => { const t = screenTex(kind, (r() * 1e6) | 0); if (kind === "code" || kind === "test") t.repeat.set(1, 0.7); return t; };
-  if (big) {
-    screens.push(monitor(g, -0.1, -0.22, 0, tex(), 1.0, 0.36));
-    screens.push(monitor(g, 0.78, -0.12, -0.5, tex(), 0.5, 0.3));
-    add(g, rbox(0.34, 0.015, 0.24, 0.006), M.steel, -0.75, 0.76, 0.12, 0, 0.3, 0);
+
+  if (isArchitect) {
+    // =========================================================================
+    // SETUP BIMA (FLEEK PROJECT): Standing Desk Elektrik + Mac Studio + Dual Studio Display
+    // =========================================================================
+    // Daun meja standing desk matte black dengan bevel lembut
+    add(g, rbox(W, 0.04, D, 0.015), mat(0x181a20, { roughness: 0.6 }), 0, 0.73, 0);
+    // Kaki standing desk teleskopik elektrik warna hitam
+    for (const sx of [-1, 1]) {
+      add(g, rbox(0.08, 0.71, 0.12, 0.01), mat(0x0f1115, { metalness: 0.6 }), sx * (W / 2 - 0.12), 0.355, 0);
+      add(g, rbox(0.12, 0.03, D - 0.1, 0.01), mat(0x0f1115, { metalness: 0.6 }), sx * (W / 2 - 0.12), 0.015, 0); // Kaki bawah T-shape
+    }
+    // Controller digital ketinggian meja (LED display kecil di sisi kanan)
+    add(g, rbox(0.08, 0.025, 0.03, 0.005), mat(0x2563eb, { emissive: 0x2563eb, emissiveIntensity: 0.5 }), W / 2 - 0.15, 0.715, D / 2 - 0.02);
+
+    // Apple Mac Studio M-Series (Kubus aluminium perak unibody)
+    const macStudio = grp(g, -W / 2 + 0.22, 0.75, -0.05);
+    add(macStudio, rbox(0.19, 0.09, 0.19, 0.02), mat(0xd1d5db, { metalness: 0.85, roughness: 0.2 }), 0, 0.045, 0);
+    add(macStudio, sph(0.004, 6), glowMat(0xffffff, 1.0, 2.0), 0, 0.025, 0.096); // LED status putih
+
+    // Dual Apple Studio Display 27" dengan stand aluminium perak
+    screens.push(monitor(g, -0.38, -0.16, 0.12, tex(), 0.64, 0.38));
+    screens.push(monitor(g, 0.36, -0.16, -0.12, tex(), 0.64, 0.38));
+
+    // Extended Desk Mat Dark Navy
+    add(g, rbox(0.85, 0.006, 0.35, 0.01), mat(0x0f172a, { roughness: 0.9 }), 0.02, 0.753, 0.18);
+    // Magic Keyboard Space Gray + Magic Trackpad
+    add(g, rbox(0.38, 0.012, 0.12, 0.004), mat(0x334155, { metalness: 0.5 }), -0.06, 0.76, 0.20);
+    add(g, rbox(0.14, 0.010, 0.12, 0.004), mat(0x1e293b, { metalness: 0.5 }), 0.25, 0.758, 0.20);
+
+    // Headphone stand aluminium + Wireless Headphones over-ear
+    const hpStand = grp(g, -W / 2 + 0.15, 0.75, -0.25);
+    add(hpStand, cyl(0.06, 0.06, 0.01, 14), M.steel, 0, 0.005, 0);
+    add(hpStand, cyl(0.008, 0.008, 0.24, 8), M.steel, 0, 0.12, 0);
+    add(hpStand, rbox(0.12, 0.02, 0.05, 0.01), M.steel, 0, 0.24, 0);
+    add(hpStand, new THREE.TorusGeometry(0.07, 0.018, 8, 16, Math.PI), mat(0x1e293b), 0, 0.22, 0, 0, 0, Math.PI); // Headband headphone
+
+    // Miniatur Rubber Duck Debugging Kuning di sudut meja
+    const duck = grp(g, W / 2 - 0.16, 0.75, -0.22);
+    add(duck, sph(0.022, 10), mat(0xfacc15, { roughness: 0.4 }), 0, 0.022, 0); // Bodi bebek
+    add(duck, sph(0.015, 8), mat(0xfacc15, { roughness: 0.4 }), 0.01, 0.040, 0.005); // Kepala
+    add(duck, rbox(0.012, 0.006, 0.012, 0.002), mat(0xf97316), 0.022, 0.038, 0.005); // Paruh oranye
+
+    // Kursi Aeron Mesh Herman Miller
+    aeronChair(s.x, s.z, s.ry);
+
+  } else if (isMaker) {
+    // =========================================================================
+    // SETUP RENO (XAVORTREE LAB): Workbench Solid Oak + PC Gaming Tower + Bambu Lab FDM
+    // =========================================================================
+    // Daun meja workbench kayu oak solid tebal kokoh
+    add(g, rbox(W, 0.055, D, 0.01), M.oak, 0, 0.725, 0);
+    for (const sx of [-1, 1]) add(g, bx(0.06, 0.695, D - 0.06), M.black, sx * (W / 2 - 0.08), 0.348, 0);
+    add(g, bx(W - 0.2, 0.25, 0.02), M.black, 0, 0.52, -D / 2 + 0.06);
+
+    // Custom PC Workstation / Gaming Tower (Casing tempered glass + radiator fan subtle glow)
+    const pcTower = grp(g, -W / 2 + 0.20, 0.755, -0.15);
+    add(pcTower, rbox(0.22, 0.46, 0.42, 0.02), mat(0x0f172a, { metalness: 0.7, roughness: 0.3 }), 0, 0.23, 0);
+    // Kaca tempered samping tembus pandang
+    add(pcTower, rbox(0.01, 0.42, 0.38, 0.01), mat(0x38bdf8, { transparent: true, opacity: 0.35 }), 0.115, 0.23, 0);
+    // Fan pendingin GPU dengan subtle glow oranye/cyan
+    add(pcTower, sph(0.04, 8), glowMat(0xf97316, 0.8, 2.0), 0.08, 0.28, 0.08);
+    add(pcTower, sph(0.04, 8), glowMat(0x38bdf8, 0.8, 2.0), 0.08, 0.18, -0.08);
+
+    // UltraWide Curved Monitor 34" untuk 3D CAD & Slicing
+    screens.push(monitor(g, -0.12, -0.16, 0.0, tex(), 0.78, 0.36));
+
+    // Mechanical Keyboard dengan Keycap Custom + Drawing Pen Tablet
+    add(g, rbox(0.38, 0.018, 0.14, 0.005), mat(0x1e293b), -0.22, 0.762, 0.22);
+    // Tombol keycap pastel warna-warni
+    add(g, rbox(0.36, 0.005, 0.12, 0.002), mat(0xfbcfe8), -0.22, 0.774, 0.22);
+    // Drawing Tablet Wacom + Stylus Pen
+    add(g, rbox(0.26, 0.008, 0.18, 0.005), mat(0x0f172a), 0.16, 0.757, 0.22);
+    add(g, cyl(0.004, 0.004, 0.14, 6), mat(0x38bdf8), 0.16, 0.768, 0.22, 0, 0, 0.3); // Stylus pen
+
+    // 3D Printer Bambu Lab FDM Miniatur Presisi
+    const p3d = grp(g, W / 2 - 0.25, 0.755, -0.14, 0);
+    add(p3d, rbox(0.42, 0.48, 0.40, 0.02), mat(0x1e293b, { roughness: 0.3, metalness: 0.7 }), 0, 0.24, 0); // Enclosure
+    add(p3d, rbox(0.34, 0.38, 0.015, 0.01), mat(0x93c5fd, { transparent: true, opacity: 0.4 }), 0, 0.24, 0.20); // Pintu kaca
+    add(p3d, rbox(0.26, 0.015, 0.26, 0.01), glowMat(0xffffff, 0.9, 1.8), 0, 0.12, 0); // Print bed bercahaya putih
+    add(p3d, cyl(0.07, 0.07, 0.05, 16), mat(0xf97316), 0, 0.51, -0.06); // Spool filamen PLA oranye di atas
+    add(p3d, bx(0.12, 0.07, 0.01), mat(0x0284c7), 0.12, 0.44, 0.20); // Layar sentuh kontrol
+
+    // Jangka Sorong Digital (Caliper) & Miniatur Chibi di meja
+    add(g, bx(0.16, 0.006, 0.03), M.steel, W / 2 - 0.35, 0.756, 0.24); // Caliper digital
+    add(g, cyl(0.025, 0.03, 0.08, 10), mat(0xf472b6), -0.02, 0.795, -0.22); // Figur chibi pink mini
+
+    // Kursi Workshop Reno
+    makerWorkshopChair(s.x, s.z, s.ry, 0x10b981);
+
   } else {
-    screens.push(monitor(g, 0, -0.2, 0, tex()));
-    screens.push(monitor(g, -0.6, -0.12, 0.45, tex()));
-    if ((MONITORS[type] || 2) > 2) screens.push(monitor(g, 0.6, -0.12, -0.45, tex()));
+    // =========================================================================
+    // SETUP KAI (EXECUTIVE COMMONS): Meja Solid Walnut Mewah + Apple iMac + iPad on Magnetic Stand
+    // =========================================================================
+    // Daun meja eksekutif solid walnut mewah
+    add(g, rbox(W, 0.05, D, 0.02), M.walnut, 0, 0.73, 0);
+    for (const sx of [-1, 1]) add(g, rbox(0.08, 0.70, D - 0.12, 0.02), M.walnut, sx * (W / 2 - 0.08), 0.35, 0);
+    add(g, bx(W - 0.2, 0.38, 0.02), mat(0x3e2719), 0, 0.52, -D / 2 + 0.08); // Modesty panel kayu
+
+    // Leather Desk Mat Cognac Brown
+    add(g, rbox(0.95, 0.008, 0.45, 0.015), mat(0x6c4427, { roughness: 0.8 }), 0, 0.757, 0.18);
+
+    // Apple iMac 24" Silver M-Series (Ultra-thin display dengan stand aluminium perak)
+    screens.push(monitor(g, 0.0, -0.16, 0.0, tex(), 0.68, 0.40));
+
+    // iPad Pro di atas Magnetic Stand miring (untuk Live KPI & Checklist Notulen)
+    const ipadStand = grp(g, -0.62, 0.755, 0.02, 0.35);
+    add(ipadStand, cyl(0.06, 0.06, 0.008, 16), M.steel, 0, 0.004, 0);
+    add(ipadStand, cyl(0.008, 0.008, 0.16, 8), M.steel, 0, 0.08, -0.02, -0.2);
+    add(ipadStand, rbox(0.24, 0.17, 0.008, 0.005), mat(0x1e293b, { metalness: 0.8 }), 0, 0.16, 0, -0.2); // iPad Pro
+    const smIpad = new THREE.MeshBasicMaterial({ map: tex(), toneMapped: false });
+    const scrIpad = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.15), smIpad);
+    scrIpad.position.set(0, 0.16, 0.006); scrIpad.rotation.x = -0.2; ipadStand.add(scrIpad);
+
+    // Magic Keyboard Silver + Magic Mouse
+    add(g, rbox(0.38, 0.012, 0.13, 0.004), mat(0xd1d5db, { metalness: 0.7 }), -0.05, 0.765, 0.22);
+    add(g, rbox(0.06, 0.018, 0.10, 0.012), mat(0xd1d5db, { metalness: 0.7 }), 0.26, 0.765, 0.22);
+
+    // Cangkir Keramik Hitam Kopi Panas Kai + Map Folder Eksekutif
+    add(g, cyl(0.04, 0.035, 0.09, 12), M.black, -W / 2 + 0.22, 0.80, 0.24); // Cangkir kopi
+    add(g, rbox(0.24, 0.025, 0.32, 0.01), mat(0x78350f), 0.58, 0.768, 0.12, 0, -0.15, 0); // Map berkas kulit
+
+    // Kursi Kulit Eksekutif Mewah Kai
+    executiveLeatherChair(s.x, s.z, s.ry, 0x14161a);
   }
-  const bl = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.75, 0.5), new THREE.MeshBasicMaterial({ color: accent, transparent: true, opacity: 0.25, toneMapped: false, depthWrite: false }));
-  bl.position.set(0, 1.08, -0.26); g.add(bl);
-  add(g, cyl(0.04, 0.035, 0.09, 12), M.white, -W / 2 + 0.18, 0.79, 0.18);
-  if (r() < 0.6) {
-    const p = grp(g, W / 2 - 0.15, 0.745, -0.25);
-    add(p, cyl(0.05, 0.04, 0.08, 10), M.terracotta, 0, 0.04, 0);
-    for (let i = 0; i < 4; i++) add(p, new THREE.IcosahedronGeometry(0.045, 0), M.leafB, Math.cos(i) * 0.03, 0.12 + i * 0.015, Math.sin(i) * 0.03);
+
+  // Tanaman pot kecil meja di sudut
+  if (r() < 0.75) {
+    const p = grp(g, W / 2 - 0.14, 0.755, -0.30);
+    add(p, cyl(0.045, 0.035, 0.07, 10), mat(0xf1f5f9), 0, 0.035, 0);
+    for (let i = 0; i < 4; i++) add(p, new THREE.IcosahedronGeometry(0.035, 0), M.leafB, Math.cos(i * 1.5) * 0.025, 0.10 + i * 0.012, Math.sin(i * 1.5) * 0.025);
   }
-  gamingChair(s.x, s.z, s.ry, accent);
+
   blockC(cx, cz, W, D, 0.22);
   DESKS[type] = { screens };
 }
@@ -561,17 +780,113 @@ function buildFurniture() {
   boards.road = board(3.55, 1.95, Z0 + 0.03, 0, 1.9, 1.2, 640, 400, false);
   boards.status = board(X1 - 0.03, 1.72, -1.45, -Math.PI / 2, 2.0, 1.15, 680, 400, false);
   boards.clock = board(X1 - 0.03, 2.62, -1.45, -Math.PI / 2, 0.42, 0.42, 256, 256, false, true);
-  // rak rendah pembatas lounge
-  const shelf = grp(scene, -7.2, 0, 1.15, 0);
-  for (const y of [0.04, 0.52, 1.02]) add(shelf, rbox(3.2, 0.04, 0.38, 0.01), M.oak, 0, y, 0);
-  for (const sx of [-1.58, -0.53, 0.53, 1.58]) add(shelf, bx(0.04, 1.02, 0.38), M.oak, sx, 0.52, 0);
-  books(shelf, -1.55, -0.6, 0.06, 0, 5); books(shelf, 0.56, 1.55, 0.06, 0, 6); books(shelf, -0.5, 0.5, 0.54, 0, 9);
-  add(shelf, sph(0.09, 16), mat(0x60a5fa, { roughness: 0.3 }), -1.1, 0.66, 0); add(shelf, cyl(0.01, 0.05, 0.1, 8), M.black, -1.1, 0.59, 0);
-  const sp1 = grp(shelf, 1.1, 1.04, 0); add(sp1, cyl(0.08, 0.06, 0.12, 12), M.white, 0, 0.06, 0);
-  for (let i = 0; i < 5; i++) add(sp1, new THREE.IcosahedronGeometry(0.06, 0), M.leafA, Math.cos(i * 1.3) * 0.05, 0.16 + (i % 2) * 0.04, Math.sin(i * 1.3) * 0.05);
-  const sp2 = grp(shelf, -0.2, 1.04, 0); add(sp2, cyl(0.06, 0.05, 0.1, 12), M.terracotta, 0, 0.05, 0);
-  for (let i = 0; i < 4; i++) add(sp2, new THREE.IcosahedronGeometry(0.05, 0), M.leafB, Math.cos(i * 1.6) * 0.04, 0.13 + (i % 2) * 0.03, Math.sin(i * 1.6) * 0.04);
-  blockC(-7.2, 1.15, 3.2, 0.38, 0.2);
+
+  // =========================================================================
+  // XAVORTREE LAB: Showcase Lemari Kaca Produk, Pegboard Filamen & IoT Bench
+  // =========================================================================
+  // 1. Showcase Lemari Kaca Display Produk 3D Xavortree
+  const sc = grp(scene, -8.3, 0, 0.5, Math.PI / 2);
+  add(sc, rbox(1.8, 1.9, 0.5, 0.03), mat(0x0f172a, { roughness: 0.2 }), 0, 0.95, 0); // Bodi kabinet luar
+  add(sc, rbox(1.7, 1.7, 0.46, 0.02), mat(0x1e293b), 0, 0.95, 0.02); // Rongga dalam
+  // Rak kaca transparan
+  add(sc, rbox(1.68, 0.02, 0.44, 0.01), M.glass, 0, 0.65, 0.02);
+  add(sc, rbox(1.68, 0.02, 0.44, 0.01), M.glass, 0, 1.25, 0.02);
+  // Pintu Kaca Depan Akrilik
+  add(sc, rbox(1.76, 1.8, 0.02, 0.01), mat(0xe0f2fe, { transparent: true, opacity: 0.35, roughness: 0.05 }), 0, 0.95, 0.25);
+  // Produk-Produk di Rak Showcase:
+  // Rak 1: 3D Strava Line Elevasi & Chibi Paintable
+  add(sc, rbox(0.35, 0.06, 0.25, 0.01), mat(0xd97706), -0.5, 0.69, 0.05); // Model rute elevasi Strava 3D
+  add(sc, cyl(0.04, 0.05, 0.14, 12), mat(0xfbcfe8), 0.0, 0.73, 0.05); // Figur Chibi Custom Paintable
+  add(sc, rbox(0.18, 0.24, 0.03, 0.005), mat(0xdb2777), 0.5, 0.78, 0.05); // Bingkai Photocard K-Pop timbul
+  // Rak 2: Keycap Clicker Charm & Articulated Fidget Dragon
+  add(sc, rbox(0.09, 0.09, 0.09, 0.01), mat(0x38bdf8), -0.4, 1.30, 0.05); // Keycap Mechanical Switch Clicker
+  add(sc, rbox(0.3, 0.04, 0.08, 0.01), mat(0x22c55e), 0.2, 1.28, 0.05); // Articulated Dragon
+  // Lampu LED Showcase Warm White
+  add(sc, bx(1.6, 0.02, 0.04), glowMat(0xfef3c7, 0.8, 2.0), 0, 1.78, 0.05, 0, 0, 0, false);
+  blockC(-8.3, 0.5, 0.5, 1.8, 0.2);
+
+  // 2. Pegboard Dinding Spool Filamen PLA Xavortree (Pastel, Silk, Glow)
+  const pb = grp(scene, -8.96, 1.7, 2.8, Math.PI / 2);
+  add(pb, rbox(1.8, 1.1, 0.04, 0.01), mat(0xfef3c7, { roughness: 0.8 }), 0, 0, 0); // Papan pegboard kayu
+  const spoolColors = [0xf472b6, 0x60a5fa, 0x4ade80, 0xfbbf24, 0xa78bfa, 0xf97316, 0x38bdf8, 0xe2e8f0];
+  spoolColors.forEach((col, idx) => {
+    const sx = -0.65 + (idx % 4) * 0.43;
+    const sy = 0.25 - Math.floor(idx / 4) * 0.5;
+    add(pb, cyl(0.08, 0.08, 0.05, 14), mat(col, { roughness: 0.4 }), sx, sy, 0.05, Math.PI / 2, 0, 0);
+  });
+
+  // 3. Workbench IoT Telemetry & Finishing Xavortree
+  const wb = grp(scene, -3.8, 0, 3.2, 0);
+  add(wb, rbox(1.8, 0.05, 0.8, 0.01), M.oak, 0, 0.725, 0); // Meja kerja kayu
+  add(wb, bx(0.05, 0.7, 0.7), M.black, -0.8, 0.35, 0);
+  add(wb, bx(0.05, 0.7, 0.7), M.black, 0.8, 0.35, 0);
+  // Matras Antistatis Hijau + Modul ESP32 & Alat
+  add(wb, rbox(0.9, 0.01, 0.5, 0.005), mat(0x047857), -0.2, 0.755, 0);
+  add(wb, rbox(0.12, 0.02, 0.08, 0.002), mat(0x1e293b), -0.2, 0.77, 0); // ESP32 board
+  add(wb, cyl(0.004, 0.004, 0.12, 4), M.steel, -0.15, 0.81, 0, 0, 0, 0.4); // Antena IoT
+  add(wb, rbox(0.14, 0.03, 0.08, 0.005), mat(0xeab308), -0.45, 0.768, -0.1); // Multimeter digital kuning
+  add(wb, rbox(0.2, 0.04, 0.06, 0.005), mat(0xef4444), 0.45, 0.765, -0.1); // Tang Potong Presisi
+  // Deretan botol cat akrilik chibi & kuas halus
+  const paintCols = [0xef4444, 0x3b82f6, 0x10b981, 0xf59e0b, 0xa855f7];
+  paintCols.forEach((col, idx) => {
+    add(wb, cyl(0.018, 0.018, 0.045, 10), mat(col), 0.2 + idx * 0.05, 0.775, 0.18);
+  });
+  add(wb, cyl(0.003, 0.003, 0.15, 6), mat(0x78350f), 0.5, 0.76, 0.15, 0, 0, 0.3); // Kuas lukis
+  blockC(-3.8, 3.2, 1.8, 0.8, 0.2);
+
+  // =========================================================================
+  // FLEEK PROJECT STUDIO: Server Tower NAS, Glass Whiteboard & Standby Desk
+  // =========================================================================
+  // 1. Mini Server Rack Tower & NAS Backup
+  const sr = grp(scene, -8.3, 0, -5.3);
+  add(sr, rbox(0.7, 1.4, 0.6, 0.02), mat(0x0f172a, { metalness: 0.6, roughness: 0.4 }), 0, 0.7, 0);
+  add(sr, rbox(0.62, 1.25, 0.02, 0.01), mat(0x1e293b), 0, 0.7, 0.31);
+  // Lampu Status LED Server
+  for (let l = 0; l < 4; l++) {
+    add(sr, sph(0.015, 8), glowMat(l === 3 ? 0x38bdf8 : 0x22c55e, 1.0, 3.0), -0.2 + l * 0.13, 1.22, 0.32, 0, 0, 0, false);
+  }
+  // Router Wi-Fi 6 Mesh di atas server rack dengan antena
+  add(sr, rbox(0.18, 0.04, 0.14, 0.01), mat(0x334155), 0, 1.42, 0);
+  add(sr, cyl(0.003, 0.003, 0.12, 4), M.black, -0.06, 1.48, -0.04);
+  add(sr, cyl(0.003, 0.003, 0.12, 4), M.black, 0.06, 1.48, -0.04);
+  blockC(-8.3, -5.3, 0.7, 0.6, 0.2);
+
+  // 2. Glass Whiteboard Arsitektur Database (Dinding Belakang Fleek)
+  const gwb = grp(scene, -4.5, 1.8, Z0 + 0.03, 0);
+  add(gwb, rbox(2.2, 1.2, 0.02, 0.01), mat(0xe0f2fe, { transparent: true, opacity: 0.85, roughness: 0.1 }), 0, 0, 0);
+  add(gwb, rbox(2.26, 1.26, 0.03, 0.01), M.black, 0, 0, -0.015); // Frame hitam
+  // Skema DB corat-coret di whiteboard
+  add(gwb, rbox(0.4, 0.25, 0.005, 0.005), mat(0x0284c7), -0.5, 0.2, 0.015);
+  add(gwb, rbox(0.4, 0.25, 0.005, 0.005), mat(0x7c3aed), 0.4, 0.2, 0.015);
+  add(gwb, bx(0.5, 0.02, 0.005), mat(0x0f172a), -0.05, 0.2, 0.015);
+
+  // Floating Wall Shelf Fleek Studio di atas whiteboard
+  const fws = grp(scene, -4.5, 2.55, Z0 + 0.08, 0);
+  add(fws, rbox(1.6, 0.03, 0.20, 0.005), mat(0x181a20), 0, 0, 0);
+  // Rubik Cube di rak
+  add(fws, rbox(0.05, 0.05, 0.05, 0.005), mat(0x3b82f6), -0.5, 0.04, 0);
+  // Buku Clean Code & System Design
+  add(fws, rbox(0.04, 0.16, 0.12, 0.002), mat(0x0284c7), 0.3, 0.09, 0);
+  add(fws, rbox(0.03, 0.15, 0.12, 0.002), mat(0x10b981), 0.35, 0.09, 0);
+
+  // 3. Meja Standby Dev Squad Fleek Project (Self-Hiring Ready)
+  const dsq = grp(scene, -3.8, 0, -3.2, 0);
+  add(dsq, rbox(1.6, 0.045, 0.75, 0.01), mat(0x334155), 0, 0.725, 0);
+  add(dsq, bx(0.04, 0.7, 0.65), M.black, -0.7, 0.35, 0);
+  add(dsq, bx(0.04, 0.7, 0.65), M.black, 0.7, 0.35, 0);
+  // Laptop Standby Dev Squad
+  add(dsq, rbox(0.34, 0.015, 0.24, 0.005), M.steel, 0, 0.755, 0.05);
+  add(dsq, rbox(0.34, 0.22, 0.01, 0.005), M.black, 0, 0.86, -0.07, -0.2);
+  officeChair(-3.8, -2.6, 0); // Kursi standby squad
+  blockC(-3.8, -3.2, 1.6, 0.75, 0.2);
+
+  // rak buku & majalah santai di lounge tengah
+  const shelf = grp(scene, 0.6, 0, 4.8, 0);
+  for (const y of [0.04, 0.52, 1.02]) add(shelf, rbox(2.4, 0.04, 0.36, 0.01), M.oak, 0, y, 0);
+  for (const sx of [-1.15, 0, 1.15]) add(shelf, bx(0.04, 1.02, 0.36), M.oak, sx, 0.52, 0);
+  books(shelf, -1.1, -0.1, 0.06, 0, 5); books(shelf, 0.1, 1.1, 0.06, 0, 6);
+  blockC(0.6, 4.8, 2.4, 0.36, 0.2);
+
   plant(-8.6, -5.55, 1.2, true); plant(2.95, -5.55, 1.1, true); plant(-4.35, 0.35, 1.0, true);
   const rack = grp(scene, 3.05, 0, 0.55);
   add(rack, cyl(0.2, 0.22, 0.03, 16), M.black, 0, 0.015, 0); add(rack, cyl(0.02, 0.02, 1.75, 8), M.black, 0, 0.88, 0);
@@ -583,19 +898,32 @@ function buildFurniture() {
   const T = grp(scene, MEET_T.x, 0, MEET_T.z);
   add(T, rbox(3.4, 0.05, 1.15, 0.02), M.walnut, 0, 0.735, 0);
   for (const sx of [-1.25, 1.25]) { add(T, bx(0.08, 0.7, 0.8), M.black, sx, 0.36, 0); add(T, bx(0.5, 0.04, 0.9), M.black, sx, 0.02, 0); }
-  add(T, rbox(0.3, 0.03, 0.15, 0.01), M.black, 0, 0.77, 0);
+  // Conference 360 Mic / Speaker Puck bulat dengan cincin LED Cyan di tengah meja
+  add(T, cyl(0.09, 0.09, 0.02, 20), mat(0x0f172a, { metalness: 0.8 }), 0, 0.765, 0);
+  add(T, new THREE.TorusGeometry(0.085, 0.003, 6, 24), glowMat(0x38bdf8, 1.2, 2.5), 0, 0.775, 0, Math.PI / 2);
+  // Wireless charging pad di dua sisi meja
+  add(T, cyl(0.05, 0.05, 0.005, 16), mat(0x334155), -0.6, 0.762, 0);
+  add(T, cyl(0.05, 0.05, 0.005, 16), mat(0x334155), 0.6, 0.762, 0);
+
   [[-1.1, -0.3], [0, -0.3], [1.1, -0.3], [-1.1, 0.3], [0, 0.3], [1.1, 0.3]].forEach(([lx, lz], i) => {
     if (i % 2) { add(T, rbox(0.21, 0.004, 0.28, 0.002), M.white, lx, 0.762, lz, 0, 0.1, 0, false); add(T, cyl(0.004, 0.004, 0.16, 6), M.black, lx + 0.14, 0.765, lz, Math.PI / 2, 0, 0, false); }
     else { const lp = grp(T, lx, 0.76, lz, lz > 0 ? Math.PI : 0); add(lp, rbox(0.32, 0.012, 0.22, 0.005), M.steel, 0, 0.006, 0); add(lp, rbox(0.32, 0.2, 0.01, 0.004), M.steel, 0, 0.11, -0.11, -0.25); }
     add(T, cyl(0.03, 0.03, 0.1, 10), M.glass, lx - 0.2, 0.81, lz * 0.7, 0, 0, 0, false);
   });
-  blockC(MEET_T.x, MEET_T.z, 3.4, 1.15, 0.22);
-  for (const id of MEET_IDS.slice(1)) { const s = SPOTS[id]; officeChair(s.x, s.z, s.ry); }
-  pendant(5.4, MEET_T.z, 1.95); pendant(7.2, MEET_T.z, 1.95);
+  for (const id of MEET_IDS.slice(1)) {
+    const s = SPOTS[id];
+    if (id === "meet:7") {
+      executiveLeatherChair(s.x, s.z, s.ry, 0x0369a1); // Kursi Pimpinan CEO (Dimitri) di kepala meja
+    } else {
+      aeronChair(s.x, s.z, s.ry); // Kursi Ergonomis Mesh Aeron untuk Tim
+    }
+  }
   const tv = grp(scene, X1 - 0.04, 0, 3.1, -Math.PI / 2);
   add(tv, rbox(2.95, 1.7, 0.06, 0.02), M.black, 0, 1.6, 0);
   boards.tv = board(0, 0, 0, 0, 2.82, 1.58, 1024, 576, true); tv.add(boards.tv.mesh); boards.tv.mesh.position.set(0, 1.6, 0.035);
-  add(tv, rbox(1.2, 0.07, 0.1, 0.02), M.black, 0, 0.66, 0.06);
+  // Soundbar & Video Conference Camera 4K di bawah TV
+  add(tv, rbox(1.4, 0.08, 0.08, 0.02), mat(0x0f172a, { metalness: 0.6 }), 0, 0.75, 0.06);
+  add(tv, sph(0.015, 8), mat(0x38bdf8), 0, 0.75, 0.11); // Lensa kamera konferensi
   add(tv, rbox(2.4, 0.5, 0.42, 0.02), M.walnut, 0, 0.25, 0.22);
   block(X1 - 0.5, 1.9, X1, 4.3, 0.1);
   plant(8.55, 5.55, 1.1, true); plant(4.0, 5.6, 0.9);
@@ -630,38 +958,20 @@ function buildFurniture() {
   pendant(6.55, -3.75, 1.85); pendant(7.05, -3.75, 1.95);
   plant(5.35, -3.0, 0.9);
 
-  // ---------- lounge ----------
-  sofa(-8.35, 3.8, Math.PI / 2, 2.5, 3, 0x8b9099, [0x2563eb, 0xf59e0b, 0x0d9488]);
-  sofa(-4.7, 3.2, -Math.PI / 2, 0.95, 1, 0x5a5f69, [0xdb2777]);
-  sofa(-4.7, 4.4, -Math.PI / 2, 0.95, 1, 0x5a5f69, [0x16a34a]);
-  const ct = grp(scene, -6.5, 0, 3.8);
-  add(ct, rbox(0.62, 0.05, 1.1, 0.02), M.walnut, 0, 0.42, 0);
+  // ---------- EXECUTIVE LOUNGE TENGAH (Warm Scandinavian, Anti AI-Slop) ----------
+  // Sofa santai staf di lounge tengah (warna warm cream, bantal slate & amber)
+  sofa(0.8, 2.8, 0, 2.4, 3, 0xd4c7b5, [0x475569, 0xb45309]);
+  const ct = grp(scene, 0.8, 0, 3.8);
+  add(ct, rbox(0.65, 0.05, 1.2, 0.02), M.walnut, 0, 0.42, 0); // Coffee table kayu solid walnut
   for (const sx of [-0.25, 0.25]) for (const sz of [-0.48, 0.48]) add(ct, cyl(0.02, 0.02, 0.4, 6), M.black, sx, 0.2, sz);
-  add(ct, rbox(0.2, 0.03, 0.28, 0.005), mat(0x1d4ed8), 0.05, 0.46, -0.25, 0, 0.3, 0); add(ct, rbox(0.18, 0.03, 0.25, 0.005), mat(0xca8a04), 0.05, 0.49, -0.25, 0, 0.1, 0);
-  add(ct, cyl(0.04, 0.035, 0.09, 10), M.white, -0.1, 0.49, 0.2); add(ct, cyl(0.04, 0.035, 0.09, 10), mat(0xf59e0b), 0.12, 0.49, 0.32);
-  blockC(-6.5, 3.8, 0.62, 1.1, 0.2);
-  floorLamp(-8.55, 5.45); plant(-8.6, 2.1, 1.0, true); plant(-4.4, 5.55, 1.1, true);
+  add(ct, rbox(0.2, 0.03, 0.28, 0.005), mat(0x1e293b), 0.05, 0.46, -0.25, 0, 0.3, 0); // Majalah desain arsitektur
+  add(ct, cyl(0.04, 0.035, 0.09, 10), M.white, -0.1, 0.49, 0.2); // Cangkir kopi
+  blockC(0.8, 3.8, 0.65, 1.2, 0.2);
 
-  // ---------- pojok main: bean bag + arcade ----------
-  for (const [id, color] of [["rest:bean1", 0xf59e0b], ["rest:bean2", 0x0891b2]]) {
-    const s = SPOTS[id];
-    const bb = add(scene, new THREE.IcosahedronGeometry(0.46, 3), mat(color, { roughness: 1 }), s.x, 0.24, s.z);
-    bb.scale.set(1, 0.55, 1);
-    block(s.x, s.z, s.x, s.z, 0.4);
-  }
-  const ar = grp(scene, 3.0, 0, 4.9, -Math.PI / 2);
-  add(ar, rbox(0.66, 1.75, 0.62, 0.03), mat(0x1e1b4b), 0, 0.875, 0);
-  add(ar, rbox(0.7, 0.2, 0.66, 0.03), glowMat(0xdb2777, 0.8, 2.4), 0, 1.72, 0.0);
-  const as = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.38), new THREE.MeshBasicMaterial({ map: screenTex("arcade", 4), toneMapped: false }));
-  as.position.set(0, 1.3, 0.316); as.rotation.x = -0.12; ar.add(as);
-  add(ar, rbox(0.62, 0.06, 0.25, 0.02), M.black, 0, 1.0, 0.38, -0.3);
-  add(ar, sph(0.03, 10), mat(0xef4444), -0.12, 1.05, 0.42); add(ar, sph(0.025, 10), mat(0x22c55e), 0.08, 1.04, 0.42); add(ar, sph(0.025, 10), mat(0x3b82f6), 0.16, 1.04, 0.4);
-  add(ar, bx(0.62, 0.02, 0.02), glowMat(0x22d3ee, 0.8, 2.6), 0, 0.02, 0.32, 0, 0, 0, false);
-  block(2.7, 4.6, 3.3, 5.2, 0.2);
-  const st2 = grp(scene, 1.5, 0, 5.55);
-  add(st2, cyl(0.22, 0.22, 0.04, 20), M.oak, 0, 0.5, 0); add(st2, cyl(0.03, 0.03, 0.5, 8), M.black, 0, 0.25, 0); add(st2, cyl(0.045, 0.04, 0.1, 10), M.white, 0.05, 0.57, 0);
-  block(1.5, 5.55, 1.5, 5.55, 0.3);
-  plant(-0.6, 5.6, 1.0, true);
+  // Lampu lantai & tanaman hias lounge tengah
+  floorLamp(2.5, 3.8);
+  plant(2.5, 2.6, 1.1, true);
+  plant(-8.6, 5.4, 1.0, true); // Tanaman sudut lab Xavortree
 }
 
 // =====================================================================
@@ -778,21 +1088,12 @@ function refreshBoards() { drawKanban(); drawRoad(); drawStatus(); drawClock(); 
 // =====================================================================
 // MANUSIA PROSEDURAL
 // =====================================================================
-const SEAT_TYPES = { orchestrator: 1, "business-analyst": 1, pm: 1, analyst: 1, "ai-engineer": 1, backend: 1, frontend: 1, data: 1, devops: 1, qa: 1, "chief-of-staff": 1, peneliti: 1 };
-const DEFAULT_COLORS = { orchestrator: "#7c3aed", "business-analyst": "#0d9488", pm: "#2563eb", analyst: "#0891b2", "ai-engineer": "#9333ea", backend: "#16a34a", frontend: "#65a30d", data: "#ca8a04", devops: "#dc2626", qa: "#ea580c", "chief-of-staff": "#334155", peneliti: "#0e7490" };
+const SEAT_TYPES = { orchestrator: 1, architect: 1, maker3d: 1 };
+const DEFAULT_COLORS = { orchestrator: "#6b4f3a", architect: "#0891b2", maker3d: "#d97706" };
 const STYLE = {
   orchestrator: { skin: 0xd9a47e, hair: 0x1c1c24, pants: 0x1f2937, hairStyle: "side", tie: true },
-  "business-analyst": { skin: 0xf1c7a8, hair: 0x3b2a1e, pants: 0x374151, female: true, hairStyle: "long" },
-  pm: { skin: 0xe8b894, hair: 0x2b1d14, pants: 0x2d3748, female: true, hairStyle: "bun" },
-  analyst: { skin: 0xc68a62, hair: 0x111111, pants: 0x2d3748, hairStyle: "short", glasses: true },
-  "ai-engineer": { skin: 0xe0ac86, hair: 0x5b3a1f, pants: 0x1f2937, female: true, hairStyle: "bob", glasses: true },
-  backend: { skin: 0xb07a52, hair: 0x111111, pants: 0x1f2937, hairStyle: "curly", headset: true },
-  frontend: { skin: 0xe8b894, hair: 0x6b4423, pants: 0x3b3f4a, hairStyle: "spiky", headset: true },
-  data: { skin: 0xd9a47e, hair: 0x1c1c24, pants: 0x374151, female: true, hairStyle: "long" },
-  devops: { skin: 0x8d5a3b, hair: 0x111111, pants: 0x1f2937, hairStyle: "short", headset: true },
-  qa: { skin: 0xf1c7a8, hair: 0x2b1d14, pants: 0x2d3748, female: true, hairStyle: "bob" },
-  "chief-of-staff": { skin: 0xc68a62, hair: 0x3b3b3b, pants: 0x1f2937, hairStyle: "side", glasses: true },
-  peneliti: { skin: 0xd9a47e, hair: 0x2b2b2b, pants: 0x374151, hairStyle: "curly", glasses: true, female: true },
+  architect: { skin: 0xc68a62, hair: 0x111111, pants: 0x2d3748, hairStyle: "short", glasses: true },
+  maker3d: { skin: 0xe8b894, hair: 0x6b4423, pants: 0x3b3f4a, hairStyle: "spiky", headset: true },
 };
 function makeHuman(style, shirtHex) {
   const shirtC = new THREE.Color(shirtHex).getHex();
@@ -917,8 +1218,13 @@ renderer.domElement.addEventListener("pointermove", (e) => {
 renderer.domElement.addEventListener("pointerleave", () => { hovered = null; });
 let roster = {}, agents = {}, meta = { meeting: { active: false } };
 const owner = {}; // spotId -> type
-const CHATTER = ["Ngopi dulu ☕", "Nunggu keputusan CEO", "Tadi QA-nya ketat banget", "Plan berikutnya apa ya?", "Kopi kedua nih", "Rehat 5 menit", "Siapa yang habisin gula?"];
-const MEET_CHATTER = ["Setuju, catat di notulen", "Itu ASUMSI atau BLOKIR?", "Rekomendasiku opsi A", "AC-nya harus bisa diuji", "Tanya CEO dulu yang ini"];
+const SOUL_CHATTER = {
+  orchestrator: ["Milestone on-track 📋", "Izin lapor, 1 blocker ke CEO", "Kopi hitam dulu sambil cek agenda", "Catat di notulen executive", "Format laporan maks 10 baris"],
+  architect: ["Arsitektur modular siap di-scale", "Hindari over-engineering, buat simpel", "Skema database SaaS aman", "Cek integrasi backend telemetry", "Teh pekat biar fokus debugging"],
+  maker3d: ["Overhang 45° aman, minim support", "Toleransi snap-fit 0.35mm presisi", "Ganti spool filamen PLA matte pastel", "Nozzle 0.4mm Bambu Lab lancar", "Kalkulasi: 38 gram PLA, siap cetak"]
+};
+const CHATTER = ["Ngopi dulu ☕", "Nunggu keputusan CEO", "Rehat 5 menit"];
+const MEET_CHATTER = ["Masuk ASUMSI atau butuh BLOKIR CEO?", "Rekomendasi teknis kita opsi A", "Pastikan acceptance criteria teruji", "Sinkronkan ke folder Drive yang tepat", "Catat di notulen executive"];
 
 function spawnActors() {
   Object.keys(SEAT_TYPES).forEach((type, idx) => {
@@ -1012,7 +1318,11 @@ function stepActors(dt, t) {
       if (quotaOut && ag && t > a.bubbleUntil) { bub = meta.quota.status === "habis" ? "Kuota habis, ngopi dulu ☕" : "API error, nunggu perintah"; a.bubbleUntil = t + 5000; a.nextChat = t + 14000; }
       else if ((a.pose === "meet" || a.pose === "present") && t > a.nextChat) { bub = ag && ag.status === "kerja" && ag.lastSummary ? ag.lastSummary : MEET_CHATTER[(a.idx + Math.floor(t / 9000)) % MEET_CHATTER.length]; a.bubbleUntil = t + 4500; a.nextChat = t + 8000 + Math.random() * 7000; }
       else if (a.pose === "type" && ag && ag.lastSummary && t > a.nextChat) { bub = ag.lastSummary; a.bubbleUntil = t + 5000; a.nextChat = t + 11000 + Math.random() * 9000; }
-      else if (["sofa", "stool", "mug", "bean", "arcade"].includes(a.pose) && !quotaOut && t > a.nextChat) { bub = a.pose === "arcade" ? "Satu ronde lagi 🎮" : CHATTER[(a.idx + Math.floor(t / 10000)) % CHATTER.length]; a.bubbleUntil = t + 4000; a.nextChat = t + 12000 + Math.random() * 8000; }
+      else if (["sofa", "stool", "mug", "bean", "arcade", "deskIdle"].includes(a.pose) && !quotaOut && t > a.nextChat) {
+        const chList = SOUL_CHATTER[a.type] || CHATTER;
+        bub = chList[(a.idx + Math.floor(t / 10000)) % chList.length];
+        a.bubbleUntil = t + 4500; a.nextChat = t + 11000 + Math.random() * 8000;
+      }
     }
     const bubbleAllowed = isHover || labelMode === "lengkap" || (labelMode === "ringkas" && ["type", "meet", "present"].includes(a.pose) && bubblesShown < 3);
     if (bub) { a.bubble.textContent = String(bub).replace(/^Bash: /, "$ ").slice(0, 60); }
@@ -1112,10 +1422,10 @@ window.office3d = { scene, camera, controls, actors, SPOTS, THREE, setTheme, blo
   buildFurniture();
   buildCat();
   spawnActors();
-  zoneLabel("☕ Pojok kopi", 6.8, 2.35, -4.6);
-  zoneLabel("🗂 Ruang Meeting", 6.3, 2.75, 0.6);
-  zoneLabel("🛋 Lounge", -6.5, 1.75, 2.3);
-  zoneLabel("🎮 Pojok main", 1.4, 1.75, 4.4);
+  zoneLabel("Studio Fleek Project", -5.8, 3.1, -3.4);
+  zoneLabel("Lab Xavortree (3D & IoT)", -5.8, 3.1, 2.2);
+  zoneLabel("Shared Boardroom", 6.3, 3.1, 3.1);
+  zoneLabel("Executive Lounge & Pantry", 0.8, 3.1, 0.2);
   themeButtons();
   applyTheme();
   if (prev && prev._last) api.update(...prev._last); else refreshBoards();

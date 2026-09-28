@@ -763,6 +763,16 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (path === "/api/rooms" && req.method === "GET") {
+    const roomsFile = join(OFFICE_DIR, "rooms.json");
+    let roomsData = { rooms: [] };
+    try {
+      roomsData = JSON.parse(readFileSync(roomsFile, "utf8"));
+    } catch {}
+    sendJSON(res, 200, roomsData);
+    return;
+  }
+
   if (path === "/api/state") {
     const usageBySlug = computeUsage();
     const companies = listCompanies().map((slug) => {

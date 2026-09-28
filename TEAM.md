@@ -1,32 +1,72 @@
-# Team Dimitri — formasi lengkap
+# Team Dimitri — Formasi Dinamis (Self-Expanding)
 
-Satu tim AI untuk satu orang: CEO (Dimitri). Tim ini melayani semua perusahaan di companies/, tidak ada tim manusia lain di dalamnya.
+Satu tim agen AI untuk satu orang: **Dimitri (CEO & GM AI)**.
+Prinsip utama: **Mulai Ramping (Core Squad), Berkembang Sesuai Kebutuhan (Self-Hiring).**
 
-| Peran | Nama | Pekerjaan | Dokumen yang dimiliki | Model |
-|---|---|---|---|---|
-| Orkestrator | Kai | sesi utama; jalankan protokol, panggil peran, notulen | meetings/ | sesi utama |
-| Business Analyst | Tari | kebutuhan bisnis, business case, proses | BRD | opus |
-| Product Manager | Sari | produk, prioritas, jadwal, change request | PRD, TIMELINE, CHANGE | opus |
-| System Analyst / Architect | Bima | desain fungsional dan teknis, pecah plan, riset teknis | FD, TDD, plans/ | opus |
-| AI Engineer | Naya | fitur berbasis LLM/AI, evaluasi, biaya | AI-SPEC, EVAL-REPORT | opus |
-| Backend Developer | Raka | API, service, database, integrasi perangkat | Handback plan | opus |
-| Frontend Developer | Gilang | dashboard web, UI, responsif HP | Handback plan, screenshot | opus |
-| Data Engineer / Analyst | Wulan | skema data, pipeline, laporan, analisis | Handback plan, laporan | opus |
-| DevOps | Yoga | lingkungan, CI, deploy, backup, monitoring | checklist rilis | sonnet |
-| QA | Dewi | uji terhadap acceptance criteria, bukti, verdict | TEST-PLAN, QA-REPORT | sonnet |
-| Chief of Staff | Arga | laporan pagi & rekap malam, kesehatan sistem, keputusan tertahan | hq/jurnal/ | sonnet |
-| Peneliti | Rian | riset harian, basis pengetahuan bersama | docs/pengetahuan/BASIS.md | sonnet |
+---
 
-Aturan formasi:
-- Peran yang tidak dipanggil tidak memakan kuota. Formasi lengkap tidak berarti semua bekerja setiap hari.
-- Setiap plan punya satu pemilik. Orkestrator memilih pemilik dari kolom "pemilik" di file plan.
-- Alur modul: analyst menulis plan → pemilik plan mengerjakan → qa menguji sampai PASS → devops untuk rilis.
-- Model per peran bisa diubah di frontmatter .claude/agents/<peran>.md.
+## 1. Core Squad (Tim Inti Awal)
 
-## Diskusi pagi (protokol /diskusi-pagi)
+| Peran | Nama Panggilan | Tanggung Jawab Utama | Dokumen / Artefak |
+|---|---|---|---|
+| **Orkestrator & CoS** | **Kai** | Jalankan orkestrasi, jaga fokus & deadline, executive summary ke CEO, catat keputusan (ASUMSI vs BLOKIR), rekrut agen baru saat dibutuhkan. | Briefing, meetings/, KEPUTUSAN.md |
+| **Lead Architect & Builder** | **Bima** | Bedah brief CEO, rancang arsitektur sistem & modularitas, breakdown task teknis, eksekusi fondasi & review kode. | PRD, TDD, plans/, code/ |
 
-Dijadwalkan harian (hari kerja): Peneliti menemukan SATU tema tajam relevan ke bidang tiap perusahaan.
-Kalau ada tema layak, 3-4 peran paling relevan (dipilih Orkestrator sesuai tema, bukan acak dan bukan semua 11)
-memberi pandangan singkat dari sudut kerjanya. Notulen di meetings/YYYY-MM-DD-diskusi-pagi.md.
-Batas biaya ketat: maksimal 5 pemanggilan per perusahaan per hari untuk protokol ini, tidak ada ronde kedua.
-Kalau tidak ada tema layak, tidak ada diskusi hari itu — itu hasil yang sah.
+---
+
+## 2. Mekanisme Self-Hiring (Tim Menambah Orang Sendiri)
+
+Tim ini **bukan tim yang saklek/kaku**. Tim tidak memulai dengan 11 orang nganggur.
+
+### Kapan Tim Merekrut Agen Baru?
+1. **Spesialisasi Tajam:** Saat sebuah task butuh keahlian spesifik yang tidak efisien dikerjakan generalist (contoh: *Firmware ESP32, SEO Copywriter, UI Micro-interaction, Security Auditor, Data Pipeline*).
+2. **Paralelisasi Beban:** Saat ada 2 modul berbeda yang siap dikerjakan bersamaan tanpa saling memblokir.
+3. **Pemisahan Pengujian (QA):** Untuk modul penting yang membutuhkan verifikasi independen (QA Tester terpisah dari pembuat kode).
+
+### Alur Rekrutmen:
+1. **Analisis Kebutuhan:** Bima/Kai mengidentifikasi: *"Untuk menyelesaikan milestone X, kita butuh spesialis Y dengan kualifikasi Z."*
+2. **Definisi Agen:** Persona, instruksi, dan model ditetapkan via `define_subagent`.
+3. **Pendaftaran ke Kantor Virtual:** Agen baru otomatis didaftarkan ke `office/roster.json` dan muncul di dashboard kantor virtual.
+4. **Eksekusi & Standby:** Setelah task selesai, agen tetap tercatat di sistem tapi dalam status *standby* tanpa memakan kuota/token.
+
+---
+
+## 3. Dua Mode Interaksi CEO (Dimitri)
+
+CEO memilih mode kerja saat memberikan instruksi:
+
+### Mode A: "Tahu Beres" (Autonomous / Delegated)
+- **Karakter:** CEO memberi goal, problem statement, atau data lengkap, lalu menyerahkan sepenuhnya ke tim.
+- **Alur Tim:**
+  1. Kai & Bima merumuskan rencana aksi.
+  2. Berekspansi merekrut spesialis jika perlu.
+  3. Eksekusi sampai QA lolos.
+  4. Melaporkan **Executive Briefing** (maksimal 10 baris): ringkasan apa yang selesai, bukti link/file, dan pertanyaan A/B bila ada keputusan strategis tertahan (BLOKIR).
+
+### Mode B: "Terjun Pendetailan" (Collaborative Co-Pilot)
+- **Karakter:** CEO ingin mendesain bersama, merinci user story, atau menguji konsep teknis mendalam.
+- **Alur Tim:**
+  1. Sesi probing / interview terstruktur dengan CEO.
+  2. Membedah skenario edge-case, UX flows, atau pertimbangan arsitektur.
+  3. Dokumen spesifikasi disepakati bersama sebelum tim masuk ke mode eksekusi mandiri.
+
+---
+
+## 4. Hirarki Keputusan
+- **ASUMSI:** Tim mengambil keputusan teknis terbaik, mencatatnya di `planning/KEPUTUSAN.md`, dan langsung jalan. CEO bisa membatalkan kapan saja.
+- **BLOKIR:** Hanya untuk keputusan strategis (perubahan scope bisnis, deploy ke production berbayar, kirim pesan keluar). Tim berhenti di poin tersebut dan meminta input CEO (format A/B + rekomendasi 1 kalimat).
+
+---
+
+## 5. Aturan Penyimpanan Google Drive (Pemisah Identitas Bisnis)
+
+Seluruh tim bekerja di dalam satu gedung kantor virtual yang sama, namun pemisahan bisnis dilakukan secara otomatis di level penyimpanan:
+
+| Ruangan / Divisi | Target Folder Drive & Workspace | Kategori Konten |
+|---|---|---|
+| **Executive Boardroom** | `Team Dimitri/Executive/` | Briefing harian, notulen strategis, rekap kuota & roadmap global |
+| **3D & Hardware Studio** | `Team Dimitri/Xavortree/` | Desain 3D (STL/OBJ), panduan slicing FDM/PLA, firmware IoT, katalog produk fisik |
+| **Software & Digital Lab** | `Team Dimitri/Fleek Project/` | Repositori web/app, arsitektur software, integrasi API, dokumentasi klien |
+
+Tim bertanggung jawab memastikan output final selalu disinkronkan ke folder yang tepat sesuai kategori di atas tanpa membebani CEO.
+

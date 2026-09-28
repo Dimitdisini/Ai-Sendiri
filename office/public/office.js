@@ -1,6 +1,5 @@
-// Kantor isometrik Team Dimitri — versi 2.0
-// Kanvas 1200×640. Karakter lebih besar, meja lebih jelas, warna lebih warm.
-// Menerima data dari app.js lewat window.office.update(agents, roster, meta).
+// Kantor isometrik Team Dimitri — Unified Multi-Disciplinary Studios
+// 1 Gedung Terpadu: Executive Boardroom, Software Lab, & 3D Hardware Studio
 (function () {
   const canvas = document.getElementById("officeCanvas");
   if (!canvas) return;
@@ -12,33 +11,23 @@
   // --- Grid isometrik ---
   const TW = 72, TH = 36;
   const GRID_W = 18, GRID_H = 10;
-  // Titik asal: tengah atas grid
   const OX = W / 2;
   const OY = 180;
 
   const WALL_H   = 160;
   const GLASS_H  = 100;
-  // Batas ruang rapat (kanan atas) dan break area (kanan bawah)
   const MEET_X   = 11.5;
   const MEET_Y   = 5.5;
 
-  // --- Posisi meja kerja (grid) ---
+  // --- Posisi meja kerja dinamis per peran ---
   const SEATS = {
-    "business-analyst": { x: 1.5, y: 1.2 },
-    pm:                 { x: 3.8, y: 1.2 },
-    analyst:            { x: 6.1, y: 1.2 },
-    "ai-engineer":      { x: 8.4, y: 1.2 },
-    backend:            { x: 1.5, y: 4.2 },
-    frontend:           { x: 3.8, y: 4.2 },
-    data:               { x: 6.1, y: 4.2 },
-    devops:             { x: 8.4, y: 4.2 },
-    qa:                 { x: 2.0, y: 7.4 },
-    "chief-of-staff":   { x: 4.6, y: 7.4 },
-    orchestrator:       { x: 7.6, y: 7.4 },
+    orchestrator: { x: 8.5, y: 7.2, room: "boardroom" },
+    architect:    { x: 3.5, y: 2.2, room: "software-lab" },
+    maker3d:      { x: 3.5, y: 7.2, room: "maker-lab" }
   };
 
   const MEETING_SEATS = [
-    { x: 12.2, y: 2.4 }, // kepala meja
+    { x: 12.2, y: 2.4 },
     { x: 13.2, y: 1.3 }, { x: 14.4, y: 1.3 }, { x: 15.6, y: 1.3 },
     { x: 13.2, y: 3.7 }, { x: 14.4, y: 3.7 }, { x: 15.6, y: 3.7 },
     { x: 16.8, y: 2.0 }, { x: 16.8, y: 3.2 },
@@ -47,17 +36,39 @@
   const BREAK_SPOTS = [
     { x: 12.6, y: 8.0 }, { x: 13.6, y: 8.0 }, { x: 14.6, y: 8.0 },
     { x: 15.8, y: 7.0 }, { x: 11.6, y: 7.2 }, { x: 12.6, y: 6.8 },
-    { x: 13.6, y: 6.8 }, { x: 14.6, y: 6.8 }, { x: 16.4, y: 8.2 },
-    { x: 11.4, y: 8.6 }, { x: 15.6, y: 8.4 },
   ];
 
-  const CHATTER = [
-    "Ngopi dulu...", "Nunggu keputusan CEO", "Rehat sebentar",
-    "QA tadi ketat banget", "Plan berikutnya apa ya?", "Kopi kedua",
-  ];
+  // Obrolan dinamis sesuai Soul agen
+  const SOUL_CHATTER = {
+    orchestrator: [
+      "Jadwal & milestone on-track.",
+      "Kopi hitam dulu sambil cek checklist.",
+      "Izin lapor, 1 blocker menunggu CEO.",
+      "Simpan dokumen final ke Google Drive.",
+      "Format ke CEO maks 10 baris."
+    ],
+    architect: [
+      "Arsitektur modular siap di-scale.",
+      "Hindari over-engineering, buat simpel.",
+      "Lagi review schema database SaaS.",
+      "Cek integrasi backend telemetry.",
+      "Teh pekat biar fokus debugging."
+    ],
+    maker3d: [
+      "Overhang 45° aman, minim support.",
+      "Toleransi snap-fit 0.35mm presisi.",
+      "Ganti spool filamen PLA matte pastel.",
+      "Nozzle 0.4mm Bambu Lab jalan mulus.",
+      "Hitung estimasi: 38 gram, Rp 19.000."
+    ]
+  };
+
   const MEETING_CHATTER = [
-    "Masuk ASUMSI atau BLOKIR?", "Rekomendasiku opsi A",
-    "AC-nya harus bisa diuji", "Tanya CEO yang ini", "Setuju, catat di notulen",
+    "Masuk ASUMSI atau butuh BLOKIR CEO?",
+    "Rekomendasi teknis kita opsi A.",
+    "Pastikan acceptance criteria teruji.",
+    "Sinkronkan ke folder Drive yang tepat.",
+    "Catat di notulen executive."
   ];
 
   let roster = {};
@@ -66,7 +77,6 @@
   const actors = {};
   let lastFrame = performance.now();
 
-  // --- Utilities ---
   function iso(gx, gy) {
     return {
       x: OX + (gx - gy) * (TW / 2),
@@ -81,8 +91,6 @@
     const b = Math.min(255,  (n        & 255) * f);
     return `rgb(${r|0},${g|0},${b|0})`;
   }
-
-  function lerp(a, b, t) { return a + (b - a) * t; }
 
   function diamond(gx, gy, fill, stroke) {
     const p = iso(gx, gy);
@@ -105,19 +113,18 @@
     const a = iso(gx,     gy),     b = iso(gx + w, gy);
     const c = iso(gx + w, gy + d), dd= iso(gx,     gy + d);
     const ly = -h - lift;
-    // top face
     ctx.fillStyle = shade(color, 1.1);
     ctx.beginPath();
     ctx.moveTo(a.x, a.y + ly); ctx.lineTo(b.x, b.y + ly);
     ctx.lineTo(c.x, c.y + ly); ctx.lineTo(dd.x, dd.y + ly);
     ctx.closePath(); ctx.fill();
-    // left face
+
     ctx.fillStyle = shade(color, 0.78);
     ctx.beginPath();
     ctx.moveTo(dd.x, dd.y + ly); ctx.lineTo(c.x, c.y + ly);
     ctx.lineTo(c.x, c.y - lift); ctx.lineTo(dd.x, dd.y - lift);
     ctx.closePath(); ctx.fill();
-    // right face
+
     ctx.fillStyle = shade(color, 0.62);
     ctx.beginPath();
     ctx.moveTo(c.x, c.y + ly); ctx.lineTo(b.x, b.y + ly);
@@ -149,7 +156,7 @@
     }
   }
 
-  // --- Gambar Ruangan ---
+  // --- Gambar Ruangan Terpadu ---
   function drawRoom(t) {
     ctx.clearRect(0, 0, W, H);
 
@@ -175,46 +182,30 @@
     ctx.lineTo(tl.x, tl.y);
     ctx.closePath(); ctx.fill();
 
-    // Jendela besar dinding belakang kanan
-    for (const x0 of [2.0, 6.2]) {
-      wallPanel(x0, 0, x0 + 2.8, 0, 138, 52, "#c8e8f5", "#ffffff88");
-      // lis jendela
-      const pw = iso(x0, 0), qw = iso(x0 + 2.8, 0);
-      ctx.strokeStyle = "#ffffffcc";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(lerp(pw.x, qw.x, 0.5), pw.y - 138);
-      ctx.lineTo(lerp(pw.x, qw.x, 0.5), pw.y - 52);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(pw.x, lerp(pw.y - 138, pw.y - 52, 0.5));
-      ctx.lineTo(qw.x, lerp(qw.y - 138, qw.y - 52, 0.5));
-      ctx.stroke();
-    }
+    // Jendela besar di Software Lab
+    wallPanel(1.5, 0, 4.5, 0, 138, 52, "#c8e8f5", "#ffffff88");
+    // Jendela di Executive Area
+    wallPanel(7.0, 0, 10.0, 0, 138, 52, "#c8e8f5", "#ffffff88");
 
     // Papan Roadmap di dinding kiri
-    wallPanel(1.2, 6.2, 1.2, 1.8, 138, 48, "#fffff8", "#b0a898");
-    const wb = iso(1.2, 6.2);
+    wallPanel(0.8, 4.8, 0.8, 1.2, 138, 48, "#fffff8", "#b0a898");
+    const wb = iso(0.8, 4.8);
     ctx.save();
     ctx.translate(wb.x, wb.y - 138);
     ctx.transform(1, -0.5, 0, 1, 0, 0);
     ctx.fillStyle = "#44403c";
     ctx.font = "bold 13px -apple-system, sans-serif";
-    ctx.fillText("Roadmap " + (meta.name || ""), 10, 18);
-    // progress bar background
+    ctx.fillText("Team Dimitri HQ", 10, 18);
     ctx.fillStyle = "#e8e2d6";
     ctx.fillRect(10, 28, 130, 9);
-    // progress bar fill
     ctx.fillStyle = "#6b4f3a";
     ctx.fillRect(10, 28, 1.3 * Math.min(100, meta.roadmapProgress), 9);
     ctx.fillStyle = "#78726a";
     ctx.font = "11px -apple-system, sans-serif";
-    ctx.fillText(`${meta.roadmapProgress}%  ·  ${meta.planCount} plan  ·  ${meta.qaReports} QA`, 10, 52);
-    ctx.fillStyle = (meta.blokir || 0) > 0 ? "#9b1c1c" : "#3d6b52";
-    ctx.fillText(`BLOKIR: ${meta.blokir || 0}`, 10, 67);
+    ctx.fillText(`${meta.roadmapProgress}% · Unified Studios`, 10, 52);
     ctx.restore();
 
-    // Papan Ruang Rapat di dinding kiri atas
+    // Papan Ruang Rapat
     wallPanel(13.2, 0, 17.0, 0, 138, 52, "#fffff8", "#b0a898");
     const mb = iso(13.2, 0);
     ctx.save();
@@ -222,44 +213,33 @@
     ctx.transform(1, 0.5, 0, 1, 0, 0);
     ctx.fillStyle = "#44403c";
     ctx.font = "bold 13px -apple-system, sans-serif";
-    ctx.fillText("Ruang Rapat", 10, 18);
+    ctx.fillText("Executive Boardroom", 10, 18);
     ctx.font = "11px -apple-system, sans-serif";
     const rapat = meta.meeting && meta.meeting.active;
     ctx.fillStyle = rapat ? "#9b1c1c" : "#78726a";
-    ctx.fillText(rapat ? ("● " + (meta.meeting.title || "Sedang rapat")) : "○ Kosong", 10, 38, 128);
-    if (rapat && meta.meeting.participants) {
-      ctx.fillStyle = "#44403c";
-      ctx.fillText(`${meta.meeting.participants.length} peserta`, 10, 54);
-    }
+    ctx.fillText(rapat ? ("● " + (meta.meeting.title || "Sedang Rapat")) : "○ Ready", 10, 38, 128);
     ctx.restore();
 
-    // Jam dinding
-    const ck = iso(GRID_W - 0.8, 0);
-    ctx.fillStyle = "#fffff8";
-    ctx.beginPath(); ctx.arc(ck.x, ck.y - 118, 16, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#b0a898"; ctx.lineWidth = 1.5; ctx.stroke();
-    const now = new Date();
-    const hh = now.getHours() % 12, mm = now.getMinutes();
-    const hAngle = (hh + mm / 60) / 12 * Math.PI * 2 - Math.PI / 2;
-    const mAngle = mm / 60 * Math.PI * 2 - Math.PI / 2;
-    ctx.strokeStyle = "#44403c"; ctx.lineWidth = 2; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(ck.x, ck.y - 118); ctx.lineTo(ck.x + 8 * Math.cos(hAngle), ck.y - 118 + 8 * Math.sin(hAngle)); ctx.stroke();
-    ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(ck.x, ck.y - 118); ctx.lineTo(ck.x + 12 * Math.cos(mAngle), ck.y - 118 + 12 * Math.sin(mAngle)); ctx.stroke();
-    ctx.lineCap = "butt";
-
-    // Lantai
+    // Lantai dengan zona warna:
+    // - Software Lab (Kiri Atas): Biru slate lembut
+    // - 3D Studio (Kiri Bawah): Amber/kayu hangat
+    // - Executive & Boardroom (Kanan): Netral / lavender lembut
     for (let gy = 0; gy < GRID_H; gy++) {
       for (let gx = 0; gx < GRID_W; gx++) {
         const inMeet  = gx >= MEET_X && gy <  MEET_Y;
-        const inBreak = gx >= MEET_X && gy >= MEET_Y;
+        const in3D    = gx <  MEET_X && gy >= 5.0;
+        const inSoft  = gx <  MEET_X && gy <  5.0;
         let fill, stroke;
+
         if (inMeet) {
           fill   = (gx + gy) % 2 ? "#dcd6ee" : "#d0c9e4";
           stroke = "#c8c0dc";
-        } else if (inBreak) {
-          fill   = (gx + gy) % 2 ? "#cad8c0" : "#bed0b2";
-          stroke = "#b2c6a8";
+        } else if (in3D) {
+          fill   = (gx + gy) % 2 ? "#f3e5d0" : "#ebd9bf";
+          stroke = "#dfcaa8";
+        } else if (inSoft) {
+          fill   = (gx + gy) % 2 ? "#e2eaf0" : "#d5e0e8";
+          stroke = "#c6d4de";
         } else {
           fill   = (gx + gy) % 2 ? "#e9d9b8" : "#e0ce9e";
           stroke = "#d4be8a";
@@ -267,9 +247,24 @@
         diamond(gx, gy, fill, stroke);
       }
     }
+
+    // Label Studio di Lantai
+    drawFloorLabel(2.5, 1.0, "💻 Software & Analytics Lab", "#475569");
+    drawFloorLabel(2.5, 6.0, "🖨️ 3D & Hardware Studio", "#92400e");
+    drawFloorLabel(9.0, 6.0, "🏛️ Executive Desk", "#5b21b6");
   }
 
-  // Dinding kaca ruang rapat
+  function drawFloorLabel(gx, gy, text, color) {
+    const p = iso(gx, gy);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.transform(1, 0.5, -1, 0.5, 0, 0);
+    ctx.fillStyle = color;
+    ctx.font = "bold 11px -apple-system, sans-serif";
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  }
+
   function drawGlassX() {
     wallPanel(MEET_X, 0, MEET_X, MEET_Y - 1.0, GLASS_H, 0, "rgba(180,220,248,0.28)", "rgba(255,255,255,0.85)");
   }
@@ -277,35 +272,44 @@
     wallPanel(MEET_X, MEET_Y, GRID_W, MEET_Y, GLASS_H, 0, "rgba(180,220,248,0.28)", "rgba(255,255,255,0.85)");
   }
 
-  // Meja kerja
+  // Meja Kerja Khusus
   function drawDesk(type, seat, working, t) {
-    const big = type === "orchestrator";
-    const w = big ? 1.8 : 1.3, d = 0.75;
-    // Meja kayu warm
-    box(seat.x - w / 2, seat.y - d / 2, w, d, 24, "#c4956a");
-    const m = iso(seat.x, seat.y - 0.1);
-    // Monitor
-    ctx.fillStyle = "#2c2826";
-    ctx.fillRect(m.x - 16, m.y - 52, 32, 20);
-    ctx.fillStyle = working ? (Math.sin(t / 200) > 0.2 ? "#7ed4fb" : "#5bb8e8") : "#3d3632";
-    ctx.fillRect(m.x - 14, m.y - 50, 28, 16);
-    // Stand monitor
-    ctx.fillStyle = "#2c2826";
-    ctx.fillRect(m.x - 2, m.y - 32, 4, 7);
-    // Keyboard kecil
-    ctx.fillStyle = "#4a403a";
-    ctx.fillRect(m.x - 12, m.y - 26, 24, 6);
+    const is3D = type === "maker3d";
+    const isBoss = type === "orchestrator";
+    const w = isBoss ? 1.8 : 1.4, d = 0.8;
+    const tableColor = is3D ? "#a77148" : isBoss ? "#5c4033" : "#6f8294";
 
-    // Monitor kedua untuk Orkestrator
-    if (big) {
-      ctx.fillStyle = "#2c2826";
-      ctx.fillRect(m.x + 20, m.y - 50, 24, 18);
-      ctx.fillStyle = working ? "#a5f3fc" : "#3d3632";
-      ctx.fillRect(m.x + 22, m.y - 48, 20, 14);
+    box(seat.x - w / 2, seat.y - d / 2, w, d, 24, tableColor);
+    const m = iso(seat.x, seat.y - 0.1);
+
+    // Kalau di Studio 3D (Reno): Ada Printer 3D di samping meja!
+    if (is3D) {
+      // 3D Printer Bambu Lab mini
+      box(seat.x + 0.8, seat.y - 0.2, 0.6, 0.6, 26, "#1e293b"); // Chasis
+      const pp = iso(seat.x + 1.1, seat.y + 0.1);
+      ctx.fillStyle = "#38bdf8"; // Layar printer
+      ctx.fillRect(pp.x - 6, pp.y - 48, 12, 6);
+      // Spool filamen jingga di atas
+      ctx.fillStyle = "#f97316";
+      ctx.beginPath(); ctx.arc(pp.x, pp.y - 56, 5, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Label nama peran di bawah meja
-    const label = (roster[type] && roster[type].role) || type;
+    // Monitor Komputer
+    ctx.fillStyle = "#2c2826";
+    ctx.fillRect(m.x - 14, m.y - 52, 28, 18);
+    ctx.fillStyle = working ? (Math.sin(t / 200) > 0.2 ? "#7ed4fb" : "#5bb8e8") : "#3d3632";
+    ctx.fillRect(m.x - 12, m.y - 50, 24, 14);
+
+    if (isBoss) {
+      // Monitor kedua untuk Kai
+      ctx.fillStyle = "#2c2826";
+      ctx.fillRect(m.x + 18, m.y - 50, 22, 16);
+      ctx.fillStyle = working ? "#a5f3fc" : "#3d3632";
+      ctx.fillRect(m.x + 20, m.y - 48, 18, 12);
+    }
+
+    // Label peran
+    const label = (roster[type] && roster[type].nickname) || type;
     ctx.font = "bold 10px -apple-system, sans-serif";
     const tw = ctx.measureText(label).width + 12;
     const lp = iso(seat.x, seat.y + d / 2 + 0.1);
@@ -316,57 +320,34 @@
     ctx.fillText(label, lp.x - tw / 2 + 6, lp.y - 7);
   }
 
-  // Meja rapat
   function drawMeetingTable() {
     box(12.6, 2.1, 3.8, 1.4, 22, "#9c7a5a");
-    // Kursi rapat
-    for (const s of MEETING_SEATS.slice(0, 7)) {
+    for (const s of MEETING_SEATS.slice(0, 6)) {
       box(s.x - 0.22, s.y - 0.22, 0.44, 0.44, 10, "#5a4f48");
     }
-    // Gelas di meja
-    const g1 = iso(13.5, 2.8);
-    ctx.fillStyle = "#e8e2d6"; ctx.fillRect(g1.x - 3, g1.y - 30, 6, 9);
-    ctx.fillStyle = "#b8d4e8"; ctx.fillRect(g1.x - 2, g1.y - 29, 4, 4);
   }
 
-  // Sudut break
   function drawBreakArea() {
-    // Sofa/kursi
     box(12.2, 8.5, 3.2, 0.8, 16, "#7a8fa8");
-    box(12.2, 8.4, 3.2, 0.2, 34, "#6a7f98", 0);
-    // Meja kopi
     box(15.8, 6.8, 0.8, 0.8, 28, "#9c7a5a");
-    box(15.9, 6.9, 0.6, 0.6, 14, "#3d3632", 28);
-    // Tanaman sudut
-    plant(11.2, 9.4);
   }
 
-  // Tanaman
   function plant(gx, gy) {
     box(gx, gy, 0.5, 0.5, 14, "#8c6d1f");
     const p = iso(gx + 0.25, gy + 0.25);
     ctx.fillStyle = "#3d6b52";
     for (let i = 0; i < 6; i++) {
       ctx.beginPath();
-      ctx.ellipse(
-        p.x + Math.cos(i * 1.05) * 9,
-        p.y - 22 + Math.sin(i * 1.05) * 4,
-        10, 6, i * 0.5, 0, Math.PI * 2
-      );
+      ctx.ellipse(p.x + Math.cos(i * 1.05) * 9, p.y - 22 + Math.sin(i * 1.05) * 4, 10, 6, i * 0.5, 0, Math.PI * 2);
       ctx.fill();
     }
-    // Batang
-    ctx.fillStyle = "#5a8a5a";
-    ctx.fillRect(p.x - 1, p.y - 14, 2, 8);
   }
 
-  // Karakter agen
   function drawActor(a, type, t) {
     const info = roster[type] || { color: "#78726a", nickname: type, role: type };
     const color = info.color || "#78726a";
     const p = iso(a.x, a.y);
 
-    // Animasi bob
     const bob = a.mode === "kerja"
       ? Math.sin(t / 140) * 2
       : a.mode === "jalan"
@@ -385,29 +366,12 @@
     rr(p.x - 10, p.y - bodyH - bob, 20, bodyH + 4, 6);
     ctx.fill();
 
-    // Lengan kerja (mengetik)
+    // Lengan
     if (a.mode === "kerja") {
       ctx.fillStyle = "#f0d5b8";
       const armY = p.y - 14 - bob;
       ctx.fillRect(p.x - 14, armY + Math.sin(t / 90) * 2, 6, 5);
       ctx.fillRect(p.x + 8,  armY - Math.sin(t / 90) * 2, 6, 5);
-    }
-
-    // Cangkir kopi (istirahat)
-    if (a.mode === "istirahat") {
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(p.x + 9, p.y - 16, 7, 9);
-      ctx.fillStyle = "#7c5c38";
-      ctx.fillRect(p.x + 10, p.y - 15, 5, 3);
-    }
-
-    // Laptop (rapat)
-    if (a.mode === "rapat") {
-      ctx.fillStyle = "#fef3c7";
-      ctx.fillRect(p.x - 14, p.y - 14, 8, 10);
-      ctx.fillStyle = "#b45309";
-      ctx.fillRect(p.x - 13, p.y - 12, 6, 1);
-      ctx.fillRect(p.x - 13, p.y - 10, 6, 1);
     }
 
     // Kepala
@@ -416,14 +380,9 @@
     ctx.fill();
 
     // Rambut
-    ctx.fillStyle = "#2c2826";
+    ctx.fillStyle = type === "maker3d" ? "#92400e" : type === "orchestrator" ? "#1e293b" : "#334155";
     rr(p.x - 9, p.y - bodyH - 18 - bob, 18, 7, 4);
     ctx.fill();
-
-    // Mata
-    ctx.fillStyle = "#1a1814";
-    ctx.fillRect(p.x - 5, p.y - bodyH - 9 - bob, 2, 2);
-    ctx.fillRect(p.x + 3, p.y - bodyH - 9 - bob, 2, 2);
 
     // Label nama
     const nm = (info.nickname || type);
@@ -439,7 +398,7 @@
     // Gelembung chat
     if (a.bubble && t < a.bubbleUntil) {
       ctx.font = "10px -apple-system, sans-serif";
-      const bw = Math.min(190, ctx.measureText(a.bubble).width + 16);
+      const bw = Math.min(210, ctx.measureText(a.bubble).width + 16);
       const bx = p.x - bw / 2;
       const by = p.y - bodyH - 66 - bob;
       ctx.fillStyle = "#fffff8";
@@ -447,17 +406,9 @@
       ctx.strokeStyle = "#e8e2d6"; ctx.lineWidth = 1; ctx.stroke();
       ctx.fillStyle = "#44403c";
       ctx.fillText(a.bubble, bx + 8, by + 14, bw - 16);
-      // Ekor gelembung
-      ctx.fillStyle = "#fffff8";
-      ctx.beginPath();
-      ctx.moveTo(p.x - 4, by + 20);
-      ctx.lineTo(p.x + 4, by + 20);
-      ctx.lineTo(p.x, by + 26);
-      ctx.closePath(); ctx.fill();
     }
   }
 
-  // --- Logic pergerakan aktor ---
   function step(dt, t) {
     const quotaOut  = meta.quota && meta.quota.status !== "ok";
     const meeting   = meta.meeting && meta.meeting.active ? meta.meeting : null;
@@ -471,7 +422,7 @@
           tx: seat.x, ty: seat.y + 0.6,
           mode: "diam", bubble: "", bubbleUntil: 0,
           active: false,
-          nextChat: t + 3000 + i * 1200,
+          nextChat: t + 2500 + i * 1500,
         };
       }
       const a  = actors[type];
@@ -506,33 +457,29 @@
         a.mode = goal;
       }
 
-      // Gelembung teks
-      if (quotaOut && ag && t > a.bubbleUntil) {
-        a.bubble = "Kuota habis, ngopi dulu...";
-        a.bubbleUntil = t + 5000; a.nextChat = t + 12000;
-      } else if (a.mode === "rapat" && t > a.nextChat) {
+      // Dialog Soul
+      const chList = SOUL_CHATTER[type] || SOUL_CHATTER.orchestrator;
+      if (a.mode === "rapat" && t > a.nextChat) {
         a.bubble = (ag && ag.status === "kerja" && ag.lastSummary)
           ? ag.lastSummary.slice(0, 36)
-          : MEETING_CHATTER[(i + Math.floor(t / 9000)) % MEETING_CHATTER.length];
+          : MEETING_CHATTER[Math.floor(Math.random() * MEETING_CHATTER.length)];
         a.bubbleUntil = t + 4500; a.nextChat = t + 7000 + Math.random() * 5000;
       } else if (wantWork && ag.lastSummary && t > a.bubbleUntil) {
         a.bubble = ag.lastSummary.slice(0, 36);
         a.bubbleUntil = t + 6000;
-      } else if (wantBreak && !quotaOut && t > a.nextChat) {
-        a.bubble = CHATTER[(i + Math.floor(t / 10000)) % CHATTER.length];
-        a.bubbleUntil = t + 4000; a.nextChat = t + 9000 + Math.random() * 5000;
+      } else if (t > a.nextChat) {
+        a.bubble = chList[Math.floor(Math.random() * chList.length)];
+        a.bubbleUntil = t + 4000; a.nextChat = t + 9000 + Math.random() * 6000;
       }
     });
   }
 
-  // --- Frame utama ---
   function frame(t) {
     const dt = Math.min(100, t - lastFrame);
     lastFrame = t;
     step(dt, t);
     drawRoom(t);
 
-    // Kumpulkan semua objek, sort by depth (painter's algorithm)
     const items = [];
     Object.keys(SEATS).forEach((type) => {
       const seat = SEATS[type];
@@ -548,18 +495,14 @@
     items.push({ depth: 14.0 + 8.5,                  draw: drawBreakArea });
     items.push({ depth: 0.6  + 9.4,                  draw: () => plant(0.6, 9.4) });
     items.push({ depth: 10.0 + 0.6,                  draw: () => plant(10.0, 0.6) });
-    items.push({ depth: 17.0 + 9.4,                  draw: () => plant(17.0, 9.4) });
-    items.push({ depth: 17.0 + 0.4,                  draw: () => plant(17.0, 0.4) });
 
     items.sort((p, q) => p.depth - q.depth).forEach((it) => it.draw());
 
     requestAnimationFrame(frame);
   }
 
-  // --- API publik ---
   window.office = {
     update(list, rosterIn, metaIn) {
-      window.office._last = [list, rosterIn, metaIn];
       roster = rosterIn || roster;
       agents = {};
       (list || []).forEach((a) => (agents[a.type] = a));

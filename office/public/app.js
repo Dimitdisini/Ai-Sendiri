@@ -99,11 +99,13 @@ function renderAgents() {
     return;
   }
 
-  const kerja = c.agents.filter(a => a.status === "kerja").length;
-  const total  = c.agents.length;
+  const activeRosterAgents = c.agents.filter(a => !!roster[a.type]);
+  const kerja = activeRosterAgents.filter(a => a.status === "kerja").length;
+  const total = activeRosterAgents.length;
   subtitle.textContent = `${kerja} dari ${total} agen aktif`;
 
   for (const a of c.agents) {
+    if (!roster[a.type]) continue; // Hanya tampilkan agen yang terdaftar di roster
     const info   = roster[a.type] || {};
     const color  = a.color || info.color || "#78726a";
     const initials = (a.nickname || a.type).slice(0, 2).toUpperCase();
@@ -297,12 +299,57 @@ setInterval(() => {
 loadJadwalCache().then(() => { if (typeof renderCronPanel === "function") renderCronPanel(); });
 setInterval(() => loadJadwalCache().then(() => { if (typeof renderCronPanel === "function") renderCronPanel(); }), 30000);
 
+let roomsCache = [];
+async function loadRooms() {
+  try {
+    const res = await fetch("/api/rooms");
+    const data = await res.json();
+    roomsCache = data.rooms || [];
+  } catch (e) {
+    roomsCache = [];
+  }
+}
+loadRooms();
+setInterval(loadRooms, 15000);
+
+function renderRooms() {
+  const grid = document.getElementById("roomsGrid");
+  const sub = document.getElementById("roomsSubtitle");
+  if (!grid) return;
+  if (!roomsCache.length) {
+    grid.innerHTML = `<div class="col-span-full text-slate-400 text-[10px] py-1">Memuat studio ruangan...</div>`;
+    return;
+  }
+  if (sub) sub.textContent = `${roomsCache.length} Ruangan Aktif · Terhubung ke Google Drive`;
+
+  grid.innerHTML = roomsCache.map((r) => {
+    const icon = r.category === "xavortree" ? "🌿" : r.category === "fleek" ? "⚡" : "🏛️";
+    return `
+      <div class="bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80 flex flex-col justify-between hover:bg-white hover:border-slate-300 transition">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+              <span>${icon}</span>${escapeHtml(r.name)}
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase" style="background:${r.color}18;color:${r.color}">${escapeHtml(r.category)}</span>
+          </div>
+          <p class="text-[10px] text-slate-600 line-clamp-2 mb-1.5 leading-tight">${escapeHtml(r.description)}</p>
+        </div>
+        <div class="flex items-center justify-between text-[9.5px] text-slate-400 pt-1 border-t border-slate-200/60 font-medium">
+          <span class="truncate flex items-center gap-1"><span class="text-blue-500">📁</span>${escapeHtml(r.storage_target)}</span>
+          <span class="font-mono text-slate-600 shrink-0">${(r.occupants||[]).length} staf</span>
+        </div>
+      </div>`;
+  }).join("");
+}
+
 function render() {
   renderSidebar();
   renderQuota();
   updateOffice();
   renderAgents();
   renderTopStats();
+  renderRooms();
 
   if (activeTab === "overview")  renderBacklogPanel();
   if (activeTab === "roadmap")   renderTabRoadmap();
