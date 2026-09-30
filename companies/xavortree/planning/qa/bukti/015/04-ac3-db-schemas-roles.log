@@ -1,0 +1,24 @@
+=== SCHEMAS ===
+ nspname 
+---------
+ core
+ jobs
+ audit
+(3 rows)
+
+=== ROLES ===
+  rolname   
+------------
+ app_fin
+ app_ops
+ app_owner
+ app_report
+(4 rows)
+
+=== EXTENSIONS ===
+ extname  
+----------
+ pgcrypto
+ citext
+(2 rows)
+

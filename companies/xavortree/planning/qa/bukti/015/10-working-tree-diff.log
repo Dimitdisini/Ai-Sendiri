@@ -1,0 +1,158 @@
+=== GIT STATUS ===
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .dockerignore
+	modified:   apps/api/src/main.ts
+	modified:   apps/worker/src/heartbeat.job.ts
+	modified:   apps/worker/test/heartbeat.test.ts
+	modified:   db/migrations/0001_extensions_schemas_roles.sql
+	modified:   packages/ui/src/Button.tsx
+	modified:   vitest.config.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	pnpm-lock.yaml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+=== GIT DIFF ===
+diff --git a/.dockerignore b/.dockerignore
+index fa02feb..d97c233 100644
+--- a/.dockerignore
++++ b/.dockerignore
+@@ -4,4 +4,6 @@
+ node_modules
+ **/node_modules
+ **/dist
++*.tsbuildinfo
++**/*.tsbuildinfo
+ docs
+diff --git a/apps/api/src/main.ts b/apps/api/src/main.ts
+index 93c26e4..9ef951f 100644
+--- a/apps/api/src/main.ts
++++ b/apps/api/src/main.ts
+@@ -14,19 +14,22 @@ async function bootstrap() {
+   });
+ 
+   // Log JSON dengan request_id (TDD §7): satu baris per request, tanpa PII.
+-  app.getHttpAdapter().getInstance().addHook('onResponse', (req, reply, done) => {
+-    log.info(
+-      {
+-        request_id: req.id,
+-        method: req.method,
+-        url: req.url,
+-        status_code: reply.statusCode,
+-        response_time_ms: reply.elapsedTime,
+-      },
+-      'request',
+-    );
+-    done();
+-  });
++  app
++    .getHttpAdapter()
++    .getInstance()
++    .addHook('onResponse', (req, reply, done) => {
++      log.info(
++        {
++          request_id: req.id,
++          method: req.method,
++          url: req.url,
++          status_code: reply.statusCode,
++          response_time_ms: reply.elapsedTime,
++        },
++        'request',
++      );
++      done();
++    });
+ 
+   const port = Number(process.env.API_PORT ?? 8080);
+   await app.listen(port, '0.0.0.0');
+diff --git a/apps/worker/src/heartbeat.job.ts b/apps/worker/src/heartbeat.job.ts
+index 0bccf86..96840cf 100644
+--- a/apps/worker/src/heartbeat.job.ts
++++ b/apps/worker/src/heartbeat.job.ts
+@@ -6,6 +6,9 @@ export const HEARTBEAT_JOB = 'system.heartbeat';
+ // Job contoh (AC5): jadwal tiap 1 menit, cukup untuk membuktikan worker benar-benar
+ // memproses job dari schema `jobs` (pg-boss), bukan hanya proses hidup.
+ export async function registerHeartbeatJob(boss: PgBoss, log: Logger) {
++  if (typeof boss.createQueue === 'function') {
++    await boss.createQueue(HEARTBEAT_JOB);
++  }
+   await boss.schedule(HEARTBEAT_JOB, '* * * * *', {}, { tz: 'UTC' });
+   await boss.work(HEARTBEAT_JOB, async (jobs) => {
+     for (const job of jobs) {
+diff --git a/apps/worker/test/heartbeat.test.ts b/apps/worker/test/heartbeat.test.ts
+index 3bad59a..6d66533 100644
+--- a/apps/worker/test/heartbeat.test.ts
++++ b/apps/worker/test/heartbeat.test.ts
+@@ -4,9 +4,10 @@ import { HEARTBEAT_JOB, registerHeartbeatJob } from '../src/heartbeat.job.js';
+ 
+ describe('registerHeartbeatJob', () => {
+   it('menjadwalkan job system.heartbeat tiap menit dan mendaftarkan worker (AC5)', async () => {
+-    const boss = { schedule: vi.fn(), work: vi.fn() };
++    const boss = { createQueue: vi.fn(), schedule: vi.fn(), work: vi.fn() };
+     await registerHeartbeatJob(boss as never, pino({ enabled: false }));
+ 
++    expect(boss.createQueue).toHaveBeenCalledWith(HEARTBEAT_JOB);
+     expect(boss.schedule).toHaveBeenCalledWith(HEARTBEAT_JOB, '* * * * *', {}, { tz: 'UTC' });
+     expect(boss.work).toHaveBeenCalledWith(HEARTBEAT_JOB, expect.any(Function));
+   });
+diff --git a/db/migrations/0001_extensions_schemas_roles.sql b/db/migrations/0001_extensions_schemas_roles.sql
+index 2316010..d7995dd 100644
+--- a/db/migrations/0001_extensions_schemas_roles.sql
++++ b/db/migrations/0001_extensions_schemas_roles.sql
+@@ -39,8 +39,23 @@ GRANT USAGE, CREATE ON SCHEMA jobs TO app_ops;
+ -- audit: app_ops hanya lewat fungsi (audit.append / audit.log_security), dibuat di plan 016.
+ GRANT USAGE ON SCHEMA audit TO app_ops;
+ 
++-- Hak akses database: CONNECT untuk semua role aplikasi, CREATE untuk app_ops (dibutuhkan pg-boss
++-- saat menjalankan bootstrap `CREATE SCHEMA IF NOT EXISTS jobs;`).
++DO $$
++BEGIN
++  EXECUTE format('GRANT CONNECT ON DATABASE %I TO app_owner, app_ops, app_fin, app_report', current_database());
++  EXECUTE format('GRANT CREATE ON DATABASE %I TO app_ops', current_database());
++END
++$$;
++
+ -- migrate:down
+ -- forward-only (TDD §6.2); down hanya untuk dev/db-reset.
++DO $$
++BEGIN
++  EXECUTE format('REVOKE CONNECT ON DATABASE %I FROM app_owner, app_ops, app_fin, app_report', current_database());
++  EXECUTE format('REVOKE CREATE ON DATABASE %I FROM app_ops', current_database());
++END
++$$;
+ REVOKE USAGE ON SCHEMA core FROM app_ops, app_report;
+ REVOKE USAGE, CREATE ON SCHEMA jobs FROM app_ops;
+ REVOKE USAGE ON SCHEMA audit FROM app_ops;
+diff --git a/packages/ui/src/Button.tsx b/packages/ui/src/Button.tsx
+index 29a5c87..8549e07 100644
+--- a/packages/ui/src/Button.tsx
++++ b/packages/ui/src/Button.tsx
+@@ -8,6 +8,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+ 
+ // Placeholder minimal (packages/ui berkembang di plan frontend 022+, FD layar L01-L16).
+ export function Button({ variant = 'primary', className, ...rest }: ButtonProps) {
+-  const base = variant === 'primary' ? 'gocean-btn gocean-btn--primary' : 'gocean-btn gocean-btn--secondary';
++  const base =
++    variant === 'primary' ? 'gocean-btn gocean-btn--primary' : 'gocean-btn gocean-btn--secondary';
+   return <button className={className ? `${base} ${className}` : base} {...rest} />;
+ }
+diff --git a/vitest.config.ts b/vitest.config.ts
+index 4f4ba51..2f02bdc 100644
+--- a/vitest.config.ts
++++ b/vitest.config.ts
+@@ -2,7 +2,11 @@ import { defineConfig } from 'vitest/config';
+ 
+ export default defineConfig({
+   test: {
+-    include: ['apps/*/test/**/*.test.{ts,tsx}', 'packages/*/test/**/*.test.{ts,tsx}'],
++    include: [
++      'test/**/*.test.{ts,tsx}',
++      'apps/*/test/**/*.test.{ts,tsx}',
++      'packages/*/test/**/*.test.{ts,tsx}',
++    ],
+     environmentMatchGlobs: [['packages/ui/**', 'jsdom']],
+   },
+ });

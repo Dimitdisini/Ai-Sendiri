@@ -1,0 +1,88 @@
+ Image gocean-b2b/api:dev Building 
+ Image gocean-b2b/migrate:dev Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.15kB done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 940B 0.0s done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:22-alpine
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 99B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [base 1/3] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#6 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.0s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 15.99kB 0.1s done
+#5 DONE 0.1s
+
+#7 [deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#7 CACHED
+
+#8 [deps 2/8] COPY packages/shared/package.json packages/shared/
+#8 CACHED
+
+#9 [deps 6/8] COPY apps/worker/package.json apps/worker/
+#9 CACHED
+
+#10 [base 2/3] RUN corepack enable
+#10 CACHED
+
+#11 [base 3/3] WORKDIR /repo
+#11 CACHED
+
+#12 [deps 3/8] COPY packages/db/package.json packages/db/
+#12 CACHED
+
+#13 [deps 4/8] COPY packages/ui/package.json packages/ui/
+#13 CACHED
+
+#14 [deps 5/8] COPY apps/api/package.json apps/api/
+#14 CACHED
+
+#15 [deps 7/8] COPY apps/web/package.json apps/web/
+#15 CACHED
+
+#16 [deps 8/8] RUN pnpm install --frozen-lockfile
+#16 0.276 ! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-9.12.0.tgz
+#16 3.292 Scope: all 7 workspace projects
+#16 3.325  ERR_PNPM_NO_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is absent
+#16 3.325 
+#16 3.325 Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+#16 ERROR: process "/bin/sh -c pnpm install --frozen-lockfile" did not complete successfully: exit code: 1
+------
+ > [deps 8/8] RUN pnpm install --frozen-lockfile:
+0.276 ! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-9.12.0.tgz
+3.292 Scope: all 7 workspace projects
+3.325  ERR_PNPM_NO_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is absent
+3.325 
+3.325 Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+------
+Dockerfile:15
+
+--------------------
+
+  13 |     COPY apps/worker/package.json apps/worker/
+
+  14 |     COPY apps/web/package.json apps/web/
+
+  15 | >>> RUN pnpm install --frozen-lockfile
+
+  16 |     
+
+  17 |     FROM deps AS build
+
+--------------------
+
+failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile" did not complete successfully: exit code: 1
+

@@ -1,0 +1,753 @@
+=== TESTING make down && make up ===
+docker compose --env-file .env -f deploy/docker-compose.yml down --remove-orphans
+ Container gocean-b2b-mailpit-1 Stopping 
+ Container gocean-b2b-web-1 Stopping 
+ Container gocean-b2b-minio-init-1 Stopping 
+ Container gocean-b2b-worker-1 Stopping 
+ Container gocean-b2b-minio-init-1 Stopped 
+ Container gocean-b2b-minio-init-1 Removing 
+ Container gocean-b2b-minio-init-1 Removed 
+ Container gocean-b2b-minio-1 Stopping 
+ Container gocean-b2b-worker-1 Stopped 
+ Container gocean-b2b-worker-1 Removing 
+ Container gocean-b2b-web-1 Stopped 
+ Container gocean-b2b-web-1 Removing 
+ Container gocean-b2b-worker-1 Removed 
+ Container gocean-b2b-minio-1 Stopped 
+ Container gocean-b2b-minio-1 Removing 
+ Container gocean-b2b-web-1 Removed 
+ Container gocean-b2b-api-1 Stopping 
+ Container gocean-b2b-minio-1 Removed 
+ Container gocean-b2b-mailpit-1 Stopped 
+ Container gocean-b2b-mailpit-1 Removing 
+ Container gocean-b2b-mailpit-1 Removed 
+ Container gocean-b2b-api-1 Stopped 
+ Container gocean-b2b-api-1 Removing 
+ Container gocean-b2b-api-1 Removed 
+ Container gocean-b2b-migrate-1 Stopping 
+ Container gocean-b2b-migrate-1 Stopped 
+ Container gocean-b2b-migrate-1 Removing 
+ Container gocean-b2b-migrate-1 Removed 
+ Container gocean-b2b-postgres-1 Stopping 
+ Container gocean-b2b-postgres-1 Stopped 
+ Container gocean-b2b-postgres-1 Removing 
+ Container gocean-b2b-postgres-1 Removed 
+ Network gocean-b2b_default Removing 
+ Network gocean-b2b_default Removed 
+docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+ Image gocean-b2b/worker:b0d77bb Building 
+ Image gocean-b2b/migrate:b0d77bb Building 
+ Image gocean-b2b/web:b0d77bb Building 
+ Image gocean-b2b/api:b0d77bb Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.27kB done
+#1 DONE 0.0s
+
+#2 [web internal] load build definition from Dockerfile
+#2 transferring dockerfile: 774B 0.0s done
+#2 DONE 0.1s
+
+#3 [api internal] load build definition from Dockerfile
+#3 transferring dockerfile: 940B 0.0s done
+#3 DONE 0.1s
+
+#4 [migrate internal] load build definition from Dockerfile
+#4 transferring dockerfile: 338B done
+#4 DONE 0.1s
+
+#5 [worker internal] load build definition from Dockerfile
+#5 transferring dockerfile: 824B done
+#5 DONE 0.3s
+
+#6 [api internal] load metadata for docker.io/library/node:22-alpine
+#6 ...
+
+#7 [web internal] load metadata for docker.io/library/nginx:1.27-alpine
+#7 DONE 0.5s
+
+#6 [worker internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.5s
+
+#8 [migrate internal] load metadata for ghcr.io/amacneil/dbmate:2
+#8 DONE 0.2s
+
+#9 [api internal] load .dockerignore
+#9 transferring context: 130B done
+#9 DONE 0.0s
+
+#10 [migrate internal] load metadata for docker.io/library/postgres:16-alpine
+#10 ...
+
+#11 [web base 1/3] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+#11 DONE 0.1s
+
+#12 [web runtime 1/3] FROM docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+#12 resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 0.1s done
+#12 DONE 0.1s
+
+#13 [web internal] load build context
+#13 transferring context: 5.04kB 0.0s done
+#13 DONE 0.1s
+
+#14 [worker internal] load build context
+#14 transferring context: 5.15kB 0.0s done
+#14 DONE 0.1s
+
+#15 [api internal] load build context
+#15 transferring context: 243.65kB 0.1s done
+#15 DONE 0.1s
+
+#16 [web deps 5/8] COPY apps/api/package.json apps/api/
+#16 CACHED
+
+#17 [web deps 6/8] COPY apps/worker/package.json apps/worker/
+#17 CACHED
+
+#18 [web build 1/2] COPY apps/web ./apps/web
+#18 CACHED
+
+#19 [web runtime 2/3] COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+#19 CACHED
+
+#20 [web deps 3/8] COPY packages/db/package.json packages/db/
+#20 CACHED
+
+#21 [web deps 4/8] COPY packages/ui/package.json packages/ui/
+#21 CACHED
+
+#22 [web base 2/3] RUN corepack enable
+#22 CACHED
+
+#23 [web deps 8/8] RUN pnpm install --frozen-lockfile
+#23 CACHED
+
+#24 [web base 3/3] WORKDIR /repo
+#24 CACHED
+
+#25 [web deps 2/8] COPY packages/shared/package.json packages/shared/
+#25 CACHED
+
+#26 [web deps 7/8] COPY apps/web/package.json apps/web/
+#26 CACHED
+
+#27 [web deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#27 CACHED
+
+#28 [web build 2/2] RUN pnpm --filter @gocean/web run build
+#28 CACHED
+
+#29 [web runtime 3/3] COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+#29 CACHED
+
+#30 [worker build 1/4] COPY tsconfig.base.json ./
+#30 CACHED
+
+#31 [worker deps 2/8] COPY packages/shared/package.json packages/shared/
+#31 CACHED
+
+#32 [worker deps 8/8] RUN pnpm install --frozen-lockfile
+#32 CACHED
+
+#33 [worker build 3/4] COPY apps/worker ./apps/worker
+#33 CACHED
+
+#34 [worker build 2/4] COPY packages ./packages
+#34 CACHED
+
+#35 [worker deps 5/8] COPY apps/api/package.json apps/api/
+#35 CACHED
+
+#36 [worker deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#36 CACHED
+
+#37 [worker deps 7/8] COPY apps/web/package.json apps/web/
+#37 CACHED
+
+#38 [worker deps 4/8] COPY packages/ui/package.json packages/ui/
+#38 CACHED
+
+#39 [worker build 4/4] RUN pnpm --filter @gocean/shared --filter @gocean/worker run build
+#39 CACHED
+
+#40 [worker deps 3/8] COPY packages/db/package.json packages/db/
+#40 CACHED
+
+#41 [worker deps 6/8] COPY apps/worker/package.json apps/worker/
+#41 CACHED
+
+#42 [worker runtime 1/1] COPY --from=build /repo ./
+#42 CACHED
+
+#43 [api build 3/4] COPY apps/api ./apps/api
+#43 CACHED
+
+#24 [api base 3/3] WORKDIR /repo
+#24 CACHED
+
+#44 [api deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#44 CACHED
+
+#45 [api build 1/4] COPY tsconfig.base.json ./
+#45 CACHED
+
+#46 [api deps 4/8] COPY packages/ui/package.json packages/ui/
+#46 CACHED
+
+#47 [api build 4/4] RUN pnpm --filter @gocean/shared --filter @gocean/db --filter @gocean/api run build
+#47 CACHED
+
+#48 [api deps 3/8] COPY packages/db/package.json packages/db/
+#48 CACHED
+
+#49 [api build 2/4] COPY packages ./packages
+#49 CACHED
+
+#50 [api deps 8/8] RUN pnpm install --frozen-lockfile
+#50 CACHED
+
+#51 [api deps 6/8] COPY apps/worker/package.json apps/worker/
+#51 CACHED
+
+#52 [api deps 7/8] COPY apps/web/package.json apps/web/
+#52 CACHED
+
+#53 [api deps 5/8] COPY apps/api/package.json apps/api/
+#53 CACHED
+
+#54 [api deps 2/8] COPY packages/shared/package.json packages/shared/
+#54 CACHED
+
+#22 [api base 2/3] RUN corepack enable
+#22 CACHED
+
+#55 [api runtime 1/1] COPY --from=build /repo ./
+#55 CACHED
+
+#56 [worker] exporting to image
+#56 exporting layers 0.0s done
+#56 exporting manifest sha256:82871fe1594dace20339b78e99a4874965fe8f458403d02caea3d352108a7c3c done
+#56 exporting config sha256:e25ec8d686087907dc48fa2c987c356481fffd6b6eaa057e4ed0637251b45f09 done
+#56 exporting attestation manifest sha256:b1200d28627ca702649291dce203f751faa55a319ce8db84cbe3845cfe694d07
+#56 exporting attestation manifest sha256:b1200d28627ca702649291dce203f751faa55a319ce8db84cbe3845cfe694d07 0.1s done
+#56 exporting manifest list sha256:943cc6563635246bd9397304979fac5ef08aee9ed853ad84a735fe382f777f20
+#56 exporting manifest list sha256:943cc6563635246bd9397304979fac5ef08aee9ed853ad84a735fe382f777f20 0.0s done
+#56 naming to docker.io/gocean-b2b/worker:b0d77bb 0.0s done
+#56 unpacking to docker.io/gocean-b2b/worker:b0d77bb 0.0s done
+#56 DONE 0.4s
+
+#57 [web] exporting to image
+#57 exporting layers 0.0s done
+#57 exporting manifest sha256:dec901703cb6c8c87ea496fa68462fe306e3d148e5141be36e1dff6e2dcd9799 0.0s done
+#57 exporting config sha256:edf2a94fa0aa194a456c40c1ac4f47fd1324dadf02fa7a0328b6ee2d7dd03e3e done
+#57 exporting attestation manifest sha256:2d4770834c548c4f14856b91310f36400b1e202d6d228fe3d9c1b48e8fb6552b 0.1s done
+#57 exporting manifest list sha256:0733585947e736f43a1fcc87fa1d601956362d65c8a70c154983de51cb32e3f0 0.1s done
+#57 naming to docker.io/gocean-b2b/web:b0d77bb 0.0s done
+#57 unpacking to docker.io/gocean-b2b/web:b0d77bb 0.1s done
+#57 DONE 0.4s
+
+#58 [api] exporting to image
+#58 exporting layers 0.0s done
+#58 exporting manifest sha256:427f42bb73efaba97228762ca2cc678b1f23077394ec819f231521219502c66e 0.0s done
+#58 exporting config sha256:9d65b25c60651bf96035cf30b659705126363316a1c0dba7ac6b853b64276570 0.0s done
+#58 exporting attestation manifest sha256:e13c5b0ff1666cb0cb89ee615d8824dea623d42c584b8b049e450cec930ba359 0.1s done
+#58 exporting manifest list sha256:86ece12921aeb8fb54cc2944521939e02454b05227cd74cc2b0ea17a0d0a3299 0.1s done
+#58 naming to docker.io/gocean-b2b/api:b0d77bb 0.0s done
+#58 unpacking to docker.io/gocean-b2b/api:b0d77bb 0.0s done
+#58 DONE 0.4s
+
+#10 [migrate internal] load metadata for docker.io/library/postgres:16-alpine
+#10 ...
+
+#59 [worker] resolving provenance for metadata file
+#59 DONE 0.6s
+
+#60 [api] resolving provenance for metadata file
+#60 DONE 0.5s
+
+#61 [web] resolving provenance for metadata file
+#61 DONE 0.1s
+
+#10 [migrate internal] load metadata for docker.io/library/postgres:16-alpine
+#10 DONE 7.5s
+
+#9 [migrate internal] load .dockerignore
+#9 CACHED
+
+#62 [migrate dbmate 1/1] FROM ghcr.io/amacneil/dbmate:2@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb
+#62 resolve ghcr.io/amacneil/dbmate:2@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb 0.1s done
+#62 DONE 0.1s
+
+#63 [migrate stage-1 1/3] FROM docker.io/library/postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+#63 resolve docker.io/library/postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea 0.1s done
+#63 DONE 0.1s
+
+#64 [migrate stage-1 2/3] COPY --from=dbmate /usr/local/bin/dbmate /usr/local/bin/dbmate
+#64 CACHED
+
+#65 [migrate stage-1 3/3] WORKDIR /db
+#65 CACHED
+
+#66 [migrate] exporting to image
+#66 exporting layers done
+#66 exporting manifest sha256:d0d64cb644376d7c19bad1d4efba904949d871253f0df5390eb5c229b217382f done
+#66 exporting config sha256:d1098d052073056e19c2a50c01f02bacc50edfe039448429a082f5abad827d79 done
+#66 exporting attestation manifest sha256:cbc310b51eacab17daee12fe3a0b5e726c0eb23dde9d272764780d07525063cd 0.0s done
+#66 exporting manifest list sha256:bc1f1fdcef586e0cfda630d97cb6bb595d9bbaf0ad2e9235bf623a40d60a4ef5 0.0s done
+#66 naming to docker.io/gocean-b2b/migrate:b0d77bb done
+#66 unpacking to docker.io/gocean-b2b/migrate:b0d77bb 0.0s done
+#66 DONE 0.2s
+
+#67 [migrate] resolving provenance for metadata file
+#67 DONE 0.0s
+ Image gocean-b2b/migrate:b0d77bb Built 
+ Image gocean-b2b/api:b0d77bb Built 
+ Image gocean-b2b/web:b0d77bb Built 
+ Image gocean-b2b/worker:b0d77bb Built 
+ Network gocean-b2b_default Creating 
+ Network gocean-b2b_default Created 
+ Container gocean-b2b-minio-1 Creating 
+ Container gocean-b2b-postgres-1 Creating 
+ Container gocean-b2b-mailpit-1 Creating 
+ Container gocean-b2b-postgres-1 Created 
+ Container gocean-b2b-minio-1 Created 
+ Container gocean-b2b-minio-init-1 Creating 
+ Container gocean-b2b-migrate-1 Creating 
+ Container gocean-b2b-mailpit-1 Created 
+ Container gocean-b2b-minio-init-1 Created 
+ Container gocean-b2b-migrate-1 Created 
+ Container gocean-b2b-api-1 Creating 
+ Container gocean-b2b-worker-1 Creating 
+ Container gocean-b2b-api-1 Created 
+ Container gocean-b2b-web-1 Creating 
+ Container gocean-b2b-worker-1 Created 
+ Container gocean-b2b-web-1 Created 
+ Container gocean-b2b-mailpit-1 Starting 
+ Container gocean-b2b-minio-1 Starting 
+ Container gocean-b2b-postgres-1 Starting 
+ Container gocean-b2b-mailpit-1 Started 
+ Container gocean-b2b-postgres-1 Started 
+ Container gocean-b2b-minio-1 Started 
+ Container gocean-b2b-postgres-1 Waiting 
+ Container gocean-b2b-minio-1 Waiting 
+ Container gocean-b2b-postgres-1 Healthy 
+ Container gocean-b2b-minio-1 Healthy 
+ Container gocean-b2b-migrate-1 Starting 
+ Container gocean-b2b-minio-init-1 Starting 
+ Container gocean-b2b-migrate-1 Started 
+ Container gocean-b2b-migrate-1 Waiting 
+ Container gocean-b2b-postgres-1 Waiting 
+ Container gocean-b2b-migrate-1 Waiting 
+ Container gocean-b2b-postgres-1 Waiting 
+ Container gocean-b2b-minio-init-1 Started 
+ Container gocean-b2b-postgres-1 Healthy 
+ Container gocean-b2b-postgres-1 Healthy 
+ Container gocean-b2b-migrate-1 Exited 
+ Container gocean-b2b-api-1 Starting 
+ Container gocean-b2b-migrate-1 Exited 
+ Container gocean-b2b-worker-1 Starting 
+ Container gocean-b2b-api-1 Started 
+ Container gocean-b2b-api-1 Waiting 
+ Container gocean-b2b-worker-1 Started 
+ Container gocean-b2b-api-1 Healthy 
+ Container gocean-b2b-web-1 Starting 
+ Container gocean-b2b-web-1 Started 
+COMPOSE="docker compose --env-file .env -f deploy/docker-compose.yml" bash deploy/scripts/wait-healthy.sh 300 migrate,minio-init postgres minio mailpit migrate minio-init api worker web
+[wait] 1s menunggu: web(running/starting)
+[wait] 4s menunggu: web(running/starting)
+[wait] semua siap dalam 7s: postgres minio mailpit migrate minio-init api worker web
+docker compose --env-file .env -f deploy/docker-compose.yml ps
+NAME                    IMAGE                                      COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+gocean-b2b-api-1        gocean-b2b/api:b0d77bb                     "docker-entrypoint.s…"   api        20 seconds ago   Up 13 seconds (healthy)   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+gocean-b2b-mailpit-1    axllent/mailpit:v1.21.5                    "/mailpit"               mailpit    20 seconds ago   Up 20 seconds (healthy)   127.0.0.1:1025->1025/tcp, 127.0.0.1:8025->8025/tcp, 1110/tcp
+gocean-b2b-minio-1      minio/minio:RELEASE.2024-11-07T00-52-20Z   "/usr/bin/docker-ent…"   minio      20 seconds ago   Up 20 seconds (healthy)   0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp, 127.0.0.1:9001->9001/tcp
+gocean-b2b-postgres-1   postgres:16.6-alpine                       "docker-entrypoint.s…"   postgres   20 seconds ago   Up 20 seconds (healthy)   127.0.0.1:5432->5432/tcp
+gocean-b2b-web-1        gocean-b2b/web:b0d77bb                     "/docker-entrypoint.…"   web        20 seconds ago   Up 7 seconds (healthy)    0.0.0.0:3000->80/tcp, [::]:3000->80/tcp
+gocean-b2b-worker-1     gocean-b2b/worker:b0d77bb                  "docker-entrypoint.s…"   worker     20 seconds ago   Up 13 seconds (healthy)   8082/tcp
+( make down && make up; )  1.00s user 1.16s system 5% cpu 42.584 total
+=== TESTING make db-reset ===
+docker compose --env-file .env -f deploy/docker-compose.yml down -v --remove-orphans
+ Container gocean-b2b-mailpit-1 Stopping 
+ Container gocean-b2b-worker-1 Stopping 
+ Container gocean-b2b-minio-init-1 Stopping 
+ Container gocean-b2b-web-1 Stopping 
+ Container gocean-b2b-minio-init-1 Stopped 
+ Container gocean-b2b-minio-init-1 Removing 
+ Container gocean-b2b-minio-init-1 Removed 
+ Container gocean-b2b-minio-1 Stopping 
+ Container gocean-b2b-web-1 Stopped 
+ Container gocean-b2b-web-1 Removing 
+ Container gocean-b2b-worker-1 Stopped 
+ Container gocean-b2b-worker-1 Removing 
+ Container gocean-b2b-minio-1 Stopped 
+ Container gocean-b2b-minio-1 Removing 
+ Container gocean-b2b-web-1 Removed 
+ Container gocean-b2b-api-1 Stopping 
+ Container gocean-b2b-worker-1 Removed 
+ Container gocean-b2b-minio-1 Removed 
+ Container gocean-b2b-mailpit-1 Stopped 
+ Container gocean-b2b-mailpit-1 Removing 
+ Container gocean-b2b-mailpit-1 Removed 
+ Container gocean-b2b-api-1 Stopped 
+ Container gocean-b2b-api-1 Removing 
+ Container gocean-b2b-api-1 Removed 
+ Container gocean-b2b-migrate-1 Stopping 
+ Container gocean-b2b-migrate-1 Stopped 
+ Container gocean-b2b-migrate-1 Removing 
+ Container gocean-b2b-migrate-1 Removed 
+ Container gocean-b2b-postgres-1 Stopping 
+ Container gocean-b2b-postgres-1 Stopped 
+ Container gocean-b2b-postgres-1 Removing 
+ Container gocean-b2b-postgres-1 Removed 
+ Volume gocean-b2b_dbdata Removing 
+ Volume gocean-b2b_miniodata Removing 
+ Network gocean-b2b_default Removing 
+ Volume gocean-b2b_dbdata Removed 
+ Volume gocean-b2b_miniodata Removed 
+ Network gocean-b2b_default Removed 
+docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+ Image gocean-b2b/web:b0d77bb Building 
+ Image gocean-b2b/api:b0d77bb Building 
+ Image gocean-b2b/migrate:b0d77bb Building 
+ Image gocean-b2b/worker:b0d77bb Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.27kB done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 transferring dockerfile: 940B 0.0s done
+#2 DONE 0.1s
+
+#3 [migrate internal] load build definition from Dockerfile
+#3 transferring dockerfile: 338B 0.0s done
+#3 DONE 0.1s
+
+#4 [web internal] load build definition from Dockerfile
+#4 transferring dockerfile: 774B 0.0s done
+#4 DONE 0.2s
+
+#5 [worker internal] load build definition from Dockerfile
+#5 transferring dockerfile: 824B 0.1s done
+#5 DONE 0.2s
+
+#6 [worker internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.2s
+
+#7 [web internal] load metadata for docker.io/library/nginx:1.27-alpine
+#7 DONE 0.2s
+
+#8 [migrate internal] load metadata for ghcr.io/amacneil/dbmate:2
+#8 DONE 0.2s
+
+#9 [worker internal] load .dockerignore
+#9 transferring context: 130B done
+#9 DONE 0.0s
+
+#10 [web internal] load build context
+#10 DONE 0.0s
+
+#11 [worker internal] load build context
+#11 DONE 0.0s
+
+#12 [api internal] load build context
+#12 DONE 0.0s
+
+#13 [web base 1/3] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#13 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+#13 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+#13 DONE 0.1s
+
+#14 [web runtime 1/3] FROM docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+#14 resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 0.1s done
+#14 DONE 0.1s
+
+#12 [api internal] load build context
+#12 transferring context: 2.08kB 0.0s done
+#12 DONE 0.1s
+
+#11 [worker internal] load build context
+#11 transferring context: 9.95kB 0.0s done
+#11 DONE 0.1s
+
+#10 [web internal] load build context
+#10 transferring context: 5.04kB 0.0s done
+#10 DONE 0.1s
+
+#15 [migrate internal] load metadata for docker.io/library/postgres:16-alpine
+#15 ...
+
+#16 [api deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#16 CACHED
+
+#17 [api deps 2/8] COPY packages/shared/package.json packages/shared/
+#17 CACHED
+
+#18 [api build 4/4] RUN pnpm --filter @gocean/shared --filter @gocean/db --filter @gocean/api run build
+#18 CACHED
+
+#19 [api deps 7/8] COPY apps/web/package.json apps/web/
+#19 CACHED
+
+#20 [api deps 8/8] RUN pnpm install --frozen-lockfile
+#20 CACHED
+
+#21 [api deps 6/8] COPY apps/worker/package.json apps/worker/
+#21 CACHED
+
+#22 [api build 1/4] COPY tsconfig.base.json ./
+#22 CACHED
+
+#23 [api build 2/4] COPY packages ./packages
+#23 CACHED
+
+#24 [api build 3/4] COPY apps/api ./apps/api
+#24 CACHED
+
+#25 [api base 2/3] RUN corepack enable
+#25 CACHED
+
+#26 [api deps 3/8] COPY packages/db/package.json packages/db/
+#26 CACHED
+
+#27 [api deps 5/8] COPY apps/api/package.json apps/api/
+#27 CACHED
+
+#28 [api deps 4/8] COPY packages/ui/package.json packages/ui/
+#28 CACHED
+
+#29 [api base 3/3] WORKDIR /repo
+#29 CACHED
+
+#30 [api runtime 1/1] COPY --from=build /repo ./
+#30 CACHED
+
+#31 [web runtime 2/3] COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+#31 CACHED
+
+#32 [web build 2/2] RUN pnpm --filter @gocean/web run build
+#32 CACHED
+
+#33 [web deps 7/8] COPY apps/web/package.json apps/web/
+#33 CACHED
+
+#34 [web deps 4/8] COPY packages/ui/package.json packages/ui/
+#34 CACHED
+
+#35 [web deps 2/8] COPY packages/shared/package.json packages/shared/
+#35 CACHED
+
+#36 [web deps 5/8] COPY apps/api/package.json apps/api/
+#36 CACHED
+
+#37 [web deps 3/8] COPY packages/db/package.json packages/db/
+#37 CACHED
+
+#38 [web deps 6/8] COPY apps/worker/package.json apps/worker/
+#38 CACHED
+
+#39 [web build 1/2] COPY apps/web ./apps/web
+#39 CACHED
+
+#40 [web deps 8/8] RUN pnpm install --frozen-lockfile
+#40 CACHED
+
+#41 [web deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#41 CACHED
+
+#42 [web runtime 3/3] COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+#42 CACHED
+
+#43 [worker deps 8/8] RUN pnpm install --frozen-lockfile
+#43 CACHED
+
+#29 [worker base 3/3] WORKDIR /repo
+#29 CACHED
+
+#44 [worker deps 7/8] COPY apps/web/package.json apps/web/
+#44 CACHED
+
+#45 [worker deps 6/8] COPY apps/worker/package.json apps/worker/
+#45 CACHED
+
+#46 [worker deps 5/8] COPY apps/api/package.json apps/api/
+#46 CACHED
+
+#47 [worker build 3/4] COPY apps/worker ./apps/worker
+#47 CACHED
+
+#48 [worker deps 2/8] COPY packages/shared/package.json packages/shared/
+#48 CACHED
+
+#25 [worker base 2/3] RUN corepack enable
+#25 CACHED
+
+#49 [worker deps 3/8] COPY packages/db/package.json packages/db/
+#49 CACHED
+
+#50 [worker build 1/4] COPY tsconfig.base.json ./
+#50 CACHED
+
+#51 [worker deps 1/8] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+#51 CACHED
+
+#52 [worker build 4/4] RUN pnpm --filter @gocean/shared --filter @gocean/worker run build
+#52 CACHED
+
+#53 [worker deps 4/8] COPY packages/ui/package.json packages/ui/
+#53 CACHED
+
+#54 [worker build 2/4] COPY packages ./packages
+#54 CACHED
+
+#55 [worker runtime 1/1] COPY --from=build /repo ./
+#55 CACHED
+
+#56 [worker] exporting to image
+#56 exporting layers done
+#56 exporting manifest sha256:82871fe1594dace20339b78e99a4874965fe8f458403d02caea3d352108a7c3c
+#56 exporting manifest sha256:82871fe1594dace20339b78e99a4874965fe8f458403d02caea3d352108a7c3c 0.0s done
+#56 exporting config sha256:e25ec8d686087907dc48fa2c987c356481fffd6b6eaa057e4ed0637251b45f09 0.0s done
+#56 exporting attestation manifest sha256:3c1e9b4b7fc602405f1eb74992f9996697bb1855de729caaef9c068ba56a0d39
+#56 exporting attestation manifest sha256:3c1e9b4b7fc602405f1eb74992f9996697bb1855de729caaef9c068ba56a0d39 0.1s done
+#56 exporting manifest list sha256:3ec2548847d893fe998b98d8ef2285cc050f9e383d83ce1b7164d67d64e5f3c2
+#56 ...
+
+#57 [api] exporting to image
+#57 exporting layers done
+#57 exporting manifest sha256:427f42bb73efaba97228762ca2cc678b1f23077394ec819f231521219502c66e done
+#57 exporting config sha256:9d65b25c60651bf96035cf30b659705126363316a1c0dba7ac6b853b64276570 done
+#57 exporting attestation manifest sha256:366f30579eb0c0052dc19f1546ac9908f6a76dea4ae53c34a14731619dd78133 0.1s done
+#57 exporting manifest list sha256:752d87210e68ef66f16d5d6522894f37643251b71b3409b376a655370f219906 0.1s done
+#57 naming to docker.io/gocean-b2b/api:b0d77bb 0.0s done
+#57 unpacking to docker.io/gocean-b2b/api:b0d77bb 0.1s done
+#57 DONE 0.4s
+
+#56 [worker] exporting to image
+#56 exporting manifest list sha256:3ec2548847d893fe998b98d8ef2285cc050f9e383d83ce1b7164d67d64e5f3c2 0.1s done
+#56 naming to docker.io/gocean-b2b/worker:b0d77bb done
+#56 unpacking to docker.io/gocean-b2b/worker:b0d77bb 0.1s done
+#56 DONE 0.6s
+
+#58 [web] exporting to image
+#58 exporting layers 0.0s done
+#58 exporting manifest sha256:dec901703cb6c8c87ea496fa68462fe306e3d148e5141be36e1dff6e2dcd9799 0.0s done
+#58 exporting config sha256:edf2a94fa0aa194a456c40c1ac4f47fd1324dadf02fa7a0328b6ee2d7dd03e3e 0.0s done
+#58 exporting attestation manifest sha256:674cdd16fb3d674377d8bc2d6f864a957f59902851f75665a744d2b1274e0b42 0.1s done
+#58 exporting manifest list sha256:7318cb391357b5148f084b580edbfd56dacbf57b5ee15463e8b4a0e3eaa7cd77 0.1s done
+#58 naming to docker.io/gocean-b2b/web:b0d77bb 0.0s done
+#58 unpacking to docker.io/gocean-b2b/web:b0d77bb 0.1s done
+#58 DONE 0.7s
+
+#15 [migrate internal] load metadata for docker.io/library/postgres:16-alpine
+#15 ...
+
+#59 [web] resolving provenance for metadata file
+#59 DONE 0.2s
+
+#60 [api] resolving provenance for metadata file
+#60 DONE 0.4s
+
+#61 [worker] resolving provenance for metadata file
+#61 DONE 0.4s
+
+#15 [migrate internal] load metadata for docker.io/library/postgres:16-alpine
+#15 DONE 7.4s
+
+#9 [migrate internal] load .dockerignore
+#9 CACHED
+
+#62 [migrate dbmate 1/1] FROM ghcr.io/amacneil/dbmate:2@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb
+#62 resolve ghcr.io/amacneil/dbmate:2@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb 0.1s done
+#62 DONE 0.1s
+
+#63 [migrate stage-1 1/3] FROM docker.io/library/postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+#63 resolve docker.io/library/postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea 0.1s done
+#63 DONE 0.1s
+
+#64 [migrate stage-1 2/3] COPY --from=dbmate /usr/local/bin/dbmate /usr/local/bin/dbmate
+#64 CACHED
+
+#65 [migrate stage-1 3/3] WORKDIR /db
+#65 CACHED
+
+#66 [migrate] exporting to image
+#66 exporting layers done
+#66 exporting manifest sha256:d0d64cb644376d7c19bad1d4efba904949d871253f0df5390eb5c229b217382f done
+#66 exporting config sha256:d1098d052073056e19c2a50c01f02bacc50edfe039448429a082f5abad827d79 done
+#66 exporting attestation manifest sha256:7280c2b407396d0b4f57d5098401a87ff4340754690135f85123f1e56e737c63 0.0s done
+#66 exporting manifest list sha256:b8d0f4044a96a9c2fe0b252a8b50abc22ac762949a85a589a4b9ef4ae66c1dd8
+#66 exporting manifest list sha256:b8d0f4044a96a9c2fe0b252a8b50abc22ac762949a85a589a4b9ef4ae66c1dd8 0.0s done
+#66 naming to docker.io/gocean-b2b/migrate:b0d77bb done
+#66 unpacking to docker.io/gocean-b2b/migrate:b0d77bb 0.0s done
+#66 DONE 0.1s
+
+#67 [migrate] resolving provenance for metadata file
+#67 DONE 0.0s
+ Image gocean-b2b/migrate:b0d77bb Built 
+ Image gocean-b2b/api:b0d77bb Built 
+ Image gocean-b2b/web:b0d77bb Built 
+ Image gocean-b2b/worker:b0d77bb Built 
+ Network gocean-b2b_default Creating 
+ Network gocean-b2b_default Created 
+ Volume gocean-b2b_miniodata Creating 
+ Volume gocean-b2b_miniodata Created 
+ Volume gocean-b2b_dbdata Creating 
+ Volume gocean-b2b_dbdata Created 
+ Container gocean-b2b-mailpit-1 Creating 
+ Container gocean-b2b-minio-1 Creating 
+ Container gocean-b2b-postgres-1 Creating 
+ Container gocean-b2b-mailpit-1 Created 
+ Container gocean-b2b-minio-1 Created 
+ Container gocean-b2b-minio-init-1 Creating 
+ Container gocean-b2b-postgres-1 Created 
+ Container gocean-b2b-migrate-1 Creating 
+ Container gocean-b2b-minio-init-1 Created 
+ Container gocean-b2b-migrate-1 Created 
+ Container gocean-b2b-api-1 Creating 
+ Container gocean-b2b-worker-1 Creating 
+ Container gocean-b2b-worker-1 Created 
+ Container gocean-b2b-api-1 Created 
+ Container gocean-b2b-web-1 Creating 
+ Container gocean-b2b-web-1 Created 
+ Container gocean-b2b-minio-1 Starting 
+ Container gocean-b2b-mailpit-1 Starting 
+ Container gocean-b2b-postgres-1 Starting 
+ Container gocean-b2b-mailpit-1 Started 
+ Container gocean-b2b-postgres-1 Started 
+ Container gocean-b2b-postgres-1 Waiting 
+ Container gocean-b2b-minio-1 Started 
+ Container gocean-b2b-minio-1 Waiting 
+ Container gocean-b2b-postgres-1 Healthy 
+ Container gocean-b2b-migrate-1 Starting 
+ Container gocean-b2b-minio-1 Healthy 
+ Container gocean-b2b-minio-init-1 Starting 
+ Container gocean-b2b-migrate-1 Started 
+ Container gocean-b2b-postgres-1 Waiting 
+ Container gocean-b2b-migrate-1 Waiting 
+ Container gocean-b2b-migrate-1 Waiting 
+ Container gocean-b2b-postgres-1 Waiting 
+ Container gocean-b2b-minio-init-1 Started 
+ Container gocean-b2b-postgres-1 Healthy 
+ Container gocean-b2b-postgres-1 Healthy 
+ Container gocean-b2b-migrate-1 Exited 
+ Container gocean-b2b-migrate-1 Exited 
+ Container gocean-b2b-api-1 Starting 
+ Container gocean-b2b-worker-1 Starting 
+ Container gocean-b2b-api-1 Started 
+ Container gocean-b2b-api-1 Waiting 
+ Container gocean-b2b-worker-1 Started 
+ Container gocean-b2b-api-1 Healthy 
+ Container gocean-b2b-web-1 Starting 
+ Container gocean-b2b-web-1 Started 
+COMPOSE="docker compose --env-file .env -f deploy/docker-compose.yml" bash deploy/scripts/wait-healthy.sh 300 migrate,minio-init postgres minio mailpit migrate minio-init api worker web
+[wait] 1s menunggu: web(running/starting)
+[wait] 4s menunggu: web(running/starting)
+[wait] semua siap dalam 7s: postgres minio mailpit migrate minio-init api worker web
+docker compose --env-file .env -f deploy/docker-compose.yml ps
+NAME                    IMAGE                                      COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+gocean-b2b-api-1        gocean-b2b/api:b0d77bb                     "docker-entrypoint.s…"   api        20 seconds ago   Up 13 seconds (healthy)   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+gocean-b2b-mailpit-1    axllent/mailpit:v1.21.5                    "/mailpit"               mailpit    20 seconds ago   Up 19 seconds (healthy)   127.0.0.1:1025->1025/tcp, 127.0.0.1:8025->8025/tcp, 1110/tcp
+gocean-b2b-minio-1      minio/minio:RELEASE.2024-11-07T00-52-20Z   "/usr/bin/docker-ent…"   minio      20 seconds ago   Up 20 seconds (healthy)   0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp, 127.0.0.1:9001->9001/tcp
+gocean-b2b-postgres-1   postgres:16.6-alpine                       "docker-entrypoint.s…"   postgres   20 seconds ago   Up 19 seconds (healthy)   127.0.0.1:5432->5432/tcp
+gocean-b2b-web-1        gocean-b2b/web:b0d77bb                     "/docker-entrypoint.…"   web        20 seconds ago   Up 7 seconds (healthy)    0.0.0.0:3000->80/tcp, [::]:3000->80/tcp
+gocean-b2b-worker-1     gocean-b2b/worker:b0d77bb                  "docker-entrypoint.s…"   worker     20 seconds ago   Up 13 seconds (healthy)   8082/tcp

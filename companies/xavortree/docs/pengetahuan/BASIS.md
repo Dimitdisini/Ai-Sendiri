@@ -9,6 +9,13 @@ File ini terus bertambah. Entri terbaru di atas. Dibaca semua peran sebelum mula
 **Sumber:** <tautan atau nama>
 -->
 
+## 2026-09-30 — Dynamic FEFO Berbasis Telemetri IoT & Prediksi Sisa Masa Simpan untuk Cold-Chain Seafood B2B
+Dynamic FEFO memanfaatkan telemetri suhu IoT kontinu untuk menghitung sisa masa simpan aktual (Remaining Shelf Life / RSL) komoditas seafood secara real-time berdasarkan paparan termal nyata, bukan sekadar tanggal kedaluwarsa statis. Alokasi order diarahkan otomatis untuk mengirim stok ber-RSL pendek ke pembeli lokal/cepat guna menekan risiko pembusukan 8–15% dan mengamankan stok mutu prima untuk jalur ekspor.
+**Relevan karena:** mendukung arsitektur order management dan traceability gocean-b2b (Scope 2) serta selaras dengan fokus solusi AI IoT Xavortree.
+**Sumber:** [Intelligent Container](https://intelligentcontainer.com), [Datoms IoT Research](https://datoms.io), [Food Logistics](https://foodlogistics.com)
+*Notulen diskusi pagi:* [meetings/2026-09-30-diskusi-pagi.md](../../meetings/2026-09-30-diskusi-pagi.md)
+
+
 ## 2026-09-25 — Pergeseran ke AI prescriptive di monitoring IoT industri
 Platform IoT industri 2026 bergeser dari dashboard deskriptif ke analitik preskriptif: AI tidak cuma menampilkan data sensor tapi mendiagnosis kondisi, memprediksi kegagalan, dan merekomendasikan tindakan langsung (contoh: Treon IQ). Pasar predictive maintenance global diperkirakan tumbuh dari USD 13,65 miliar (2025) ke USD 97 miliar (2034), CAGR di atas 24%.
 **Relevan karena:** ini persis segmen produk Xavortree (monitoring sensor + dashboard analitik untuk klien) — jadi acuan arah fitur (rekomendasi otomatis, bukan cuma grafik) dan bukti pasar sedang tumbuh cepat.

@@ -1,0 +1,27 @@
+=== 1. Normal state: healthz & readyz ===
+HTTP/1.1 200 OK
+content-type: application/json; charset=utf-8
+content-length: 15
+Date: Tue, 29 Sep 2026 16:26:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=72
+
+{"status":"ok"}
+HTTP/1.1 200 OK
+content-type: application/json; charset=utf-8
+content-length: 18
+Date: Tue, 29 Sep 2026 16:26:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=72
+
+{"status":"ready"}
+=== 2. Stopping postgres ===
+ Container gocean-b2b-postgres-1 Stopping 
+ Container gocean-b2b-postgres-1 Stopped 
+=== 3. Readyz during postgres outage (expected 503) ===
+
+=== 4. Healthz during postgres outage (expected 200) ===
+
+=== 5. Restarting postgres ===
+ Container gocean-b2b-postgres-1 Starting 
+ Container gocean-b2b-postgres-1 Started 

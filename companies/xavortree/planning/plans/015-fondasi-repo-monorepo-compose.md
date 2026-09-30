@@ -80,3 +80,4 @@ make ps | make logs | make psql | make db-reset | make down
 ## Riwayat QA
 | Ronde | Verdict | File |
 |---|---|---|
+| 1 | FAIL | planning/qa/015-fondasi-repo-monorepo-compose-qa-r1.md |
