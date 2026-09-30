@@ -1,23 +1,5 @@
-=== git ls-files check ===
-TIDAK ADA .env atau file kunci dalam git ls-files (OK)
-=== README sections ===
+=== AC8: git ls-files & README sections ===
+NO_SECRETS_FOUND
 ## Prasyarat
-- Node.js ≥22, pnpm ≥9 (`corepack enable` lalu `corepack prepare pnpm@9.12.0 --activate`)
-- Docker ≥24 + Compose v2 (Docker Desktop atau OrbStack)
-- `git`
-
-## Mulai cepat
---
 ## Perintah Makefile
-| Perintah | Fungsi |
-|---|---|
-| `make up` | build image lalu nyalakan `postgres`, `minio`, `mailpit`, `migrate`, `minio-init`, `api`, `worker`, `web` |
-| `make down` | matikan service (volume dipertahankan) |
-| `make logs` | ikuti log semua service |
---
 ## Port (dev, TDD §6.1)
-| Service | Port host | Keterangan |
-|---|---|---|
-| `web` | 3000 | build statis (nginx); `5173` saat `pnpm --filter @gocean/web dev` |
-| `api` | 8080 | `/healthz`, `/readyz`, `/metrics` |
-| `worker` | 8082 | health-only, tidak dipublikasikan ke host |

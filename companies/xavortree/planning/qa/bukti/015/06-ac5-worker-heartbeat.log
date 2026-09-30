@@ -1,11 +1,7 @@
-=== COUNT JOBS ===
- count 
--------
-     0
-(1 row)
-
-=== RECENT JOBS ===
- id | name | state | created_on | started_on | completed_on 
-----+------+-------+------------+------------+--------------
-(0 rows)
+=== AC5: worker heartbeat jobs ===
+       name        |   state   | count 
+-------------------+-----------+-------
+ __pgboss__send-it | completed |     1
+ system.heartbeat  | completed |     1
+(2 rows)
 

@@ -1,4 +1,4 @@
-=== SCHEMAS ===
+=== AC3: database schemas, roles, extensions ===
  nspname 
 ---------
  core
@@ -6,7 +6,6 @@
  audit
 (3 rows)
 
-=== ROLES ===
   rolname   
 ------------
  app_fin
@@ -15,7 +14,6 @@
  app_report
 (4 rows)
 
-=== EXTENSIONS ===
  extname  
 ----------
  pgcrypto

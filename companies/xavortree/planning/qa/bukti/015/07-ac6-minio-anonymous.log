@@ -1,6 +1,4 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   360  100   339  100    21  45497   2818 --:--:-- --:--:-- --:--:-- 51428
+=== AC6: minio anonymous upload ===
 HTTP/1.1 403 Forbidden
 Accept-Ranges: bytes
 Content-Length: 339
@@ -10,12 +8,12 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 Vary: Origin
 Vary: Accept-Encoding
 X-Amz-Id-2: dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
-X-Amz-Request-Id: 18D9D7745EFDF57E
+X-Amz-Request-Id: 18DA25BB35DA9314
 X-Content-Type-Options: nosniff
-X-Ratelimit-Limit: 861
-X-Ratelimit-Remaining: 861
+X-Ratelimit-Limit: 1035
+X-Ratelimit-Remaining: 1035
 X-Xss-Protection: 1; mode=block
-Date: Tue, 29 Sep 2026 16:27:01 GMT
+Date: Wed, 30 Sep 2026 16:21:27 GMT
 
 <?xml version="1.0" encoding="UTF-8"?>
-<Error><Code>AccessDenied</Code><Message>Access Denied.</Message><Key>test.txt</Key><BucketName>gocean-dev-files</BucketName><Resource>/gocean-dev-files/test.txt</Resource><RequestId>18D9D7745EFDF57E</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>
+<Error><Code>AccessDenied</Code><Message>Access Denied.</Message><Key>test.txt</Key><BucketName>gocean-dev-files</BucketName><Resource>/gocean-dev-files/test.txt</Resource><RequestId>18DA25BB35DA9314</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>

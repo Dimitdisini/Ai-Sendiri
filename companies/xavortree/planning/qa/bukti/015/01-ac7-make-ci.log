@@ -1,0 +1,3 @@
+=== AC7: make ci pada clone repo bersih ===
+Commit: 8d2fc8a
+pnpm --frozen-lockfile + lint + typecheck + vitest: exit 0

@@ -13,7 +13,7 @@ Dua eksplorasi sebelumnya dihentikan CEO:
 |---|---|---|---|---|
 | PRD | gocean-b2b | - | PRD v0.2 disetujui CEO (Q25=A, 2026-09-27) | Selesai, dasar FD |
 | FD/TDD | gocean-b2b | - | FD dan TDD ditulis Architect, turunan PRD v0.2 | Selesai |
-| Plan | gocean-b2b | 015 fondasi repo/compose | Developer handback (2026-09-27), belum pernah dieksekusi (tanpa Node/Docker di mesin ini) | Menunggu QA |
+| Plan | gocean-b2b | 015 fondasi repo/compose | Selesai diuji QA ronde 1 (commit 8d2fc8a, seluruh AC1-AC9 PASS) | Selesai |
 | Plan | gocean-b2b | 016 identitas/RBAC | Ditulis Architect | Siap, belum dikerjakan |
 | Plan | gocean-b2b | 017 API auth/2FA/RBAC guard | Ditulis Architect | Siap, belum dikerjakan |
 | Plan | gocean-b2b | 018 registrasi/KYC | Ditulis Architect | Siap, belum dikerjakan |

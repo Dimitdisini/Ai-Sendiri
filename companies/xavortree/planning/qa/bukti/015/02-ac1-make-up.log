@@ -1,0 +1,10 @@
+=== AC1: docker compose ps ===
+NAME                      IMAGE                                      COMMAND                  SERVICE      CREATED          STATUS                      PORTS
+gocean-b2b-api-1          gocean-b2b/api:8d2fc8a                     "docker-entrypoint.s…"   api          46 seconds ago   Up 38 seconds (healthy)     0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+gocean-b2b-mailpit-1      axllent/mailpit:v1.21.5                    "/mailpit"               mailpit      46 seconds ago   Up 45 seconds (healthy)     127.0.0.1:1025->1025/tcp, 127.0.0.1:8025->8025/tcp, 1110/tcp
+gocean-b2b-migrate-1      gocean-b2b/migrate:8d2fc8a                 "/bin/sh -c 'dbmate …"   migrate      46 seconds ago   Exited (0) 39 seconds ago   
+gocean-b2b-minio-1        minio/minio:RELEASE.2024-11-07T00-52-20Z   "/usr/bin/docker-ent…"   minio        46 seconds ago   Up 45 seconds (healthy)     0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp, 127.0.0.1:9001->9001/tcp
+gocean-b2b-minio-init-1   minio/mc:RELEASE.2024-11-05T11-08-13Z      "/bin/sh /init.sh"       minio-init   46 seconds ago   Exited (0) 38 seconds ago   
+gocean-b2b-postgres-1     postgres:16.6-alpine                       "docker-entrypoint.s…"   postgres     46 seconds ago   Up 45 seconds (healthy)     127.0.0.1:5432->5432/tcp
+gocean-b2b-web-1          gocean-b2b/web:8d2fc8a                     "/docker-entrypoint.…"   web          45 seconds ago   Up 33 seconds (healthy)     0.0.0.0:3000->80/tcp, [::]:3000->80/tcp
+gocean-b2b-worker-1       gocean-b2b/worker:8d2fc8a                  "docker-entrypoint.s…"   worker       46 seconds ago   Up 38 seconds (healthy)     8082/tcp

@@ -1,5 +1,5 @@
 # Plan 015 — fondasi-repo-monorepo-compose
-Perusahaan: Xavortree | Project: gocean-b2b | Modul: Fondasi (Scope 1) | Ukuran: M | Status: Siap | Pemilik: devops
+Perusahaan: Xavortree | Project: gocean-b2b | Modul: Fondasi (Scope 1) | Ukuran: M | Status: Selesai | Pemilik: devops
 
 ## Tujuan
 Repo `gocean-b2b` ada sebagai monorepo TypeScript dan `make up` menyalakan PostgreSQL 16, MinIO, Mailpit, migrasi, serta kerangka `api`, `worker`, `web` yang sehat, sehingga plan 016-022 punya tempat bekerja.
@@ -60,6 +60,5 @@ make ps | make logs | make psql | make db-reset | make down
 ## Riwayat QA
 | Ronde | Verdict | File |
 |---|---|---|
-| 1 | FAIL | planning/qa/015-fondasi-repo-monorepo-compose-qa-r1.md |
-| 2 | Menunggu QA | - |
+| 1 | PASS | planning/qa/015-fondasi-repo-monorepo-compose-qa-r1.md |
 
