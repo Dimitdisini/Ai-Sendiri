@@ -9,6 +9,13 @@ File ini terus bertambah. Entri terbaru di atas. Dibaca semua peran sebelum mula
 **Sumber:** <tautan atau nama>
 -->
 
+## 2026-10-01 — Edge AI Risk Scoring & Local Store-and-Forward via MQTT pada Gateway IoT Cold-Chain
+Edge AI pada gateway IoT cold-chain memungkinkan deteksi anomali deviasi suhu dan kalkulasi skor risiko secara on-device saat armada kapal atau truk berada di area blank spot sinyal maritim. Mekanisme local store-and-forward berprotokol MQTT QoS 1 menjamin seluruh telemetri tersimpan aman dan terkompresi hingga sinkronisasi audit logistik berhasil ditransmisikan ke cloud saat koneksi pulih.
+**Relevan karena:** memperkuat ketahanan monitoring IoT dan keutuhan jejak audit data pada modul traceability Gocean B2B (Scope 2).
+**Sumber:** [OpenText IoT](https://opentext.com), [Datoms IoT Research](https://datoms.io), [GCCA](https://gcca.org)
+*Notulen diskusi pagi:* [meetings/2026-10-01-diskusi-pagi.md](../../meetings/2026-10-01-diskusi-pagi.md)
+
+
 ## 2026-09-30 — Dynamic FEFO Berbasis Telemetri IoT & Prediksi Sisa Masa Simpan untuk Cold-Chain Seafood B2B
 Dynamic FEFO memanfaatkan telemetri suhu IoT kontinu untuk menghitung sisa masa simpan aktual (Remaining Shelf Life / RSL) komoditas seafood secara real-time berdasarkan paparan termal nyata, bukan sekadar tanggal kedaluwarsa statis. Alokasi order diarahkan otomatis untuk mengirim stok ber-RSL pendek ke pembeli lokal/cepat guna menekan risiko pembusukan 8–15% dan mengamankan stok mutu prima untuk jalur ekspor.
 **Relevan karena:** mendukung arsitektur order management dan traceability gocean-b2b (Scope 2) serta selaras dengan fokus solusi AI IoT Xavortree.
