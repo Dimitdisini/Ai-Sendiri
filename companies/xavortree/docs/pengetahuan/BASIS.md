@@ -9,6 +9,12 @@ File ini terus bertambah. Entri terbaru di atas. Dibaca semua peran sebelum mula
 **Sumber:** <tautan atau nama>
 -->
 
+## 2026-10-07 — Arsitektur Tiered Storage & Continuous Aggregates (TimescaleDB) untuk Telemetri IoT Cold-Chain
+Implementasi TimescaleDB dengan pola Continuous Aggregates (CAGGs) memungkinkan pra-kalkulasi rollup metrik sensor (min, max, avg per 5 menit/jam) secara hierarkis, menjaga latensi kueri dashboard analitik tetap di bawah 200 ms tanpa memindai miliaran baris mentah. Kombinasi native columnar compression dan tiered storage ke object storage S3 mengotomatisasi penurunan data telemetri historis >30 hari, memangkas biaya penyimpanan hingga 85% untuk kebutuhan audit kepatuhan cold-chain 1–2 tahun tanpa memutus akses kueri SQL standar.
+**Relevan karena:** sangat krusial untuk arsitektur backend data ingestion dan dashboard analitik Gocean B2B (Scope 2: traceability) serta efisiensi biaya infrastruktur cloud Xavortree.
+**Sumber:** [Timescale Docs & Benchmarks](https://timescale.com), [Datoms IoT Research](https://datoms.io), [ResearchGate Time-Series IoT](https://researchgate.net)
+*Notulen diskusi pagi:* [meetings/2026-10-07-diskusi-pagi.md](../../meetings/2026-10-07-diskusi-pagi.md)
+
 ## 2026-10-01 — Edge AI Risk Scoring & Local Store-and-Forward via MQTT pada Gateway IoT Cold-Chain
 Edge AI pada gateway IoT cold-chain memungkinkan deteksi anomali deviasi suhu dan kalkulasi skor risiko secara on-device saat armada kapal atau truk berada di area blank spot sinyal maritim. Mekanisme local store-and-forward berprotokol MQTT QoS 1 menjamin seluruh telemetri tersimpan aman dan terkompresi hingga sinkronisasi audit logistik berhasil ditransmisikan ke cloud saat koneksi pulih.
 **Relevan karena:** memperkuat ketahanan monitoring IoT dan keutuhan jejak audit data pada modul traceability Gocean B2B (Scope 2).
