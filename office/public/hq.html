@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kantor Virtual HQ</title>
+  <style>
+    /* ───────────────────────────────────────────
+       RESET & BASE
+    ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; width: 100%; overflow: hidden;
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      font-size: 13px; background: #f4f3ef; color: #1a1814;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 8px; }
+
+    /* ───────────────────────────────────────────
+       LAYOUT GRID
+    ─────────────────────────────────────────── */
+    .shell {
+      display: grid;
+      grid-template-rows: 52px 1fr 120px;
+      grid-template-columns: 290px 1fr 260px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "feed   main   sidebar"
+        "agents agents agents";
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ───────────────────────────────────────────
+       TOPBAR
+    ─────────────────────────────────────────── */
+    .topbar {
+      grid-area: topbar;
+      display: flex; align-items: center; gap: 0;
+      background: #fff;
+      border-bottom: 1px solid #e8e4dc;
+      padding: 0 16px 0 0;
+      z-index: 10;
+    }
+
+    .tb-brand {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 0 16px;
+      border-right: 1px solid #e8e4dc;
+      min-width: 216px; height: 100%;
+    }
+    .tb-brand-title {
+      font-size: 13px; font-weight: 700; color: #1a1814; line-height: 1.2;
+    }
+    .tb-brand-sub { font-size: 11px; color: #9a9083; }
+
+    .tb-live {
+      display: flex; align-items: center; gap: 5px;
+      margin-left: 14px;
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; color: #15803d;
+    }
+    .tb-live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #22c55e;
+      animation: blink 1.4s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .tb-time {
+      margin-left: 10px; font-size: 16px; font-weight: 800;
+      color: #1a1814; letter-spacing: -0.3px; font-variant-numeric: tabular-nums;
+    }
+
+    .tb-pills {
+      display: flex; align-items: center; gap: 1px;
+      margin-left: auto;
+    }
+    .tb-pill {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 16px; height: 52px; justify-content: center;
+      border-left: 1px solid #e8e4dc;
+      min-width: 80px;
+    }
+    .tb-pill-n {
+      font-size: 14px; font-weight: 800; color: #1a1814;
+      font-variant-numeric: tabular-nums; line-height: 1.1;
+    }
+    .tb-pill-n.ok    { color: #15803d; }
+    .tb-pill-n.warn  { color: #b45309; }
+    .tb-pill-n.info  { color: #1d4ed8; }
+    .tb-pill-l {
+      font-size: 10px; color: #9a9083; text-transform: uppercase;
+      letter-spacing: 0.05em; margin-top: 1px;
+    }
+
+    /* ───────────────────────────────────────────
+       FEED KIRI — Aktivitas langsung
+    ─────────────────────────────────────────── */
+    .feed {
+      grid-area: feed;
+      background: #fff;
+      border-right: 1px solid #e8e4dc;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .feed-header {
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid #f0ede6;
+      font-size: 12px; font-weight: 700; color: #44403c;
+    }
+    .feed-filters {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #f0ede6;
+    }
+    .feed-filter {
+      padding: 4px 10px; border-radius: 999px; font-size: 11px;
+      background: #f4f3ef; color: #78726a; font-weight: 500;
+      transition: background .12s, color .12s;
+    }
+    .feed-filter.active { background: #1a1814; color: #fff; font-weight: 700; }
+    .feed-filter:hover:not(.active) { background: #e8e4dc; }
+
+    .feed-list {
+      flex: 1; overflow-y: auto;
+      padding: 6px 0;
+    }
+    .feed-item {
+      display: flex; gap: 9px; align-items: flex-start;
+      padding: 7px 14px;
+      border-bottom: 1px solid #f8f6f2;
+      cursor: default; transition: background .1s;
+    }
+    .feed-item:hover { background: #faf8f5; }
+    .feed-item.hidden { display: none; }
+
+    .feed-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 800; color: #fff;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .feed-body { flex: 1; min-width: 0; }
+    .feed-meta {
+      display: flex; align-items: center; gap: 5px; margin-bottom: 2px;
+    }
+    .feed-who {
+      font-size: 11px; font-weight: 700; color: #1a1814;
+    }
+    .feed-tool {
+      font-size: 10px; background: #f0ede6; color: #78726a;
+      padding: 1px 5px; border-radius: 4px;
+    }
+    .feed-text {
+      font-size: 11px; color: #44403c; line-height: 1.45;
+      overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .feed-time {
+      font-size: 10px; color: #b5aca3; flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ───────────────────────────────────────────
+       MAIN — tengah (status board)
+    ─────────────────────────────────────────── */
+    .main {
+      grid-area: main;
+      overflow-y: auto;
+      padding: 18px 20px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .main-heading {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .main-heading h2 {
+      font-size: 14px; font-weight: 700; color: #1a1814;
+    }
+    .main-heading span { font-size: 11px; color: #9a9083; }
+
+    /* Progres bar besar */
+    .progress-block {
+      background: #fff; border: 1px solid #e8e4dc;
+      border-radius: 12px; padding: 16px 20px;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .progress-label span { font-size: 12px; color: #78726a; }
+    .progress-label strong { font-size: 22px; font-weight: 800; color: #1a1814; }
+    .progress-track {
+      height: 10px; background: #f0ede6; border-radius: 999px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, #6b4f3a, #a07850);
+      transition: width .6s ease;
+    }
+    .progress-sub {
+      display: flex; gap: 16px; margin-top: 10px;
+    }
+    .progress-sub-item { font-size: 11px; color: #9a9083; }
+    .progress-sub-item strong { color: #44403c; font-weight: 700; }
+
+    /* Grid statistik kecil */
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
+    .stat-card {
+      background: #fff; border: 1px solid #e8e4dc; border-radius: 10px;
+      padding: 13px 16px;
+    }
+    .stat-card-n {
+      font-size: 24px; font-weight: 800; line-height: 1;
+      margin-bottom: 4px; font-variant-numeric: tabular-nums;
+    }
+    .stat-card-l { font-size: 11px; color: #9a9083; }
+    .stat-card-n.ok   { color: #15803d; }
+    .stat-card-n.warn { color: #b45309; }
+    .stat-card-n.err  { color: #b91c1c; }
+    .stat-card-n.info { color: #1d4ed8; }
+
+    /* Tabel roadmap */
+    .table-block {
+      background: #fff; border: 1px solid #e8e4dc;
+      border-radius: 12px; overflow: hidden;
+    }
+    .table-block-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid #f0ede6;
+    }
+    .table-block-header h3 { font-size: 12px; font-weight: 700; color: #44403c; }
+    .table-block-header span { font-size: 11px; color: #9a9083; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .data-table thead th {
+      background: #faf8f4; color: #9a9083; font-size: 10px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      padding: 8px 14px; text-align: left; border-bottom: 1px solid #f0ede6;
+    }
+    .data-table tbody td {
+      padding: 8px 14px; border-bottom: 1px solid #f8f6f2;
+      color: #44403c; vertical-align: top;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: #faf8f5; }
+    .chip {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+    }
+    .chip-done    { background: #dcfce7; color: #15803d; }
+    .chip-pending { background: #fef3c7; color: #b45309; }
+    .chip-blokir  { background: #fee2e2; color: #b91c1c; }
+
+    /* ───────────────────────────────────────────
+       SIDEBAR KANAN — Backlog
+    ─────────────────────────────────────────── */
+    .sidebar {
+      grid-area: sidebar;
+      background: #fff;
+      border-left: 1px solid #e8e4dc;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .sb-tabs {
+      display: flex; border-bottom: 1px solid #e8e4dc; flex-shrink: 0;
+    }
+    .sb-tab {
+      flex: 1; padding: 10px 4px; font-size: 12px; font-weight: 600;
+      color: #9a9083; background: transparent;
+      border-bottom: 2px solid transparent;
+      text-align: center; transition: color .12s, border-color .12s;
+    }
+    .sb-tab.active { color: #1a1814; border-color: #6b4f3a; }
+    .sb-tab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #f0ede6; font-size: 9px; font-weight: 800;
+      margin-left: 4px; color: #44403c;
+    }
+    .sb-tab-badge.red { background: #fee2e2; color: #b91c1c; }
+
+    .sb-body { flex: 1; overflow-y: auto; padding: 10px 0; }
+    .sb-panel { display: none; }
+    .sb-panel.active { display: block; }
+
+    .sb-section { margin-bottom: 2px; }
+    .sb-section-title {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px 4px;
+      font-size: 10px; font-weight: 700; color: #9a9083;
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .sb-section-count {
+      font-size: 9px; background: #f0ede6; color: #78726a;
+      padding: 1px 5px; border-radius: 999px; font-weight: 700;
+    }
+    .sb-item {
+      display: flex; align-items: flex-start; gap: 6px;
+      padding: 5px 14px; cursor: default;
+      border-left: 3px solid transparent;
+      transition: background .1s;
+    }
+    .sb-item:hover { background: #faf8f5; }
+    .sb-item-text { font-size: 11px; color: #44403c; line-height: 1.4; flex: 1; }
+    .sb-item-date {
+      font-size: 10px; white-space: nowrap; flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .sb-item-date.red  { color: #b91c1c; }
+    .sb-item-date.warn { color: #b45309; }
+    .sb-item-date.ok   { color: #15803d; }
+    .sb-item.deadline { border-left-color: #fca5a5; }
+    .sb-item.owner    { border-left-color: #fde68a; }
+    .sb-item.idea     { border-left-color: #bfdbfe; }
+
+    .sb-checkbox {
+      width: 12px; height: 12px; border: 1.5px solid #d6d0c8;
+      border-radius: 3px; flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ───────────────────────────────────────────
+       BOTTOM — Kartu agen
+    ─────────────────────────────────────────── */
+    .agents-bar {
+      grid-area: agents;
+      background: #fff; border-top: 1px solid #e8e4dc;
+      display: flex; align-items: stretch; overflow-x: auto;
+      gap: 0;
+    }
+    .agent-card {
+      flex: 1; min-width: 180px; max-width: 240px;
+      border-right: 1px solid #f0ede6;
+      padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 4px;
+      cursor: default; transition: background .12s;
+    }
+    .agent-card:hover { background: #faf8f5; }
+    .agent-card-top {
+      display: flex; align-items: center; gap: 7px;
+    }
+    .agent-av {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .agent-info { flex: 1; min-width: 0; }
+    .agent-name {
+      font-size: 12px; font-weight: 700; color: #1a1814;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .agent-role { font-size: 10px; color: #9a9083; }
+    .agent-badge {
+      font-size: 9px; font-weight: 800; padding: 2px 6px;
+      border-radius: 4px; white-space: nowrap; text-transform: uppercase;
+    }
+    .badge-kerja    { background: #dcfce7; color: #15803d; }
+    .badge-istirahat { background: #f4f3ef; color: #9a9083; }
+    .badge-rapat    { background: #fef3c7; color: #b45309; }
+
+    .agent-summary {
+      font-size: 10px; color: #78726a; line-height: 1.4;
+      overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .agent-meta {
+      display: flex; gap: 8px; font-size: 10px; color: #b5aca3;
+    }
+
+    /* ───────────────────────────────────────────
+       EMPTY STATE
+    ─────────────────────────────────────────── */
+    .empty {
+      padding: 30px 14px; text-align: center;
+      color: #b5aca3; font-size: 11px; line-height: 1.6;
+    }
+    .empty strong { display: block; color: #78726a; margin-bottom: 4px; font-size: 12px; }
+
+    /* ───────────────────────────────────────────
+       BANNER KUOTA
+    ─────────────────────────────────────────── */
+    .quota-banner {
+      grid-area: topbar;
+      align-self: end;
+      margin: 0 16px 4px;
+      background: #fef3c7; border: 1px solid #fde68a;
+      color: #b45309; border-radius: 6px;
+      padding: 6px 12px; font-size: 11px; font-weight: 500;
+      display: none; z-index: 20;
+      position: fixed; top: 52px; left: 0; right: 0;
+    }
+    .quota-banner.visible { display: block; }
+    .quota-banner.error {
+      background: #fee2e2; border-color: #fca5a5; color: #b91c1c;
+    }
+
+    /* company switch di main */
+    .company-switch { display: flex; gap: 4px; }
+    .co-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; background: #f4f3ef; color: #78726a;
+      transition: background .12s, color .12s;
+    }
+    .co-btn.active { background: #1a1814; color: #fff; }
+    .co-dot { width: 7px; height: 7px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ╔══════════════════ TOPBAR ══════════════════╗ -->
+  <header class="topbar">
+    <div class="tb-brand">
+      <span class="tb-brand-title">Kantor Virtual HQ</span>
+      <span class="tb-brand-sub" id="brandSub">Akhirat · Mode Terang W/B</span>
+    </div>
+    <div class="tb-live"><span class="tb-live-dot"></span>LIVE</div>
+    <div class="tb-time" id="tbTime">--:--:--</div>
+    <div class="tb-pills">
+      <div class="tb-pill">
+        <span class="tb-pill-n info" id="statAksi">—</span>
+        <span class="tb-pill-l">Total Aksi</span>
+      </div>
+      <div class="tb-pill">
+        <span class="tb-pill-n" id="statSesi">—</span>
+        <span class="tb-pill-l">Sesi Aktif</span>
+      </div>
+      <div class="tb-pill">
+        <span class="tb-pill-n ok" id="statKerja">—</span>
+        <span class="tb-pill-l">Agen Kerja</span>
+      </div>
+      <div class="tb-pill">
+        <span class="tb-pill-n warn" id="statBlokir">—</span>
+        <span class="tb-pill-l">BLOKIR</span>
+      </div>
+      <div class="tb-pill">
+        <span class="tb-pill-n" id="statPlan">—</span>
+        <span class="tb-pill-l">Plan</span>
+      </div>
+      <div class="tb-pill">
+        <span class="tb-pill-n" id="statQA">—</span>
+        <span class="tb-pill-l">QA Report</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ╔══════════════════ FEED KIRI ══════════════════╗ -->
+  <aside class="feed">
+    <div class="feed-header">Aktivitas langsung</div>
+    <div class="feed-filters" id="feedFilters">
+      <button class="feed-filter active" data-type="all">Semua</button>
+    </div>
+    <div class="feed-list" id="feedList">
+      <div class="empty"><strong>Belum ada aktivitas</strong>Jalankan /kickoff di Claude Code</div>
+    </div>
+  </aside>
+
+  <!-- ╔══════════════════ MAIN TENGAH ══════════════════╗ -->
+  <main class="main">
+
+    <div class="main-heading">
+      <h2 id="mainCompanyName">Team Dimitri</h2>
+      <div class="company-switch" id="companySwitch"></div>
+    </div>
+
+    <!-- Progress roadmap -->
+    <div class="progress-block">
+      <div class="progress-label">
+        <span>Progres Roadmap</span>
+        <strong id="progPct">0%</strong>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progFill" style="width:0%"></div>
+      </div>
+      <div class="progress-sub">
+        <div class="progress-sub-item">Plan: <strong id="progPlan">—</strong></div>
+        <div class="progress-sub-item">QA Report: <strong id="progQA">—</strong></div>
+        <div class="progress-sub-item">Roadmap rows: <strong id="progRows">—</strong></div>
+      </div>
+    </div>
+
+    <!-- Stat grid -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-card-n ok" id="sgKerja">0</div>
+        <div class="stat-card-l">Agen Aktif Kerja</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-n info" id="sgPlan">0</div>
+        <div class="stat-card-l">Total Plan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-n warn" id="sgBlokir">0</div>
+        <div class="stat-card-l">Keputusan Tertahan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-n" id="sgAksi">0</div>
+        <div class="stat-card-l">Aksi Hari Ini</div>
+      </div>
+    </div>
+
+    <!-- Tabel Roadmap -->
+    <div class="table-block">
+      <div class="table-block-header">
+        <h3>Roadmap</h3>
+        <span id="roadmapLabel">—</span>
+      </div>
+      <div id="roadmapTable"><div class="empty">Memuat...</div></div>
+    </div>
+
+  </main>
+
+  <!-- ╔══════════════════ SIDEBAR KANAN ══════════════════╗ -->
+  <aside class="sidebar">
+    <div class="sb-tabs">
+      <button class="sb-tab active" data-panel="backlog">
+        Backlog <span class="sb-tab-badge" id="backlogBadge">0</span>
+      </button>
+      <button class="sb-tab" data-panel="keputusan">
+        Keputusan <span class="sb-tab-badge red" id="keputusanBadge">0</span>
+      </button>
+    </div>
+    <div class="sb-body">
+      <!-- Panel Backlog (dari ROADMAP/status Siap/Pending) -->
+      <div class="sb-panel active" id="panelBacklog">
+        <div class="empty"><strong>Memuat...</strong></div>
+      </div>
+      <!-- Panel Keputusan (dari KEPUTUSAN.md) -->
+      <div class="sb-panel" id="panelKeputusan">
+        <div class="empty"><strong>Memuat...</strong></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ╔══════════════════ AGENTS BAR BAWAH ══════════════════╗ -->
+  <div class="agents-bar" id="agentsBar">
+    <div class="agent-card" style="justify-content:center;align-items:center">
+      <div class="empty" style="padding:10px">Memuat tim...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ╔══════════════════ QUOTA BANNER ══════════════════╗ -->
+<div class="quota-banner" id="quotaBanner"></div>
+
+<script>
+// ──────────────────────────────────────────────
+// STATE & CONFIG
+// ──────────────────────────────────────────────
+const COMPANY_COLORS = ["#6b4f3a","#3d6b52","#1d4ed8","#7c3aed","#dc2626"];
+let state     = null;
+let roster    = {};
+let feed      = [];
+let activeCompany = null;
+let activeFeedType = "all";
+let activeSbPanel  = "backlog";
+
+// ──────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────
+function esc(s){ return String(s||"").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function fmtTime(ts){
+  if(!ts) return "—";
+  const d = Math.round((Date.now()-ts)/60000);
+  if(d<1) return "baru saja";
+  if(d<60) return d+"m";
+  if(d<1440) return Math.round(d/60)+"j";
+  return Math.round(d/1440)+"h";
+}
+
+function fmtDate(str){
+  if(!str) return "";
+  const d = new Date(str);
+  if(isNaN(d)) return str;
+  const now = new Date();
+  const diff = (d - now)/(1000*60*60*24);
+  return str;
+}
+
+function initials(name){ return (name||"?").slice(0,2).toUpperCase(); }
+
+function currentCompany(){
+  return state && state.companies && state.companies.find(c=>c.slug===activeCompany)||null;
+}
+
+// ──────────────────────────────────────────────
+// JAM
+// ──────────────────────────────────────────────
+function tickClock(){
+  const t = document.getElementById("tbTime");
+  if(t) t.textContent = new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+setInterval(tickClock,1000); tickClock();
+
+// ──────────────────────────────────────────────
+// TOPBAR STATS
+// ──────────────────────────────────────────────
+function renderTopbar(){
+  if(!state) return;
+  const c = currentCompany();
+  let totalAksi=0, totalSesi=0, kerja=0;
+  if(c && c.agents){
+    c.agents.forEach(a=>{ totalAksi+=a.actions||0; totalSesi=Math.max(totalSesi,a.sessions||0); if(a.status==="kerja") kerja++; });
+  }
+  set("statAksi", totalAksi||"—");
+  set("statSesi", c ? (c.agents||[]).reduce((s,a)=>s+(a.sessions||0),0)||"—" : "—");
+  set("statKerja", kerja||"0");
+  set("statBlokir", c ? (c.keputusanTertahan||0) : "—");
+  set("statPlan",  c ? (c.planCount||0) : "—");
+  set("statQA",    c ? (c.qaReports||0) : "—");
+}
+
+function set(id,val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+
+// ──────────────────────────────────────────────
+// COMPANY SWITCH
+// ──────────────────────────────────────────────
+function renderCompanySwitch(){
+  if(!state) return;
+  const el = document.getElementById("companySwitch");
+  const sig = (state.companies||[]).map(c=>c.slug).join("|");
+  if(el.dataset.sig===sig){
+    [...el.children].forEach(b=>b.classList.toggle("active",b.dataset.slug===activeCompany));
+    return;
+  }
+  el.innerHTML="";
+  (state.companies||[]).forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.className="co-btn"+(c.slug===activeCompany?" active":"");
+    b.dataset.slug=c.slug;
+    b.innerHTML=`<span class="co-dot" style="background:${COMPANY_COLORS[i%COMPANY_COLORS.length]}"></span>${esc(c.name)}`;
+    b.onclick=()=>{ activeCompany=c.slug; renderAll(); };
+    el.appendChild(b);
+  });
+  el.dataset.sig=sig;
+  const nm=document.getElementById("mainCompanyName");
+  if(nm) nm.textContent=currentCompany()?.name||"Team Dimitri";
+}
+
+// ──────────────────────────────────────────────
+// FEED AKTIVITAS
+// ──────────────────────────────────────────────
+function renderFeedFilters(){
+  const filtersEl = document.getElementById("feedFilters");
+  const types = [...new Set(feed.map(f=>f.type))];
+  const known = [...filtersEl.querySelectorAll("[data-type]")].map(b=>b.dataset.type);
+  const missing = types.filter(t=>!known.includes(t));
+  missing.forEach(type=>{
+    const info = roster[type]||{nickname:type,color:"#78726a"};
+    const b=document.createElement("button");
+    b.className="feed-filter";
+    b.dataset.type=type;
+    b.style.setProperty("--c",info.color);
+    b.textContent=info.nickname||type;
+    b.onclick=()=>{
+      activeFeedType=type;
+      [...filtersEl.querySelectorAll(".feed-filter")].forEach(x=>x.classList.toggle("active",x.dataset.type===type));
+      applyFeedFilter();
+    };
+    filtersEl.appendChild(b);
+  });
+  // "Semua" handler
+  const allBtn=filtersEl.querySelector("[data-type='all']");
+  if(allBtn && !allBtn._bound){
+    allBtn._bound=true;
+    allBtn.onclick=()=>{
+      activeFeedType="all";
+      [...filtersEl.querySelectorAll(".feed-filter")].forEach(x=>x.classList.toggle("active",x.dataset.type==="all"));
+      applyFeedFilter();
+    };
+  }
+}
+
+function applyFeedFilter(){
+  const list=document.getElementById("feedList");
+  [...list.querySelectorAll(".feed-item")].forEach(el=>{
+    el.classList.toggle("hidden", activeFeedType!=="all" && el.dataset.type!==activeFeedType);
+  });
+}
+
+function renderFeed(){
+  const list=document.getElementById("feedList");
+  if(!feed||!feed.length){
+    list.innerHTML='<div class="empty"><strong>Belum ada aktivitas</strong>Jalankan /kickoff di Claude Code untuk mulai.</div>';
+    return;
+  }
+  renderFeedFilters();
+
+  // Tambah item baru saja (hanya yang belum ada, pakai ts sebagai key)
+  const existingTs=new Set([...list.querySelectorAll(".feed-item")].map(e=>e.dataset.ts));
+  const newItems=feed.filter(f=>!existingTs.has(String(f.ts)));
+
+  // Kalau pertama kali atau terlalu beda, render ulang penuh
+  if(existingTs.size===0 || newItems.length > 10){
+    list.innerHTML="";
+    feed.forEach(f=>list.appendChild(makeFeedItem(f)));
+  } else {
+    // Prepend item baru
+    newItems.forEach(f=>list.insertBefore(makeFeedItem(f),list.firstChild));
+  }
+  applyFeedFilter();
+}
+
+function makeFeedItem(f){
+  const info=roster[f.type]||{nickname:f.type,color:"#78726a"};
+  const div=document.createElement("div");
+  div.className="feed-item";
+  div.dataset.ts=f.ts;
+  div.dataset.type=f.type;
+  div.innerHTML=`
+    <div class="feed-avatar" style="background:${esc(info.color)}">${initials(info.nickname)}</div>
+    <div class="feed-body">
+      <div class="feed-meta">
+        <span class="feed-who">${esc(info.nickname)}</span>
+        ${f.tool?`<span class="feed-tool">${esc(f.tool)}</span>`:""}
+      </div>
+      <div class="feed-text">${esc(f.summary)}</div>
+    </div>
+    <div class="feed-time">${fmtTime(f.ts)}</div>`;
+  return div;
+}
+
+// ──────────────────────────────────────────────
+// PROGRESS ROADMAP
+// ──────────────────────────────────────────────
+function renderProgress(){
+  const c=currentCompany();
+  if(!c){ set("progPct","—"); return; }
+  const pct=c.roadmapProgress||0;
+  set("progPct",pct+"%");
+  const fill=document.getElementById("progFill");
+  if(fill) fill.style.width=pct+"%";
+  set("progPlan",  c.planCount||0);
+  set("progQA",    c.qaReports||0);
+  set("progRows",  c.roadmapRows||0);
+  // stat grid
+  const kerja=(c.agents||[]).filter(a=>a.status==="kerja").length;
+  set("sgKerja", kerja);
+  set("sgPlan",  c.planCount||0);
+  set("sgBlokir",c.keputusanTertahan||0);
+  const totalAksi=(c.agents||[]).reduce((s,a)=>s+(a.actions||0),0);
+  set("sgAksi",  totalAksi);
+  set("roadmapLabel", c.name||"");
+}
+
+// ──────────────────────────────────────────────
+// TABEL ROADMAP
+// ──────────────────────────────────────────────
+async function renderRoadmap(){
+  const el=document.getElementById("roadmapTable");
+  if(!activeCompany){ el.innerHTML=""; return; }
+  try{
+    const data=await(await fetch(`/api/company/${activeCompany}/roadmap`)).json();
+    if(!data.rows||!data.rows.length){ el.innerHTML='<div class="empty"><strong>Roadmap kosong</strong>planning/ROADMAP.md belum ada isi.</div>'; return; }
+    const STATUS=/status|kondisi/i;
+    const DONE=/selesai|done|✅|100%/i;
+    const BLOK=/blokir|tertahan|menunggu/i;
+    const head=data.headers.map(h=>`<th>${esc(h)}</th>`).join("");
+    const rows=data.rows.map(r=>`<tr>${data.headers.map(h=>{
+      let v=esc(r[h]||"");
+      if(STATUS.test(h)){
+        if(DONE.test(v))      v=`<span class="chip chip-done">${v}</span>`;
+        else if(BLOK.test(v)) v=`<span class="chip chip-blokir">${v}</span>`;
+        else if(v)            v=`<span class="chip chip-pending">${v}</span>`;
+      }
+      return `<td>${v}</td>`;
+    }).join("")}</tr>`).join("");
+    el.innerHTML=`<table class="data-table"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>`;
+  }catch{ el.innerHTML='<div class="empty">Gagal memuat roadmap.</div>'; }
+}
+
+// ──────────────────────────────────────────────
+// SIDEBAR: Backlog
+// ──────────────────────────────────────────────
+async function renderBacklog(){
+  const el=document.getElementById("panelBacklog");
+  if(!activeCompany){ el.innerHTML="<div class='empty'><strong>Pilih perusahaan</strong></div>"; return; }
+  try{
+    // Gunakan roadmap rows yg statusnya bukan selesai sebagai backlog
+    const data=await(await fetch(`/api/company/${activeCompany}/roadmap`)).json();
+    const DONE=/selesai|done|✅|100%/i;
+    const BLOK=/blokir|tertahan|menunggu/i;
+    const all=data.rows||[];
+    const pending=all.filter(r=>!DONE.test(Object.values(r).join(" ")));
+    const blokir= pending.filter(r=>BLOK.test(Object.values(r).join(" ")));
+    const siap=   pending.filter(r=>!BLOK.test(Object.values(r).join(" ")));
+
+    set("backlogBadge", pending.length);
+
+    let html="";
+    if(blokir.length){
+      html+=`<div class="sb-section">
+        <div class="sb-section-title">Tertahan <span class="sb-section-count">${blokir.length}</span></div>
+        ${blokir.map(r=>makeBacklogItem(r,data.headers,"deadline")).join("")}
+      </div>`;
+    }
+    if(siap.length){
+      html+=`<div class="sb-section">
+        <div class="sb-section-title">Siap Dikerjakan <span class="sb-section-count">${siap.length}</span></div>
+        ${siap.slice(0,8).map(r=>makeBacklogItem(r,data.headers,"owner")).join("")}
+        ${siap.length>8?`<div style="padding:4px 14px;font-size:10px;color:#9a9083">+${siap.length-8} lainnya</div>`:""}
+      </div>`;
+    }
+    if(!pending.length) html='<div class="empty"><strong>Roadmap bersih</strong>Semua milestone selesai.</div>';
+    el.innerHTML=html;
+  }catch{ el.innerHTML='<div class="empty">Gagal memuat backlog.</div>'; }
+}
+
+function makeBacklogItem(r,headers,cls){
+  // Ambil kolom pertama sebagai judul
+  const title=Object.values(r).filter(v=>v&&!/^\s*[-–]\s*$/.test(v)).slice(0,2).join(" · ");
+  return `<div class="sb-item ${cls}"><div class="sb-item-text">${esc(title.slice(0,80))}</div></div>`;
+}
+
+// ──────────────────────────────────────────────
+// SIDEBAR: Keputusan
+// ──────────────────────────────────────────────
+async function renderKeputusan(){
+  const el=document.getElementById("panelKeputusan");
+  if(!activeCompany){ el.innerHTML="<div class='empty'><strong>Pilih perusahaan</strong></div>"; return; }
+  try{
+    const data=await(await fetch(`/api/company/${activeCompany}/keputusan`)).json();
+    const rows=data.rows||[];
+    set("keputusanBadge", rows.length);
+    if(!rows.length){ el.innerHTML='<div class="empty"><strong>Belum ada keputusan</strong>KEPUTUSAN.md masih kosong.</div>'; return; }
+    const BLOK=/blokir|menunggu|tertahan/i;
+    const blokir=rows.filter(r=>BLOK.test(Object.values(r).join(" ")));
+    const lainnya=rows.filter(r=>!BLOK.test(Object.values(r).join(" ")));
+
+    let html="";
+    if(blokir.length){
+      html+=`<div class="sb-section">
+        <div class="sb-section-title">Menunggu CEO <span class="sb-section-count">${blokir.length}</span></div>
+        ${blokir.map(r=>{
+          const vals=Object.values(r).filter(v=>v);
+          return `<div class="sb-item deadline"><div class="sb-item-text">${esc(vals.slice(0,2).join(" · ").slice(0,90))}</div></div>`;
+        }).join("")}
+      </div>`;
+    }
+    if(lainnya.length){
+      html+=`<div class="sb-section">
+        <div class="sb-section-title">Sudah Diputuskan <span class="sb-section-count">${lainnya.length}</span></div>
+        ${lainnya.slice(0,6).map(r=>{
+          const vals=Object.values(r).filter(v=>v);
+          return `<div class="sb-item idea">
+            <div class="sb-checkbox"></div>
+            <div class="sb-item-text">${esc(vals.slice(0,2).join(" · ").slice(0,80))}</div>
+          </div>`;
+        }).join("")}
+        ${lainnya.length>6?`<div style="padding:4px 14px;font-size:10px;color:#9a9083">+${lainnya.length-6} lainnya</div>`:""}
+      </div>`;
+    }
+    el.innerHTML=html;
+  }catch{ el.innerHTML='<div class="empty">Gagal memuat keputusan.</div>'; }
+}
+
+// ──────────────────────────────────────────────
+// AGENTS BAR BAWAH
+// ──────────────────────────────────────────────
+function renderAgents(){
+  const bar=document.getElementById("agentsBar");
+  const c=currentCompany();
+  if(!c||!c.agents||!c.agents.length){
+    bar.innerHTML='<div class="agent-card" style="justify-content:center;align-items:center"><div class="empty" style="padding:10px">Belum ada agen</div></div>';
+    return;
+  }
+  bar.innerHTML="";
+  c.agents.forEach(a=>{
+    const info=roster[a.type]||{};
+    const color=a.color||info.color||"#78726a";
+    const summary=(a.lastSummary||"Belum ada aktivitas").slice(0,100);
+    const badgeCls=a.status==="kerja"?"badge-kerja":a.status==="rapat"?"badge-rapat":"badge-istirahat";
+    const badgeLbl=a.status==="kerja"?"KERJA":a.status==="rapat"?"RAPAT":"—";
+    const div=document.createElement("div");
+    div.className="agent-card";
+    div.innerHTML=`
+      <div class="agent-card-top">
+        <div class="agent-av" style="background:${esc(color)}">${initials(a.nickname)}</div>
+        <div class="agent-info">
+          <div class="agent-name">${esc(a.nickname||a.type)}</div>
+          <div class="agent-role">${esc(a.role||a.type)}</div>
+        </div>
+        <span class="agent-badge ${badgeCls}">${badgeLbl}</span>
+      </div>
+      <div class="agent-summary">${esc(summary)}</div>
+      <div class="agent-meta">
+        <span>${a.actions||0} aksi</span>
+        <span>${a.sessions||0} sesi</span>
+        <span>${fmtTime(a.lastTs)}</span>
+      </div>`;
+    bar.appendChild(div);
+  });
+}
+
+// ──────────────────────────────────────────────
+// QUOTA BANNER
+// ──────────────────────────────────────────────
+function renderQuota(){
+  if(!state) return;
+  const q=state.quota||{status:"ok"};
+  const el=document.getElementById("quotaBanner");
+  if(q.status==="ok"){ el.classList.remove("visible"); return; }
+  const jam=q.resumeAt?new Date(q.resumeAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}):"—";
+  el.className="quota-banner visible"+(q.status==="error"?" error":"");
+  el.textContent=q.status==="habis"
+    ?`Tim istirahat — kuota habis sejak ${fmtTime(q.since)}. Perkiraan lanjut ±${jam}.`
+    :`Giliran terakhir gagal (${fmtTime(q.since)}): ${q.message}`;
+}
+
+// ──────────────────────────────────────────────
+// SIDEBAR TABS
+// ──────────────────────────────────────────────
+document.querySelectorAll(".sb-tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    activeSbPanel=btn.dataset.panel;
+    document.querySelectorAll(".sb-tab").forEach(b=>b.classList.toggle("active",b===btn));
+    document.querySelectorAll(".sb-panel").forEach(p=>p.classList.toggle("active",p.id==="panel"+cap(activeSbPanel)));
+    if(activeSbPanel==="backlog") renderBacklog();
+    else renderKeputusan();
+  });
+});
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+// ──────────────────────────────────────────────
+// RENDER UTAMA
+// ──────────────────────────────────────────────
+function renderAll(){
+  renderTopbar();
+  renderCompanySwitch();
+  renderProgress();
+  renderAgents();
+  renderFeed();
+  renderQuota();
+  renderRoadmap();
+  if(activeSbPanel==="backlog") renderBacklog();
+  else renderKeputusan();
+  const nm=document.getElementById("mainCompanyName");
+  if(nm) nm.textContent=currentCompany()?.name||"Team Dimitri";
+}
+
+// ──────────────────────────────────────────────
+// FETCH DATA
+// ──────────────────────────────────────────────
+async function fetchAll(){
+  try{
+    const [st, ro, fd] = await Promise.all([
+      fetch("/api/state").then(r=>r.json()),
+      fetch("/api/roster").then(r=>r.json()).catch(()=>({})),
+      fetch("/api/activity").then(r=>r.json()).catch(()=>[]),
+    ]);
+    state=st; roster=ro; feed=Array.isArray(fd)?fd:[];
+    if(!activeCompany && st.companies && st.companies.length) activeCompany=st.companies[0].slug;
+    renderAll();
+  } catch(e){ console.warn("fetchAll gagal:",e); }
+}
+
+fetchAll();
+setInterval(fetchAll,5000);
+
+// SSE real-time
+try{
+  const es=new EventSource("/events");
+  es.onmessage=()=>fetchAll();
+}catch{}
+</script>
+</body>
+</html>
